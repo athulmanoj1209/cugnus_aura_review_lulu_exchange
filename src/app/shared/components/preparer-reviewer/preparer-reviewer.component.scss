@@ -1,0 +1,367 @@
+/* Assurance Engagers — single collapsible personnel block */
+
+:host {
+  display: block;
+}
+
+/* ─── SECTION HEADER ─────────────────────────────────────── */
+.pp-pers-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .9rem 1.25rem;
+  border-bottom: 1px solid var(--surface-border);
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+  }
+
+  &__icon {
+    width: 38px; height: 38px; border-radius: 10px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    i { font-size: 1rem; }
+    &--auditor  { background: color-mix(in srgb, var(--p-purple-500) 12%, transparent); i { color: var(--p-purple-700); } }
+    &--reviewer { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); i { color: var(--p-blue-700); } }
+  }
+
+  &__title {
+    margin: 0; font-size: .9rem; font-weight: 600; color: var(--text-color);
+  }
+
+  &__sub {
+    margin: .1rem 0 0; font-size: .7rem; color: var(--text-color-secondary);
+  }
+
+  &--toggle {
+    cursor: pointer;
+    user-select: none;
+    transition: background .12s;
+    &:hover { background: var(--surface-hover); }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+  }
+
+  &__chevron {
+    font-size: .8rem;
+    color: var(--text-color-secondary);
+    transition: transform .2s;
+    &--blue { color: var(--p-blue-700); }
+  }
+}
+
+/* ─── COUNT BADGES ───────────────────────────────────────── */
+.pp-count-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 20px; padding: 0 6px;
+  border-radius: 10px; background: color-mix(in srgb, var(--p-purple-500) 12%, transparent); color: var(--p-violet-800);
+  font-size: .68rem; font-weight: 700;
+
+  &--blue {
+    background: color-mix(in srgb, var(--p-blue-500) 16%, transparent);
+    color: var(--p-blue-700);
+  }
+}
+
+/* ─── PERSON LIST ─────────────────────────────────────────── */
+.person-list {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: .75rem 1rem .75rem 2.25rem;
+  background: var(--surface-hover);
+}
+
+/* ─── PERSON CARDS ────────────────────────────────────────── */
+.person-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+  border-left: 3px solid var(--p-purple-600);
+  box-shadow: 0 1px 4px rgba(15,23,42,.05);
+  overflow: hidden;
+  transition: box-shadow .14s;
+
+  &:hover { box-shadow: 0 3px 10px rgba(15,23,42,.09); }
+
+  &.is-expanded {
+    border-left-color: var(--p-violet-800);
+    box-shadow: 0 4px 14px rgba(109,40,217,.14);
+  }
+
+  &--reviewer {
+    border-left-color: var(--p-blue-600);
+    &.is-expanded { border-left-color: var(--p-blue-700); box-shadow: 0 4px 14px rgba(29,78,216,.14); }
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .85rem 1rem;
+    flex-wrap: wrap;
+    transition: background .12s;
+    &:hover { background: #fafbfe; }
+
+    &--expandable {
+      cursor: pointer;
+      user-select: none;
+    }
+  }
+
+  &__identity {
+    display: flex; flex-direction: column;
+    min-width: 140px;
+  }
+
+  &__name { font-size: .88rem; font-weight: 600; color: var(--text-color); }
+
+  &__role {
+    display: flex; align-items: center; gap: .3rem;
+    font-size: .73rem; color: var(--text-color-secondary); margin-top: .1rem;
+    i { font-size: .67rem; }
+  }
+
+  &__meta {
+    display: flex; flex-direction: column; gap: .3rem;
+    flex: 1; min-width: 180px;
+  }
+
+  &__workload { min-width: 150px; max-width: 190px; flex: 1; }
+
+  &__review-stats {
+    display: flex; align-items: center; gap: .35rem;
+    padding: .3rem .65rem;
+    background: var(--surface-hover); border-radius: 8px;
+    min-width: 100px;
+  }
+
+  &__toggle {
+    width: 28px; height: 28px; flex-shrink: 0;
+    border: none; background: var(--surface-hover); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: var(--text-color-secondary);
+    transition: background .12s, color .12s;
+    &:hover { background: var(--surface-hover); color: var(--text-color); }
+    i { font-size: .75rem; }
+  }
+
+  &__body {
+    border-top: 1px dashed var(--surface-border);
+    background: #f9fbff;
+    padding-bottom: .5rem;
+  }
+
+  &--reviewer .person-card__review-stats { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); }
+}
+
+/* ─── AVATAR INITIALS ────────────────────────────────────── */
+.person-avatar {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; font-weight: 700;
+  &--auditor  { background: color-mix(in srgb, var(--p-purple-500) 12%, transparent); color: var(--p-purple-700); }
+  &--reviewer { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); color: var(--p-blue-700); }
+}
+
+/* ─── EXPERIENCE BADGE ───────────────────────────────────── */
+.exp-badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  align-self: flex-start;
+  padding: .2rem .55rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--p-purple-500) 12%, transparent); color: var(--p-purple-700);
+  font-size: .69rem; font-weight: 600;
+  i { font-size: .64rem; }
+  &--blue { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); color: var(--p-blue-700); }
+}
+
+/* ─── EXPERTISE TAGS ─────────────────────────────────────── */
+.exp-tags { display: flex; flex-wrap: wrap; gap: .3rem; }
+
+.exp-tag {
+  padding: .15rem .5rem; border-radius: 999px;
+  background: var(--surface-hover); color: var(--p-green-700);
+  font-size: .67rem; font-weight: 500;
+  border: 1px solid color-mix(in srgb, var(--p-green-500) 30%, transparent);
+  &--blue { background: var(--surface-hover); color: var(--p-blue-700); border-color: var(--p-sky-200); }
+}
+
+/* ─── WORKLOAD BAR ───────────────────────────────────────── */
+.workload-label-row {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: .3rem;
+}
+
+.workload-lbl {
+  font-size: .67rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .05em; color: var(--text-color-secondary);
+}
+
+.workload-pct { font-size: .72rem; font-weight: 700; color: var(--text-color); }
+
+:host ::ng-deep {
+  .wl-bar .p-progressbar {
+    height: 0.60rem; border-radius: 3px; background: var(--surface-hover);
+  }
+  .wl-bar .p-progressbar-value { border-radius: 3px; }
+  .wl-bar--low    .p-progressbar-value { background: var(--p-green-500); }
+  .wl-bar--medium .p-progressbar-value { background: var(--p-orange-500); }
+  .wl-bar--high   .p-progressbar-value { background: var(--p-red-500); }
+}
+
+/* ─── AUDIT/REVIEW STAT COUNTS ───────────────────────────── */
+.rev-stat {
+  display: flex; flex-direction: column; align-items: center;
+  &__val { font-size: .95rem; font-weight: 700; color: var(--p-blue-700); }
+  &__lbl { font-size: .62rem; color: var(--text-color-secondary); }
+  &__sep { font-size: .8rem; color: var(--surface-border); font-weight: 600; }
+}
+
+/* ─── SEARCH BARS ────────────────────────────────────────── */
+.pers-list-search {
+  padding: .6rem 1rem .4rem;
+  background: var(--surface-hover);
+  border-bottom: 1px solid var(--surface-border);
+
+  &--rev { background: #f0f7ff; border-bottom-color: color-mix(in srgb, var(--p-blue-500) 16%, transparent); }
+}
+
+.card-scope-search {
+  padding: .65rem 1rem .3rem;
+}
+
+:host ::ng-deep {
+  .pers-list-search,
+  .card-scope-search {
+    p-iconfield { display: block; width: 100%; }
+    p-iconfield input { font-size: .82rem; padding-block: .38rem; }
+  }
+
+  /* purple focus ring — auditor card searches */
+  .card-scope-search p-iconfield:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(196,181,253,.22);
+    border-radius: 6px;
+  }
+
+  /* blue focus ring — reviewer card and reviewer list searches */
+  .card-scope-search--rev p-iconfield:focus-within,
+  .pers-list-search--rev p-iconfield:focus-within {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(147,197,253,.22);
+    border-radius: 6px;
+  }
+
+  /* person-list paginator background */
+  .pers-paginator {
+    background: var(--surface-hover);
+    border-top: 1px solid var(--surface-border);
+  }
+}
+
+/* ─── SCOPE HINT ─────────────────────────────────────────── */
+.assign-hint {
+  display: flex; align-items: center; gap: .35rem;
+  padding: .6rem 1.25rem .2rem;
+  font-size: .72rem; color: var(--p-purple-600); font-weight: 500;
+  i { font-size: .68rem; }
+
+  &--rev { color: var(--p-blue-700); }
+}
+
+/* ─── SCOPE ASSIGNMENT LIST ──────────────────────────────── */
+.assign-list {
+  display: flex; flex-direction: column;
+  padding: .25rem 1rem;
+  gap: .35rem;
+}
+
+.assign-row {
+  display: flex; align-items: flex-start; gap: .75rem;
+  padding: .6rem .75rem;
+  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 8px;
+  transition: border-color .12s, box-shadow .12s;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--p-purple-500) 40%, transparent);
+    box-shadow: 0 2px 6px rgba(109,40,217,.08);
+  }
+
+  &--reviewer {
+    &:hover {
+      border-color: color-mix(in srgb, var(--p-blue-500) 40%, transparent);
+      box-shadow: 0 2px 6px rgba(29,78,216,.08);
+    }
+  }
+
+  &__icon {
+    width: 28px; height: 28px; border-radius: 7px; flex-shrink: 0;
+    background: color-mix(in srgb, var(--p-purple-500) 12%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    i { font-size: .75rem; color: var(--p-purple-700); }
+    &--rev { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); i { color: var(--p-blue-700); } }
+    &--sub { background: var(--surface-hover); i { color: var(--p-sky-600); } }
+  }
+
+  &__info { display: flex; flex-direction: column; gap: .15rem; flex: 1; min-width: 0; }
+
+  &__top { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+
+  &__name {
+    font-size: .82rem; font-weight: 600; color: var(--text-color);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0;
+  }
+
+  &__parent {
+    display: flex; align-items: center; gap: .22rem;
+    font-size: .66rem; color: var(--text-color-secondary);
+    i { font-size: .58rem; color: var(--text-color-secondary); }
+  }
+
+  &__timeframe {
+    display: flex; align-items: center; gap: .22rem;
+    font-size: .66rem; color: var(--p-purple-700); font-weight: 500;
+    i { font-size: .62rem; }
+    &--rev { color: var(--p-blue-700); }
+  }
+}
+
+/* ─── EMPTY STATES ───────────────────────────────────────── */
+.assign-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .4rem; padding: 1.25rem;
+  color: var(--text-color-secondary); font-size: .8rem;
+  i { font-size: 1.1rem; }
+}
+
+/* ─── PAGINATOR OVERRIDES ────────────────────────────────── */
+:host ::ng-deep .assign-paginator {
+  padding: .35rem .5rem;
+  border-top: 1px solid var(--surface-border);
+  background: transparent;
+
+  .p-paginator {
+    background: transparent; border: none; padding: 0;
+    justify-content: center; gap: .25rem;
+  }
+  .p-paginator-page,
+  .p-paginator-prev,
+  .p-paginator-next,
+  .p-paginator-first,
+  .p-paginator-last {
+    min-width: 28px; height: 28px; border-radius: 6px; font-size: .75rem;
+  }
+  .p-paginator-page.p-highlight { background: color-mix(in srgb, var(--p-purple-500) 12%, transparent); color: var(--p-purple-700); border-color: color-mix(in srgb, var(--p-purple-500) 40%, transparent); }
+}
+
+:host ::ng-deep .assign-paginator--rev {
+  .p-paginator-page.p-highlight { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); color: var(--p-blue-700); border-color: color-mix(in srgb, var(--p-blue-500) 40%, transparent); }
+}
+
+/* ─── TAG OVERRIDES ──────────────────────────────────────── */
+:host ::ng-deep .tag-xs .p-tag { font-size: .68rem; padding: .1rem .45rem; }

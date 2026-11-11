@@ -1,0 +1,849 @@
+// ── Design tokens (match audit-plan parent) ───────────────────────────────────
+$primary:       var(--primary-color);
+$primary-light: color-mix(in srgb, var(--primary-color) 16%, transparent);
+$accent:        var(--primary-color);
+$success:       var(--p-green-500);
+$danger:        var(--p-red-500);
+$warning:       var(--p-orange-500);
+$border:        var(--surface-border);
+$muted:         var(--text-color-secondary);
+$text-body:     var(--text-color);
+$text-heading:  var(--text-color);
+$text-muted:    var(--text-color-secondary);
+$input-border:  var(--surface-border);
+$error:         var(--p-red-500);
+$bg-page:       var(--surface-ground);
+
+// ════════════════════════════════════════════════════════
+//  TABLE HOST  — transparent, no own card/shadow
+//  The parent audit-plan component already wraps this in a p-card
+// ════════════════════════════════════════════════════════
+.scope-table-host {
+  background: transparent;
+  overflow-x: auto;
+}
+
+// ── Table overrides ───────────────────────────────────────────────────────────
+::ng-deep .scope-tbl {
+
+  // ── Header ────────────────────────────────────────────
+  thead > tr > th {
+    background: var(--surface-card) !important;
+    color: var(--text-color-secondary) !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.02em;
+    padding: 14px 16px 12px !important;
+    border-bottom: 1px solid $border !important;
+    border-top: none !important;
+    white-space: nowrap;
+  }
+
+  // ── Body rows ─────────────────────────────────────────
+  tbody > tr > td {
+    padding: 16px 16px !important;
+    border-bottom: 1px solid $border !important;
+    vertical-align: middle;
+    background: var(--surface-card) !important;
+  }
+
+  tbody > tr:last-child > td {
+    border-bottom: none !important;
+  }
+
+  tbody > tr:hover > td {
+    background: var(--surface-hover) !important;
+  }
+
+  // ── Remove default p-table box shadow / border ────────
+  border: none !important;
+  box-shadow: none !important;
+}
+
+// Column widths
+.col-title     { width: 28%; min-width: 200px; }
+.col-dept      { width: 12%; min-width: 100px; }
+.col-auditors  { width: 14%; min-width: 120px; }
+.col-mode      { width: 8%;  min-width: 70px;  }
+.col-timeframe { width: 18%; min-width: 160px; }
+.col-status    { width: 12%; min-width: 120px; }
+.col-action    { width: 8%;  min-width: 90px;  text-align: center !important; }
+
+// ── Title cell ────────────────────────────────────────────────────────────────
+.title-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: $text-heading;
+  line-height: 1.35;
+}
+
+.title-desc {
+  font-size: 12px;
+  color: $text-muted;
+  line-height: 1.45;
+  max-width: 280px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+// ── Department cell ───────────────────────────────────────────────────────────
+.dept-text {
+  font-size: 13px;
+  color: $text-muted;
+  font-weight: 400;
+}
+
+// ── Auditor avatars — overlapping stack ───────────────────────────────────────
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-stack-clickable {
+  cursor: pointer;
+  border-radius: 24px;
+  padding: 3px 6px 3px 3px;
+  margin: -3px -6px -3px -3px;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--surface-hover);
+
+    .av { border-color: color-mix(in srgb, var(--p-indigo-500) 30%, transparent); }
+  }
+}
+
+.av {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  background: #c8d6f0;
+  color: $primary;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -10px;
+  position: relative;
+  cursor: default;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 1px #dce6f5;
+
+  &:first-child { margin-left: 0; }
+
+  // Cycle through shades to simulate real photo-style avatars
+  &:nth-child(1) { background: #b8cbe8; color: var(--primary-color); }
+  &:nth-child(2) { background: #8fa8d4; color: #0f2a5a; }
+  &:nth-child(3) { background: #2b4d8e; color: #fff; }
+  &:nth-child(4) { background: var(--primary-color); color: #fff; }
+
+  &.av-more {
+    background: var(--surface-hover);
+    color: $primary;
+    font-size: 10px;
+    font-weight: 800;
+  }
+}
+
+// ── Mode cell ─────────────────────────────────────────────────────────────────
+.mode-txt {
+  font-size: 13px;
+  color: $text-body;
+  font-weight: 400;
+}
+
+// ── Timeframe cell ────────────────────────────────────────────────────────────
+.tf-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tf-line {
+  font-size: 12px;
+  color: $text-body;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+// ── Status cell ───────────────────────────────────────────────────────────────
+.status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-name {
+  font-size: 13px;
+  color: $text-body;
+  font-weight: 500;
+}
+
+.status-sub {
+  font-size: 11px;
+  color: $text-muted;
+}
+
+// ── Action icon buttons ───────────────────────────────────────────────────────
+.action-icons {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.15s;
+
+  .pi {
+    font-size: 15px;
+    color: var(--text-color-secondary);
+    transition: color 0.15s;
+  }
+
+  &:hover {
+    background: #f0f4ff;
+    .pi { color: $primary-light; }
+  }
+
+  &.icon-btn-cancel:hover {
+    background: #fff0f0;
+    .pi { color: $danger; }
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.scope-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 52px 24px;
+  gap: 8px;
+
+  .pi { font-size: 36px; color: var(--text-color-secondary); }
+  p   { font-size: 14px; font-weight: 500; color: $text-muted; margin: 0; }
+}
+
+// ════════════════════════════════════════════════════════
+//  DRAWER
+// ════════════════════════════════════════════════════════
+::ng-deep .audit-scope-drawer {
+  width: 680px !important;
+  max-width: 100vw !important;
+
+  &.p-drawer {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-drawer-content {
+    padding: 0 !important;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .p-drawer-footer {
+    padding: 0 !important;
+    border-top: 1px solid $border;
+    flex-shrink: 0;
+  }
+}
+
+.drawer-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.drawer-scroll-body {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: $bg-page;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-border) transparent;
+
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background-color: var(--surface-border); border-radius: 10px; }
+}
+
+// ── Drawer Header ─────────────────────────────────────────────────────────────
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $border;
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.drawer-icon-wrap {
+  width: 40px;
+  height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi { font-size: 18px; color: $primary; }
+}
+
+.drawer-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.drawer-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-color-secondary);
+  margin: 0;
+
+  strong { font-weight: 700; color: $primary; }
+}
+
+.drawer-subtitle {
+  font-size: 11px;
+  color: $muted;
+  margin: 0;
+}
+
+.mode-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  background: $primary;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  .pi { font-size: 12px; }
+  &:hover { background: var(--primary-color); }
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  .pi { font-size: 13px; color: $muted; }
+  &:hover { background: var(--surface-hover); }
+}
+
+// ── Tab Content ───────────────────────────────────────────────────────────────
+.tab-content {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+// ── Field Labels ──────────────────────────────────────────────────────────────
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  margin-bottom: 5px;
+  letter-spacing: 0.01em;
+}
+
+.field-optional {
+  font-weight: 400;
+  color: $muted;
+  margin-left: 4px;
+}
+
+.field-required {
+  color: $error;
+  margin-left: 2px;
+}
+
+// ── Form Layout ───────────────────────────────────────────────────────────────
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.form-col {
+  flex: 1;
+  min-width: 0;
+
+  &.full { flex: 1 1 100%; }
+}
+
+// ── Inputs ────────────────────────────────────────────────────────────────────
+.form-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid $input-border;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text-color);
+  background: var(--surface-card);
+  box-sizing: border-box;
+
+  &::placeholder { color: var(--text-color-secondary); }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  &[readonly] { background: var(--surface-hover); color: $muted; cursor: default; }
+  &.input-error { border-color: $error !important; }
+}
+
+.form-textarea {
+  width: 100%;
+  border: 1px solid $input-border;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-color);
+  background: var(--surface-card);
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+
+  &::placeholder { color: var(--text-color-secondary); }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  &[readonly] { background: var(--surface-hover); color: $muted; }
+  &.input-error { border-color: $error !important; }
+}
+
+.error-hint {
+  display: block;
+  font-size: 11px;
+  color: $error;
+  margin-top: 4px;
+}
+
+.field-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: $muted;
+  margin-top: 4px;
+
+  .pi { font-size: 11px; color: $accent; }
+}
+
+.char-counter {
+  font-size: 11px;
+  color: $muted;
+  text-align: right;
+  margin-top: 3px;
+
+  &.char-over { color: $error; font-weight: 600; }
+}
+
+// ── DatePicker ────────────────────────────────────────────────────────────────
+::ng-deep .form-datepicker {
+  width: 100%;
+
+  .p-datepicker-input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid $input-border;
+    border-radius: 6px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--text-color);
+    background: var(--surface-card);
+    box-sizing: border-box;
+
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba(16,46,112,.08); }
+  }
+
+  &.p-datepicker-with-icon .p-datepicker-input { padding-right: 36px; }
+
+  .p-datepicker-dropdown {
+    border: 1px solid $input-border;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    background: var(--surface-card);
+    color: $muted;
+    height: 40px;
+    width: 36px;
+    &:hover { background: var(--surface-hover); }
+  }
+
+  &.p-invalid .p-datepicker-input {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px rgba(217,45,32,.08) !important;
+  }
+}
+
+// ── Dropdowns ─────────────────────────────────────────────────────────────────
+::ng-deep .form-dropdown {
+  width: 100% !important;
+  height: 40px !important;
+  border: 1px solid $input-border !important;
+  border-radius: 6px !important;
+
+  .p-select-label {
+    font-size: 13px;
+    color: var(--text-color);
+    padding: 9px 12px;
+    line-height: 1.4;
+  }
+
+  &.p-placeholder .p-select-label { color: var(--text-color-secondary); }
+  .p-select-dropdown { color: $muted; }
+
+  .p-multiselect-label {
+    font-size: 13px;
+    color: var(--text-color);
+    padding: 9px 12px;
+    line-height: 1.4;
+  }
+
+  &.p-multiselect-empty .p-multiselect-label { color: var(--text-color-secondary); }
+
+  &.p-focus {
+    border-color: $primary !important;
+    box-shadow: 0 0 0 3px rgba(16,46,112,.08) !important;
+  }
+
+  &.p-invalid {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px rgba(217,45,32,.08) !important;
+  }
+
+  &.p-disabled {
+    background: var(--surface-hover) !important;
+    opacity: 1 !important;
+    .p-select-label,
+    .p-multiselect-label { color: $muted !important; }
+  }
+}
+
+::ng-deep .p-inputnumber {
+  &.p-invalid .p-inputtext { border-color: $error !important; }
+}
+
+// ── Section Label ─────────────────────────────────────────────────────────────
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: $primary;
+  margin: 4px 0 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $border;
+}
+
+// ── Evidence ──────────────────────────────────────────────────────────────────
+.evidence-upload-area {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+::ng-deep .evidence-upload-btn .p-fileupload-choose-button {
+  height: 40px;
+  background: var(--surface-card) !important;
+  border: 1px dashed $input-border !important;
+  border-radius: 6px !important;
+  color: var(--text-color-secondary) !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0 16px;
+  gap: 8px;
+  transition: border-color .15s, background .15s;
+
+  &:hover { background: var(--surface-hover) !important; border-color: $primary !important; }
+  .p-button-icon { color: $primary; font-size: 14px; }
+}
+
+.upload-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: $muted;
+  margin: 0;
+
+  .pi { font-size: 12px; color: $accent; }
+}
+
+.evidence-file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.evidence-file-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--surface-card);
+  border: 1px solid $border;
+  border-radius: 6px;
+}
+
+.evidence-file-icon { font-size: 16px; color: $primary; flex-shrink: 0; }
+
+.evidence-file-name {
+  flex: 1;
+  font-size: 12px;
+  color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.evidence-file-size { font-size: 11px; color: $muted; flex-shrink: 0; }
+
+.evidence-file-remove {
+  width: 24px;
+  height: 24px;
+  border: 1px solid $border;
+  border-radius: 4px;
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .15s;
+
+  .pi { font-size: 10px; color: $muted; }
+  &:hover { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-red-500) 40%, transparent); .pi { color: $error; } }
+}
+
+.evidence-empty { padding: 4px 0; }
+
+// ── Drawer Footer ─────────────────────────────────────────────────────────────
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid $border;
+  flex-shrink: 0;
+}
+
+::ng-deep .cancel-btn.p-button {
+  height: 40px;
+  min-width: 307px;
+  background: transparent !important;
+  border: 1px solid $input-border !important;
+  border-radius: 6px !important;
+  color: var(--text-color-secondary) !important;
+  font-size: 13px;
+
+  &:hover { background: var(--surface-hover) !important; }
+}
+
+::ng-deep .submit-btn.p-button {
+  height: 40px;
+  min-width: 303px;
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  border-radius: 6px !important;
+  font-size: 13px;
+  font-weight: 600;
+
+  &:hover { background: var(--primary-color) !important; border-color: var(--primary-color) !important; }
+}
+
+// ════════════════════════════════════════════════════════
+//  AUDITOR LIST DIALOG
+// ════════════════════════════════════════════════════════
+::ng-deep .auditor-list-dialog {
+  border-radius: 12px !important;
+  overflow: hidden;
+
+  .p-dialog-header {
+    padding: 20px 20px 16px !important;
+    border-bottom: 1px solid $border !important;
+    background: var(--surface-card) !important;
+  }
+
+  .p-dialog-content {
+    padding: 0 !important;
+    background: var(--surface-card) !important;
+  }
+}
+
+// Dialog custom header layout
+.ald-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ald-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--surface-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi { font-size: 18px; color: $primary; }
+}
+
+.ald-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $text-heading;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.ald-sub {
+  font-size: 11px;
+  color: $muted;
+  margin: 2px 0 0;
+  line-height: 1.4;
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// Auditor list
+.ald-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 0;
+}
+
+.ald-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  transition: background 0.12s;
+
+  &:hover { background: var(--surface-hover); }
+}
+
+// Avatar inside dialog — four colour slots matching the table stack
+.ald-av {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #dce6f5;
+
+  &[data-idx="0"] { background: #b8cbe8; color: var(--primary-color); }
+  &[data-idx="1"] { background: #8fa8d4; color: #0f2a5a; }
+  &[data-idx="2"] { background: #2b4d8e; color: #fff; }
+  &[data-idx="3"] { background: var(--primary-color); color: #fff; }
+}
+
+.ald-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.ald-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-heading;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ald-role {
+  font-size: 11px;
+  color: $muted;
+}
+
+// Footer count line
+.ald-count {
+  margin: 0;
+  padding: 10px 20px 14px;
+  font-size: 11px;
+  color: $muted;
+  border-top: 1px solid $border;
+  text-align: center;
+}

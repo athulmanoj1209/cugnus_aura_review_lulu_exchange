@@ -1,0 +1,48 @@
+.empty-state-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px 40px;
+  text-align: center;
+  width: 100%;
+}
+
+.empty-state-illustration {
+  margin-bottom: 20px;
+
+  svg {
+    display: block;
+  }
+}
+
+.empty-state-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e2a45;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.empty-state-desc {
+  font-size: 0.875rem;
+  color: #74788d;
+  margin: 0 0 24px;
+  max-width: 320px;
+  line-height: 1.55;
+}
+
+::ng-deep .empty-state-action-btn.p-button {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  gap: 8px;
+
+  &:hover {
+    background: #3549e0;
+    border-color: #3549e0;
+  }
+}

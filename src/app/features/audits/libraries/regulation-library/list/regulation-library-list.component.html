@@ -1,0 +1,361 @@
+<!-- Confirmation dialog -->
+<p-confirmDialog styleClass="reg-library__confirm-dialog"></p-confirmDialog>
+
+<div class="reg-library">
+
+  <!-- ════════════════════════════════════════════════════════════
+       PAGE HEADER
+  ═════════════════════════════════════════════════════════════ -->
+  <div class="reg-library__header">
+    <div class="reg-library__header-lead">
+      <app-back-button></app-back-button>
+      <div class="reg-library__header-text">
+        <h1 class="reg-library__title">Regulation Library</h1>
+        <p class="reg-library__subtitle">
+          Centralized repository for regulatory documents, policies, and standards
+        </p>
+      </div>
+    </div>
+    <button pButton type="button" label="New Regulation" icon="pi pi-plus"
+            class="reg-library__add-btn" (click)="openAddDrawer()"></button>
+            <!-- View toggle -->
+      <div class="view-toggle">
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === 'list'"
+                (click)="setViewMode('list')"
+                pTooltip="List view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === 'grid'"
+                (click)="setViewMode('grid')"
+                pTooltip="Grid view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+      </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       TOOLBAR
+  ═════════════════════════════════════════════════════════════ -->
+  <div class="reg-library__toolbar" [formGroup]="searchForm">
+
+
+    <!-- Right actions -->
+    <div class="reg-library__toolbar-actions">
+
+      <!-- Filter button + overlay wrapper -->
+      <div class="reg-library__filter-overlay-wrap">
+        <button #filterBtn
+          pButton type="button"
+          icon="pi pi-sliders-h"
+          [label]="activeFilterCount > 0 ? 'Filters (' + activeFilterCount + ')' : 'Filters'"
+          [class]="'p-button-outlined reg-library__filter-btn' + (activeFilterCount > 0 ? ' reg-library__filter-btn--active' : '') + (showFilterPanel ? ' reg-library__filter-btn--open' : '')"
+          (click)="$event.stopPropagation(); toggleFilterPanel()"
+        ></button>
+
+        <!-- ── FILTER OVERLAY PANEL ── -->
+        <div class="reg-library__filter-overlay" *ngIf="showFilterPanel"
+             [ngStyle]="overlayStyle"
+             [formGroup]="filterForm"
+             (click)="$event.stopPropagation()">
+
+          <!-- Header -->
+          <div class="reg-library__filter-overlay-header">
+            <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+            <span>Filters</span>
+          </div>
+
+          <!-- Fields grid -->
+          <div class="reg-library__filter-grid">
+
+            <!-- <div class="reg-library__filter-field">
+              <label class="reg-library__filter-label">Authority</label>
+              <p-select formControlName="authority" [options]="authorityOptions"
+                        optionLabel="label" optionValue="value"
+                        placeholder="All Authorities" styleClass="w-full"></p-select>
+            </div>
+
+            <div class="reg-library__filter-field">
+              <label class="reg-library__filter-label">Type</label>
+              <p-select formControlName="type" [options]="typeOptions"
+                        optionLabel="label" optionValue="value"
+                        placeholder="All Types" styleClass="w-full"></p-select>
+            </div> -->
+
+            <div class="reg-library__filter-field">
+              <label class="reg-library__filter-label">Status</label>
+              <p-select formControlName="status" [options]="statusOptions"
+                        optionLabel="label" optionValue="value"
+                        placeholder="All Statuses" styleClass="w-full"
+                        appendTo="body" [panelStyle]="{'max-width': '260px'}"></p-select>
+            </div>
+
+            <!-- appendTo="body": Company/Division/Sub-Division option labels come
+                 from company-org-data.ts and run noticeably longer than the
+                 old placeholder lists ("Emirates NBD", "Dubai Main", ...).
+                 Without appendTo, the panel renders inline inside this
+                 480px-wide fixed-position overlay's 2-col grid (~200px per
+                 cell) with no ancestor clipping it, so a long option list
+                 was free to render past the card's edge instead of over the
+                 page — i.e. visually "going out" of the Filters card. Same
+                 fix already used for every p-select in auditor-assignment.
+                 panelStyle max-width keeps the popped-open list from
+                 stretching arbitrarily wide even once appended to body. -->
+            <div class="reg-library__filter-field">
+              <label class="reg-library__filter-label">Company</label>
+              <p-select formControlName="company" [options]="companyOptions"
+                        optionLabel="label" optionValue="value"
+                        placeholder="All Companies" styleClass="w-full"
+                        appendTo="body" [panelStyle]="{'max-width': '260px'}"></p-select>
+            </div>
+
+            <div class="reg-library__filter-field">
+              <label class="reg-library__filter-label">Division</label>
+              <p-select formControlName="division" [options]="divisionOptions"
+                        optionLabel="label" optionValue="value"
+                        placeholder="All Divisions" styleClass="w-full"
+                        appendTo="body" [panelStyle]="{'max-width': '260px'}"></p-select>
+            </div>
+
+            <div class="reg-library__filter-field">
+              <label class="reg-library__filter-label">Sub-Division</label>
+              <p-select formControlName="subDivision" [options]="subDivisionOptions"
+                        optionLabel="label" optionValue="value"
+                        [placeholder]="subDivisionFilterVisible() ? 'All Sub-Divisions' : 'No sub-divisions for this division'" styleClass="w-full"
+                        appendTo="body" [panelStyle]="{'max-width': '260px'}"></p-select>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="reg-library__filter-overlay-footer">
+            <button type="button" class="reg-library__filter-reset-btn"
+                    (click)="resetFilterOverlay()">Reset</button>
+            <button type="button" class="reg-library__filter-apply-btn"
+                    (click)="applyFilterOverlay()">Apply Filters</button>
+          </div>
+
+        </div>
+        <!-- /overlay -->
+      </div>
+
+      <span class="reg-library__toolbar-divider"></span>
+
+      <!-- Sort -->
+      <p-select formControlName="sortBy" [formGroup]="searchForm"
+                [options]="sortOptions" optionLabel="label" optionValue="value"
+                styleClass="reg-library__sort-select">
+        <ng-template pTemplate="selectedItem">
+          <span class="reg-library__sort-label">
+            <app-draw-icon icon="pi pi-sort-amount-down-alt"></app-draw-icon>
+            Sort by <strong>{{ sortByValue | titlecase }}</strong>
+          </span>
+        </ng-template>
+      </p-select>
+
+      <span class="reg-library__toolbar-divider"></span>
+
+      
+
+    </div>
+    
+    <!-- Search -->
+    <div class="reg-library__search-wrap">
+      <app-draw-icon icon="pi pi-search" class="reg-library__search-icon"></app-draw-icon>
+      <input pInputText formControlName="search"
+             placeholder="Search by title, reference, keywords, or article numbers..."
+             class="reg-library__search-input" />
+      <button *ngIf="searchValue" pButton type="button" icon="pi pi-times"
+              class="p-button-text p-button-rounded p-button-plain reg-library__search-clear"
+              (click)="searchForm.patchValue({ search: '' })"
+              pTooltip="Clear" tooltipPosition="top"></button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       CARDS — LIST / GRID
+  ═════════════════════════════════════════════════════════════ -->
+  <div class="reg-library__list" [class.reg-library__list--grid]="viewMode() === 'grid'">
+
+    <!-- Empty state -->
+    <div *ngIf="filteredRegulations.length === 0" class="reg-library__empty">
+      <app-draw-icon icon="pi pi-inbox" class="reg-library__empty-icon"></app-draw-icon>
+      <p class="reg-library__empty-text">No regulations found matching your criteria.</p>
+      <button pButton type="button" label="Clear Filters" icon="pi pi-filter-slash"
+              class="p-button-outlined p-button-sm" (click)="resetFilterOverlay()"></button>
+    </div>
+
+    <!-- ═══════════════════════ GRID VIEW (cards) ═══════════════════════ -->
+    <ng-container *ngIf="filteredRegulations.length > 0 && viewMode() === 'grid'">
+      <div *ngFor="let reg of pagedRegulations; trackBy: trackById"
+           class="reg-library__card"
+           [class.reg-library__card--inactive]="!isActive(reg)"
+           role="button" tabindex="0"
+           (keydown.enter)="viewDetail(reg)"
+           aria-label="View details for {{ reg.title }}">
+
+        <p-tag [value]="reg.status" [severity]="statusSeverity(reg.status)"
+               class="status-tag status-tag--corner" styleClass="reg-library__status-tag"></p-tag>
+
+        <!-- Header -->
+        <div class="card-header">
+          <div class="reg-avatar-wrap">
+            <div class="reg-badge" [style.background-color]="authorityColor(reg.authority)">{{ reg.authority }}</div>
+            <svg class="reg-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+              <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <h2 class="reg-library__card-title">{{ reg.title }}</h2>
+          <span class="reg-library__card-reference">{{ reg.reference }}</span>
+        </div>
+
+        <!-- Description -->
+        <p class="reg-library__card-description">{{ reg.description }}</p>
+
+        <!-- Key info grid -->
+        <div class="info-grid">
+          <div class="info-item" pTooltip="Effective Date" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ formatDate(reg.effectiveDate) }}</span></div>
+          </div>
+          <div class="info-item" *ngIf="reg.amendedDate" pTooltip="Last Amended" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-calendar-plus"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ formatDate(reg.amendedDate) }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Jurisdiction" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-globe"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ reg.region }}</span></div>
+          </div>
+          <div class="info-item" [pTooltip]="reg.linkedItems + ' linked item(s)'" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-link"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ reg.linkedItems }} linked {{ reg.linkedItems === 1 ? 'item' : 'items' }}</span></div>
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="tags-row">
+          <span class="reg-library__badge" [style.background-color]="typeColor(reg.type)">{{ reg.type }}</span>
+          <p-chip *ngFor="let tag of reg.tags" [label]="tag"
+                  styleClass="reg-library__tag-chip"></p-chip>
+        </div>
+
+        <!-- Footer: action icons -->
+        <div class="card-footer">
+          <span class="company-label">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon>{{ reg.authority }}
+          </span>
+          <div class="card-actions">
+            <div class="card-actions__icons">
+              <button type="button" class="reg-library__footer-action"
+                      pTooltip="Edit" tooltipPosition="top"
+                      (click)="editRegulation(reg, $event)">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button"
+                      [class]="'reg-library__footer-action ' + (isActive(reg) ? 'reg-library__footer-action--danger' : 'reg-library__footer-action--success')"
+                      [pTooltip]="isActive(reg) ? 'Deactivate' : 'Activate'"
+                      tooltipPosition="top"
+                      (click)="toggleActive(reg, $event)">
+                <app-draw-icon [icon]="isActive(reg) ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+              </button>
+            </div>
+
+            <button type="button" class="btn-view" (click)="viewDetail(reg, $event)">
+              View
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </ng-container>
+
+    <!-- ═══════════════════════ LIST VIEW (compact rows) ═══════════════════════ -->
+    <ng-container *ngIf="filteredRegulations.length > 0 && viewMode() !== 'grid'">
+      <div class="reg-row-header">
+        <span class="reg-row-header__cell col-reg">Regulation</span>
+        <span class="reg-row-header__cell col-type">Type</span>
+        <span class="reg-row-header__cell col-region">Region</span>
+        <span class="reg-row-header__cell col-effective">Effective Date</span>
+        <span class="reg-row-header__cell col-status">Status</span>
+        <span class="reg-row-header__cell col-actions">Action</span>
+      </div>
+
+      <article *ngFor="let reg of pagedRegulations; trackBy: trackById"
+               class="reg-row"
+               [class.reg-row--inactive]="!isActive(reg)"
+               role="button" tabindex="0"
+               (click)="viewDetail(reg)"
+               (keydown.enter)="viewDetail(reg)"
+               aria-label="View details for {{ reg.title }}">
+
+        <div class="col-reg">
+          <div class="reg-row__name">
+            <div class="reg-badge reg-badge--sm" [style.background-color]="authorityColor(reg.authority)">{{ reg.authority }}</div>
+            <div class="reg-row__name-text">
+              <span class="reg-row__title">{{ reg.title }}</span>
+              <span class="reg-row__reference">{{ reg.reference }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-type">
+          <span class="reg-library__badge" [style.background-color]="typeColor(reg.type)">{{ reg.type }}</span>
+        </div>
+
+        <div class="col-region">{{ reg.region }}</div>
+
+        <div class="col-effective">{{ formatDate(reg.effectiveDate) }}</div>
+
+        <div class="col-status">
+          <p-tag [value]="reg.status" [severity]="statusSeverity(reg.status)" styleClass="reg-library__status-tag"></p-tag>
+        </div>
+
+        <div class="col-actions" (click)="$event.stopPropagation()">
+          <div class="row-actions">
+            <button type="button" class="btn-view" (click)="viewDetail(reg, $event)">View</button>
+            <button type="button" class="reg-library__footer-action"
+                    pTooltip="Edit" tooltipPosition="top"
+                    (click)="editRegulation(reg, $event)">
+              <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+            </button>
+            <button type="button"
+                    [class]="'reg-library__footer-action ' + (isActive(reg) ? 'reg-library__footer-action--danger' : 'reg-library__footer-action--success')"
+                    [pTooltip]="isActive(reg) ? 'Deactivate' : 'Activate'"
+                    tooltipPosition="top"
+                    (click)="toggleActive(reg, $event)">
+              <app-draw-icon [icon]="isActive(reg) ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+
+      </article>
+    </ng-container>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+       PAGINATOR
+  ═════════════════════════════════════════════════════════════ -->
+  <div class="reg-library__paginator-wrap" *ngIf="filteredCount > pageSize">
+    <div class="reg-library__results-meta">
+      <span>
+        Showing <strong>{{ pageRangeStart }}–{{ pageRangeEnd }}</strong>
+        of <strong>{{ filteredCount }}</strong> regulation{{ filteredCount !== 1 ? 's' : '' }}
+      </span>
+      <span *ngIf="activeFilterCount > 0" class="reg-library__active-filters">
+        — {{ activeFilterCount }} filter{{ activeFilterCount > 1 ? 's' : '' }} active
+        <button type="button" class="reg-library__clear-filters-inline"
+                (click)="resetFilterOverlay()">Clear all</button>
+      </span>
+    </div>
+    <p-paginator
+      [rows]="pageSize" [totalRecords]="filteredCount"
+      [first]="currentPage * pageSize" [rowsPerPageOptions]="pageSizeOptions"
+      [showCurrentPageReport]="false"
+      styleClass="reg-library__paginator"
+      (onPageChange)="onPageChange($event)"
+    ></p-paginator>
+  </div>
+
+</div>

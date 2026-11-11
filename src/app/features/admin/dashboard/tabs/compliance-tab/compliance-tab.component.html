@@ -1,0 +1,221 @@
+<div class="compliance-tab">
+
+  <!-- ── Stat Cards ──────────────────────────────────────── -->
+  <div class="stats-grid">
+    @for (card of statCards; track card.label) {
+      <div class="stat-card" [ngClass]="card.cardClass">
+        <div class="stat-card__header">
+          <span class="stat-card__label">{{ card.label }}</span>
+          <span class="stat-card__icon">
+            @switch (card.icon) {
+              @case ('pi pi-copy') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect pathLength="100" x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path pathLength="100" d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              }
+              @case ('pi pi-shield') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              }
+              @case ('pi pi-exclamation-triangle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line pathLength="100" x1="12" y1="9" x2="12" y2="13"></line>
+                  <line pathLength="100" x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              }
+              @case ('pi pi-calendar') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect pathLength="100" x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line pathLength="100" x1="16" y1="2" x2="16" y2="6"></line>
+                  <line pathLength="100" x1="8" y1="2" x2="8" y2="6"></line>
+                  <line pathLength="100" x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              }
+              @default {
+                <i [class]="card.icon"></i>
+              }
+            }
+          </span>
+        </div>
+        <div class="stat-card__value">{{ card.value }}</div>
+        @if (card.sub) {
+          <div class="stat-card__sub" [ngClass]="card.subClass">{{ card.sub }}</div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── Row 2: Mapping Pie + Coverage Horizontal Bar ───── -->
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title" i18n="@@dashboard.compliance.mappingStatusDistribution">Mapping Status Distribution</h3>
+      <div class="chart-box">
+        <app-donut-status-chart [legend]="mappingLegend" centerLabel="Coverage" i18n-centerLabel="@@dashboard.compliance.coverageCenterLabel" valueSuffix="%" [maxWidth]="260"></app-donut-status-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title" i18n="@@dashboard.compliance.coverageByRegulation">Coverage by Regulation</h3>
+      <div class="chart-box">
+        <p-chart #coverageChart type="bar" [data]="coverageChartData" [options]="coverageChartOptions()" [plugins]="coverageHoverBandPlugins"></p-chart>
+      </div>
+
+      <div class="donut-legend">
+        @for (item of coverageLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="coverageHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="coverageHidden[i]"
+               [attr.aria-label]="legendToggleLabel(coverageHidden[i], item.label)"
+               (click)="toggleCoverageTier(i)"
+               (keydown.enter)="toggleCoverageTier(i)"
+               (keydown.space)="$event.preventDefault(); toggleCoverageTier(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Row 3: Radar + Scopes per Regulation ───────────── -->
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title" i18n="@@dashboard.compliance.regulatoryCoverageRadar">Regulatory Coverage Radar</h3>
+      <div class="chart-box">
+        <p-chart type="radar" [data]="radarChartData" [options]="radarChartOptions()" height="290px"></p-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title" i18n="@@dashboard.compliance.scopesPerRegulation">Scopes per Regulation</h3>
+      <div class="chart-box">
+        <p-chart #scopesPerRegChart type="bar" [data]="scopesPerRegChartData" [options]="scopesPerRegChartOptions()" [plugins]="scopesPerRegHoverBandPlugins" height="290px"></p-chart>
+      </div>
+
+      <div class="donut-legend">
+        @for (item of scopesPerRegLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="scopesPerRegHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="scopesPerRegHidden[i]"
+               [attr.aria-label]="legendToggleLabel(scopesPerRegHidden[i], item.label)"
+               (click)="toggleScopesPerRegDataset(i)"
+               (keydown.enter)="toggleScopesPerRegDataset(i)"
+               (keydown.space)="$event.preventDefault(); toggleScopesPerRegDataset(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── All Compliance Scopes Table ────────────────────── -->
+  <div class="table-card">
+
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-copy" class="header-icon"></app-draw-icon>
+      <span class="table-card__title" i18n="@@dashboard.compliance.allComplianceScopes">All Compliance Scopes</span>
+    </div>
+
+    <p-table
+      [value]="complianceScopes"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      i18n-currentPageReportTemplate="@@dashboard.compliance.currentPageReport"
+      sortMode="multiple"
+      styleClass="p-datatable-sm compliance-table">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="name"><ng-container i18n="@@dashboard.compliance.colScopeName">Scope Name</ng-container> <p-sortIcon field="name" /></th>
+          <th pSortableColumn="regulation" style="width:160px"><ng-container i18n="@@dashboard.compliance.colRegulation">Regulation</ng-container> <p-sortIcon field="regulation" /></th>
+          <th pSortableColumn="coverage" style="width:180px"><ng-container i18n="@@dashboard.compliance.colCoverage">Coverage</ng-container> <p-sortIcon field="coverage" /></th>
+          <th pSortableColumn="status" style="width:130px"><ng-container i18n="@@common.status">Status</ng-container> <p-sortIcon field="status" /></th>
+          <th pSortableColumn="nextRenewal" style="width:140px"><ng-container i18n="@@dashboard.compliance.colNextRenewal">Next Renewal</ng-container> <p-sortIcon field="nextRenewal" /></th>
+          <th style="width:80px" i18n="@@common.actions">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-scope>
+        <tr [ngClass]="{ 'row-alert': isAlertRow(scope) }">
+          <td>{{ scope.name }}</td>
+          <td>{{ scope.regulation }}</td>
+          <td>
+            <div class="coverage-cell">
+              <div class="coverage-track">
+                <div
+                  class="coverage-fill"
+                  [ngClass]="getCoverageBarClass(scope.coverage)"
+                  [style.width.%]="scope.coverage">
+                </div>
+              </div>
+              <span class="coverage-pct">{{ scope.coverage }}%</span>
+            </div>
+          </td>
+          <td>
+            <p-tag [value]="statusText(scope.status)" [severity]="getStatusSeverity(scope.status)" [rounded]="true"></p-tag>
+          </td>
+          <td>{{ scope.nextRenewal }}</td>
+          <td>
+            <p-button
+              class="view-btn"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              pTooltip="View Details"
+              i18n-pTooltip="@@common.viewDetailsTitle"
+              tooltipPosition="left"
+              (onClick)="openDrawer(scope)">
+              <ng-template pTemplate="icon">
+                <svg class="eye-draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </ng-template>
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="empty-msg" i18n="@@dashboard.compliance.noScopesFound">No compliance scopes found.</td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </div>
+
+</div>
+
+<!-- ── Compliance Detail Drawer ─────────────────────────── -->
+<app-compliance-detail-drawer
+  [(visible)]="drawerVisible"
+  [scope]="selectedScope">
+</app-compliance-detail-drawer>

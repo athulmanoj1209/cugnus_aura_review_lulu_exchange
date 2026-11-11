@@ -1,0 +1,145 @@
+<div class="detail-drawer">
+
+  <div class="detail-drawer__header">
+    <div>
+      <h2 class="detail-drawer__title" i18n="@@dashboard.slaBySubDivision.title">SLA Compliance by Division / Sub-Division</h2>
+      <p class="detail-drawer__subtitle" i18n="@@dashboard.slaBySubDivision.subtitle">
+        {{ divisionCount }} divisions · {{ subDivisionCount }} sub-divisions · {{ data.companies.length }} organizations —
+        one per page, every organization's compliance shown
+      </p>
+    </div>
+    <button type="button"
+            class="detail-drawer__close"
+            (click)="close()"
+            aria-label="Close detailed view"
+            i18n-aria-label="@@common.closeDetailedView">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- ============== Sub-Division pager — the page itself IS one sub-division ============== -->
+  <div class="dept-pager">
+    <span class="dept-pager__label">{{ unitLabel }}</span>
+    <button type="button"
+            class="dept-pager__arrow"
+            [disabled]="isFirstPage"
+            (click)="prevDept()"
+            aria-label="Previous page"
+            i18n-aria-label="@@dashboard.slaBySubDivision.prevPageAria">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+    <div class="dept-pager__tabs">
+      <button type="button"
+              #tabBtn
+              *ngFor="let page of data.pages; let i = index"
+              class="dept-pager__tab"
+              [class.dept-pager__tab--division]="page.kind === 'division'"
+              [class.dept-pager__tab--sub]="page.kind === 'subDivision'"
+              [class.active]="i === deptIndex"
+              [attr.title]="pageTabTitle(page)"
+              (click)="goToDept(i)">
+        <i *ngIf="page.kind === 'division'" class="pi pi-building"></i>
+        <span *ngIf="page.kind === 'subDivision'" class="dept-pager__branch" aria-hidden="true">↳</span>
+        {{ page.name }}
+      </button>
+    </div>
+    <button type="button"
+            class="dept-pager__arrow"
+            [disabled]="isLastPage"
+            (click)="nextDept()"
+            aria-label="Next page"
+            i18n-aria-label="@@dashboard.slaBySubDivision.nextPageAria">
+      <i class="pi pi-chevron-right"></i>
+    </button>
+    <span class="dept-pager__count" i18n="@@dashboard.slaBySubDivision.pageOf">Page {{ deptIndex + 1 }} of {{ totalPages }}</span>
+  </div>
+
+  <!-- ============== Sort + search within the current sub-division ============== -->
+  <div class="sub-controls">
+    <span class="control-label" i18n="@@dashboard.slaBySubDivision.sortOrganizations">Sort organizations</span>
+    <div class="segmented">
+      <button type="button" [class.active]="sort === 'compliance'" (click)="setSort('compliance')" i18n="@@dashboard.slaBySubDivision.sortWorstFirst">Worst first</button>
+      <button type="button" [class.active]="sort === 'volume'" (click)="setSort('volume')" i18n="@@dashboard.slaBySubDivision.sortVolume">RFI volume</button>
+      <button type="button" [class.active]="sort === 'alpha'" (click)="setSort('alpha')" i18n="@@common.sortAZ">A–Z</button>
+    </div>
+    <div class="search-input">
+      <i class="pi pi-search"></i>
+      <input type="text"
+             placeholder="Filter by organization…"
+             i18n-placeholder="@@dashboard.slaBySubDivision.searchPlaceholder"
+             [value]="search"
+             (input)="onSearchChange($any($event.target).value)">
+    </div>
+  </div>
+
+  <!-- ============== Chart: per-organization SLA compliance for the current sub-division ============== -->
+  <div class="chart-card">
+    <div class="chart-card__title-row">
+      <div>
+        <h3 class="chart-card__title" i18n="@@dashboard.slaBySubDivision.chartTitle">{{ currentPage.name }} — SLA compliance by organization</h3>
+        <p class="chart-card__context">
+          <ng-container *ngIf="currentPage.kind === 'subDivision'" i18n="@@dashboard.slaBySubDivision.contextSubDivisionOf">Sub-division of {{ currentPage.division }}</ng-container>
+          <ng-container *ngIf="currentPage.kind === 'division'" i18n="@@dashboard.slaBySubDivision.contextDivision">Division · RFIs raised at division level</ng-container>
+        </p>
+      </div>
+      <span class="chart-card__meta" i18n="@@dashboard.slaBySubDivision.chartMeta">
+        {{ companiesInCurrentDept.length }} organizations · {totalInDept, plural, =1 {1 RFI} other {{{ totalInDept }} RFIs}} total
+      </span>
+    </div>
+    <div class="chart-scroll">
+      <div class="chart-wrap" [style.min-width.px]="chartMinWidthPx">
+        <p-chart type="bar"
+                 [data]="chartData"
+                 [options]="barOptions()">
+        </p-chart>
+      </div>
+    </div>
+    <p *ngIf="showScrollHint" class="chart-hint" i18n="@@dashboard.slaBySubDivision.scrollHint">Scroll horizontally to see every organization →</p>
+  </div>
+
+  <!-- ============== Table: every organization's compliance stats in the current sub-division ============== -->
+  <div class="table-card">
+    <div class="table-card__title-row">
+      <h3 class="table-card__title" i18n="@@dashboard.slaBySubDivision.tableTitle">Organizations in {{ currentPage.name }}</h3>
+      <span class="chart-card__meta" i18n="@@dashboard.slaBySubDivision.rowsShown">{{ rows.length }} of {{ companiesInCurrentDept.length }} shown</span>
+    </div>
+    <div class="table-scroll">
+      <table class="sla-detail-table">
+        <thead>
+          <tr>
+            <th i18n="@@common.organization">Organization</th>
+            <th i18n="@@dashboard.slaBySubDivision.colTotalRfis">Total RFIs</th>
+            <th i18n="@@dashboard.slaBySubDivision.colMet">Met</th>
+            <th i18n="@@dashboard.slaBySubDivision.colBreach">Breach</th>
+            <th i18n="@@dashboard.slaBySubDivision.colCompliance">Compliance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td class="cell--org">{{ row.company }}</td>
+            <td>{{ row.total }}</td>
+            <td>{{ row.met }}</td>
+            <td>{{ row.breach }}</td>
+            <td>
+              <span *ngIf="row.hasData"
+                    class="compliance-pill"
+                    [class.compliance-pill--good]="row.compliance === 100">
+                {{ row.compliance }}%
+              </span>
+              <span *ngIf="!row.hasData" class="compliance-pill compliance-pill--none" i18n="@@dashboard.slaBySubDivision.notApplicable">N/A</span>
+            </td>
+          </tr>
+          <tr *ngIf="!rows.length">
+            <td colspan="5" class="empty-row" i18n="@@dashboard.slaBySubDivision.noMatch">No organizations match "{{ search }}" in {{ currentPage.name }}.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="footnote" i18n="@@dashboard.slaBySubDivision.footnote">
+      {currentPage.kind, select, division {Green means every RFI in that division met its SLA target; red means at least one breached —
+      same pass/fail convention as the main SLA Compliance chart.} other {Green means every RFI in that sub-division met its SLA target; red means at least one breached —
+      same pass/fail convention as the main SLA Compliance chart.}}
+    </p>
+  </div>
+
+</div>

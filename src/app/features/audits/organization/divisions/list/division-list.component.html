@@ -1,0 +1,304 @@
+<div class="divisions-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+
+    <!-- Row 1: title + action button -->
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title">Division Management</h2>
+          <p class="page-subtitle">Define, manage, and monitor divisions across all regions</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+        <p-button label="+ New Division" class="add-division-btn" (onClick)="addNewDivision()">
+        </p-button>
+
+        <!-- View toggle -->
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === DivisionViewModes.List"
+            (click)="setViewMode(DivisionViewModes.List)" aria-label="List view">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          </button>
+          <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === DivisionViewModes.Grid"
+            (click)="setViewMode(DivisionViewModes.Grid)" aria-label="Grid view">
+            <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: filters + search -->
+    <div class="page-header__filters">
+      <div class="page-header__selects">
+        <p-multiselect [options]="companyFilterOptions" [(ngModel)]="selectedCompanies" optionLabel="label"
+          optionValue="value" placeholder="All Companies" [showClear]="true" [showToggleAll]="true"
+          class="company-multiselect" (onChange)="onCompanyFilter()" [maxSelectedLabels]="2"
+          selectedItemsLabel="{0} companies">
+          <ng-template pTemplate="item" let-item>
+            <div class="company-option">
+              <span class="company-dot" [style.background]="getCompanyColor(item.value)"></span>
+              <span>{{ item.label }}</span>
+            </div>
+          </ng-template>
+        </p-multiselect>
+      </div>
+
+      <span class="p-input-icon-left search-wrapper page-header__search relative">
+        <app-draw-icon icon="pi pi-search" class="left-3 top-[15.1px] absolute"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search divisions…" class="search-input" [(ngModel)]="searchQuery"
+          (input)="onSearch()" />
+      </span>
+    </div>
+
+  </div>
+
+  <!-- Results summary -->
+  <div class="results-bar">
+    <span class="results-count">
+      <app-draw-icon icon="pi pi-building"></app-draw-icon>
+      {{ filteredDivisions.length }} division{{ filteredDivisions.length !== 1 ? 'es' : '' }} found
+    </span>
+  </div>
+
+  <!-- ═══════════════════════ GRID VIEW ═══════════════════════ -->
+  @if (viewMode === DivisionViewModes.Grid) {
+  @if (pagedDivisions.length > 0) {
+  <div class="divisions-grid">
+    @for (division of pagedDivisions; track division.divisionCode) {
+    <div class="division-card" [class.division-card--inactive]="isBlocked(division.status)">
+
+      <!-- Card Header -->
+      <p-tag [value]="divisionStatusLabels[isBlocked(division.status) ? DivisionStatuses.Inactive : DivisionStatuses.Active]"
+        [severity]="division.status === DivisionStatuses.Active ? 'success' : 'danger'" class="status-tag status-tag--corner">
+      </p-tag>
+      <div class="card-header">
+        <div class="division-avatar-wrap">
+          <div class="company-badge" [style.background]="getCompanyColor(division.company)">
+            {{ getCompanyTag(division.company) }}
+          </div>
+          <svg class="division-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+            <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+          </svg>
+        </div>
+        <h3 class="division-name">{{ division.divisionName }}</h3>
+        <p class="division-code">{{ division.divisionCode }}</p>
+      </div>
+
+      <!-- Key Info Row -->
+      <div class="info-grid">
+        <div class="info-item" pTooltip="Location" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-map-marker"></app-draw-icon></span>
+          <div class="info-content">
+            <span class="info-value">{{ division.city }}, {{ division.country | uppercase }}</span>
+          </div>
+        </div>
+        <div class="info-item" pTooltip="Type" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-tag"></app-draw-icon></span>
+          <div class="info-content">
+            <span class="info-value">{{ divisionTypeMap[division.divisionType] }}</span>
+          </div>
+        </div>
+        <div class="info-item" pTooltip="Employees" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-users"></app-draw-icon></span>
+          <div class="info-content">
+            <span class="info-value">{{ division.numberOfEmployees ?? '—' }}</span>
+          </div>
+        </div>
+        <div class="info-item" pTooltip="Email" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-envelope"></app-draw-icon></span>
+          <div class="info-content">
+            <span class="info-value email-val">{{ division.contactEmail }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- License Row -->
+      <!-- <div class="license-row">
+              <div class="license-item">
+                <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+                <span class="lic-label">License No:</span>
+                <span class="lic-value">{{ division.licenseNumber }}</span>
+              </div>
+              <div class="license-item">
+                <app-draw-icon icon="pi pi-calendar-times"></app-draw-icon>
+                <span class="lic-label">Expires:</span>
+                <span class="lic-value" [class.expired]="division.licenseExpiryDate < '2026-06-02'">
+                  {{ division.licenseExpiryDate || '—' }}
+                </span>
+              </div>
+            </div> -->
+
+      <!-- Risk, Audit & Sector Tags -->
+      <div class="tags-row">
+        <p-tag [value]="'Risk: ' + (division.riskRating | titlecase)" [severity]="riskRatingSeverity[division.riskRating]"
+          class="meta-tag">
+        </p-tag>
+        <p-tag [value]="'Audit: ' + auditStatusLabel[division.auditStatus]"
+          [severity]="auditStatusSeverity[division.auditStatus]" class="meta-tag">
+        </p-tag>
+        <p-tag [value]="division.sectorActivity | titlecase" severity="info" class="meta-tag sector-tag">
+        </p-tag>
+      </div>
+
+      <!-- Documents Row -->
+      <!-- <div class="docs-row">
+              <a [href]="FILE_URL" download="Audit_Theory_BRD.docx" class="doc-chip" pTooltip="Trade License" tooltipPosition="top">
+                <i class="pi pi-file"></i>
+                <span>Trade License</span>
+              </a>
+              <a [href]="FILE_URL" download="Audit_Theory_BRD.docx" class="doc-chip" pTooltip="VAT Certificate" tooltipPosition="top">
+                <i class="pi pi-file"></i>
+                <span>VAT Cert</span>
+              </a>
+              <a [href]="FILE_URL" download="Audit_Theory_BRD.docx" class="doc-chip" pTooltip="Org Document" tooltipPosition="top">
+                <i class="pi pi-file"></i>
+                <span>Org Doc</span>
+              </a>
+            </div> -->
+
+      <!-- Card Footer -->
+      <div class="card-footer">
+        <span class="company-label">
+          <app-draw-icon icon="pi pi-building"></app-draw-icon>
+          {{ getCompanyLabel(division.company) }}
+        </span>
+        <div class="footer-actions-row">
+          <div class="card-actions">
+            <button type="button" class="icon-btn icon-btn--edit" (click)="editDivision(division)" pTooltip="Edit"
+              tooltipPosition="top">
+              <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+            </button>
+            <button type="button" class="icon-btn" [class.icon-btn--activate]="division.status !== DivisionStatuses.Active"
+              [class.icon-btn--deactivate]="division.status === DivisionStatuses.Active"
+              [pTooltip]="division.status === DivisionStatuses.Active ? 'Deactivate' : 'Activate'" tooltipPosition="top"
+              (click)="openConfirm(division)">
+              <app-draw-icon [icon]="division.status === DivisionStatuses.Active ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+            </button>
+          </div>
+
+          <button type="button" class="btn-view" (click)="viewDivision(division)">
+            View
+          </button>
+        </div>
+      </div>
+
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <app-draw-icon icon="pi pi-building" class="empty-icon"></app-draw-icon>
+    <h3>No divisions found</h3>
+    <p>Try adjusting your search or filter criteria.</p>
+  </div>
+  }
+  }
+
+  <!-- ═══════════════════════ LIST VIEW ═══════════════════════ -->
+  @if (viewMode === DivisionViewModes.List) {
+  @if (pagedDivisions.length > 0) {
+  <div class="divisions divisions--list">
+    <div class="list-header">
+      <span class="list-header__cell col-name">Division Name</span>
+      <span class="list-header__cell col-type">Type</span>
+      <span class="list-header__cell col-location">Location</span>
+      <span class="list-header__cell col-employees">Employees</span>
+      <span class="list-header__cell col-risk">Risk / Audit</span>
+      <span class="list-header__cell col-license">License Expiry</span>
+      <span class="list-header__cell col-actions">Action</span>
+    </div>
+
+    @for (division of pagedDivisions; track division.divisionCode) {
+    <article class="division-row" [class.division-row--blocked]="isBlocked(division.status)">
+
+      <div class="col-name">
+        <div class="cell-name">
+          <div class="cell-badge" [style.background]="getCompanyColor(division.company)">
+            {{ getCompanyTag(division.company) }}
+          </div>
+          <div class="cell-name__block">
+            <span class="cell-name__text">{{ division.divisionName }}</span>
+            <span class="cell-name__type">{{ division.divisionCode }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-type">
+        <span class="cell-type">{{ divisionTypeMap[division.divisionType] }}</span>
+      </div>
+
+      <div class="col-location">
+        <div class="cell-location-block">
+          <app-draw-icon icon="pi pi-map-marker" class="cell-icon"></app-draw-icon>
+          <span class="cell-location">{{ division.city }}, {{ division.country | uppercase }}</span>
+        </div>
+      </div>
+
+      <div class="col-employees">
+        <span class="cell-employees">{{ division.numberOfEmployees ?? '—' }}</span>
+      </div>
+
+      <div class="col-risk">
+        <div class="cell-tags">
+          <p-tag [value]="division.riskRating | titlecase" [severity]="riskRatingSeverity[division.riskRating]"
+            class="meta-tag">
+          </p-tag>
+          <p-tag [value]="divisionStatusLabels[isBlocked(division.status) ? DivisionStatuses.Inactive : DivisionStatuses.Active]"
+            [severity]="division.status === DivisionStatuses.Active ? 'success' : 'danger'" class="status-tag">
+          </p-tag>
+        </div>
+      </div>
+
+      <div class="col-license">
+        <span class="cell-license" [class.expired]="division.licenseExpiryDate < '2026-06-02'">
+          {{ division.licenseExpiryDate || '—' }}
+        </span>
+      </div>
+
+      <div class="col-actions">
+        <div class="row-actions">
+          <button type="button" class="btn-view" (click)="viewDivision(division)">
+            View
+          </button>
+          <button type="button" class="icon-btn icon-btn--edit" (click)="editDivision(division)" pTooltip="Edit"
+            tooltipPosition="top">
+            <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+          </button>
+          <button type="button" class="icon-btn" [class.icon-btn--activate]="division.status !== DivisionStatuses.Active"
+            [class.icon-btn--deactivate]="division.status === DivisionStatuses.Active"
+            [pTooltip]="division.status === DivisionStatuses.Active ? 'Deactivate' : 'Activate'" tooltipPosition="top"
+            (click)="openConfirm(division)">
+            <app-draw-icon [icon]="division.status === DivisionStatuses.Active ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+
+    </article>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <app-draw-icon icon="pi pi-building" class="empty-icon"></app-draw-icon>
+    <h3>No divisions found</h3>
+    <p>Try adjusting your search or filter criteria.</p>
+  </div>
+  }
+  }
+
+  <!-- Paginator -->
+  @if (filteredDivisions.length > 0) {
+  <app-pagination-bar [pageSize]="PAGE_SIZE" [totalRecords]="filteredDivisions.length" [currentPage]="currentPage"
+    [rowsPerPageOptions]="[6, 12, 18, 24, 40, 56]" (pageChange)="onPageChange($event)"
+    (rowsChange)="onRowsChange($event)">
+  </app-pagination-bar>
+  }
+
+</div>
+
+<app-confirm-action-dialog [visible]="showConfirmDialog"
+  [action]="isBlocked(confirmTarget?.status ?? '') ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.divisionName ?? ''" (confirmed)="confirmToggle()" (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>

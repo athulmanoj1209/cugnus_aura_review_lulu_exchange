@@ -1,0 +1,62 @@
+<div class="detail-drawer">
+
+  <div class="detail-drawer__header">
+    <div>
+      <h2 class="detail-drawer__title">{{ data.title }}</h2>
+      <p class="detail-drawer__subtitle">{{ data.subtitle }}</p>
+    </div>
+    <button type="button" class="detail-drawer__close" (click)="close()" aria-label="Close detailed view" i18n-aria-label="@@common.closeDetailedView">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  @if (data.rows.length > 0) {
+    <div class="detail-drawer__chart" [style.height.px]="chartHeightPx">
+      <p-chart type="bar" [data]="chartData" [options]="chartOptions" />
+    </div>
+  }
+
+  <div class="detail-drawer__table-wrap">
+    <table class="detail-table">
+      <thead>
+        <tr>
+          @for (col of data.columns; track col.key) {
+            <th [class.is-numeric]="col.numeric">{{ col.label }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of pagedRows; track $index) {
+          <tr>
+            @for (col of data.columns; track col.key) {
+              <td [class.is-numeric]="col.numeric">
+                @if (col.tag) {
+                  <p-tag [value]="'' + row[col.key]" [severity]="data.tagSeverity?.[row[col.key]] ?? 'secondary'" [rounded]="true" />
+                } @else {
+                  {{ row[col.key] }}{{ col.percent ? '%' : '' }}
+                }
+              </td>
+            }
+          </tr>
+        } @empty {
+          <tr>
+            <td class="empty-row" [attr.colspan]="data.columns.length" i18n="@@common.nothingToShow">Nothing to show.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  @if (data.rows.length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize"
+      [totalRecords]="data.rows.length"
+      [currentPage]="page - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      [entityLabel]="data.entityLabel"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>

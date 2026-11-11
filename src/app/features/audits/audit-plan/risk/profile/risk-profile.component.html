@@ -1,0 +1,186 @@
+<div class="drawer-inner">
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-shield"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ risk.title }}</h2>
+        <p class="drawer-subtitle">{{ risk.id }} · {{ riskTypeLabels[risk.riskType] }} · {{ subDivisionName }}</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="risk-detail__body">
+
+    <!-- ── stat cards (overlap the hero) ── -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-gauge"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ risk.inherentScore }} <small>/{{ maxScore }}</small></span>
+          <span class="stat-lbl">Inherent · Impact {{ risk.impact }} × Likelihood {{ risk.likelihood }}</span>
+          <span class="stat-bar"><i class="stat-bar__fill stat-bar__fill--inherent" [style.width.%]="scoreBarWidth"></i></span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--{{ risk.residualLevel }}"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num stat-num--{{ risk.residualLevel }}">{{ risk.residualScore }} <small>/{{ maxScore }}</small></span>
+          <span class="stat-lbl">Residual · {{ risk.residualLevel | titlecase }} risk</span>
+          <span class="stat-bar"><i class="stat-bar__fill stat-bar__fill--{{ risk.residualLevel }}" [style.width.%]="residualBarWidth"></i></span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--mint"><app-draw-icon icon="pi pi-lock"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ ceLabels[risk.controlEffectiveness] }}</span>
+          <span class="stat-lbl">Control Effectiveness</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--violet"><app-draw-icon icon="pi pi-link"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ linkedTotal }}</span>
+          <span class="stat-lbl">Linked Items</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3>Basic Information</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k">Risk ID</span>
+          <span class="kv__v"><strong>{{ risk.id }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Risk Type</span>
+          <span class="kv__v"><span class="type-badge type-badge--{{ risk.riskType }}">{{ riskTypeLabels[risk.riskType] }}</span></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Status</span>
+          <span class="kv__v"><span class="status-chip risk-status--{{ risk.status }}">{{ statusLabel(risk.status) }}</span></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Residual Level</span>
+          <span class="kv__v">
+            <span class="residual-pill residual--{{ risk.residualLevel }}">
+              <i class="pi" [ngClass]="residualLevelIcons[risk.residualLevel]"></i>
+              {{ risk.residualLevel | titlecase }}
+            </span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Company</span>
+          <span class="kv__v">
+            <span class="org-avatar">{{ companyName.slice(0, 2).toUpperCase() }}</span>{{ companyName }}
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Division</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-map-marker" class="kv-ic"></app-draw-icon>{{ divisionName }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Sub-Division</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-building" class="kv-ic"></app-draw-icon>{{ subDivisionName }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Risk Owner</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-user" class="kv-ic"></app-draw-icon>{{ risk.owner }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Date Identified</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-calendar" class="kv-ic"></app-draw-icon>{{ risk.dateIdentified | date:'MMM d, y' }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Last Updated</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-refresh" class="kv-ic"></app-draw-icon>{{ risk.lastUpdated | date:'MMM d, y' }}</span>
+        </div>
+      </div>
+
+      <div class="notes">
+        <span class="notes__k">Risk Description</span>
+        <p class="notes__v">{{ risk.description }}</p>
+      </div>
+
+      <div class="notes" *ngIf="risk.keyControls">
+        <span class="notes__k"><app-draw-icon icon="pi pi-lock"></app-draw-icon> Key Controls</span>
+        <p class="notes__v">{{ risk.keyControls }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ LINKED ITEMS ═══════════════ -->
+    <div class="sec-card" *ngIf="linkedTotal > 0">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--violet"><app-draw-icon icon="pi pi-link"></app-draw-icon></span>
+        <h3>Linked Items</h3>
+        <span class="sec-count">{{ linkedTotal }}</span>
+      </div>
+
+      <div class="link-group" *ngIf="risk.linkedScopes.length">
+        <span class="link-group__lbl"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon> Scopes</span>
+        <div class="chip-row">
+          <span *ngFor="let s of risk.linkedScopes" class="scope-chip">{{ s }}</span>
+        </div>
+      </div>
+
+      <div class="link-group" *ngIf="risk.linkedFindings.length">
+        <span class="link-group__lbl"><app-draw-icon icon="pi pi-flag"></app-draw-icon> Findings</span>
+        <div class="chip-row">
+          <span *ngFor="let f of risk.linkedFindings" class="finding-chip">{{ f }}</span>
+        </div>
+      </div>
+
+      <div class="link-group" *ngIf="risk.linkedObservations.length">
+        <span class="link-group__lbl"><app-draw-icon icon="pi pi-eye"></app-draw-icon> Observations</span>
+        <div class="chip-row">
+          <span *ngFor="let o of risk.linkedObservations" class="obs-chip">{{ o }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SUPPORTING EVIDENCE ═══════════════ -->
+    <div class="sec-card" *ngIf="risk.supportingFiles.length">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon></span>
+        <h3>Supporting Evidence</h3>
+        <span class="sec-count">{{ risk.supportingFiles.length }}</span>
+      </div>
+
+      <ul class="file-list">
+        <li *ngFor="let f of risk.supportingFiles" class="file-list__item"
+            [class.file-list__item--clickable]="canDownload(f)"
+            (click)="canDownload(f) && downloadFile(f)">
+          <div class="file-list__icon-wrap">
+            <i class="pi" [ngClass]="fileIcon(f.name)"></i>
+          </div>
+          <div class="file-list__info">
+            <span class="file-list__name">{{ f.name }}</span>
+            <span class="file-list__size">{{ formatFileSize(f.size) }}</span>
+          </div>
+          <button type="button" class="file-list__dl" [disabled]="!canDownload(f)"
+                  (click)="$event.stopPropagation(); downloadFile(f)" pTooltip="Download" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-download"></app-draw-icon>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="drawer-footer">
+    <p-button label="Close" styleClass="cancel-btn" (onClick)="onClose()" type="button"></p-button>
+  </div>
+</div>

@@ -1,0 +1,238 @@
+<div class="auditor-overview">
+
+  <!-- ── KPI Cards ──────────────────────────────────────────── -->
+  <div class="stats-grid">
+    @for (card of kpiCards; track card.label) {
+      <div class="stat-card"
+           [ngClass]="[card.cardClass, card.action ? 'stat-card--clickable' : '']"
+           [attr.role]="card.action ? 'button' : null"
+           [attr.tabindex]="card.action ? 0 : null"
+           (click)="card.action && onKpiClick(card)"
+           (keydown.enter)="card.action && onKpiClick(card)">
+        <div class="stat-card__header">
+          <span class="stat-card__label">{{ card.label }}</span>
+          <span class="stat-card__icon">
+            @switch (card.icon) {
+              @case ('pi pi-briefcase') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect pathLength="100" x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                  <path pathLength="100" d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+              }
+              @case ('pi pi-list') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line pathLength="100" x1="8" y1="6" x2="21" y2="6"></line>
+                  <line pathLength="100" x1="8" y1="12" x2="21" y2="12"></line>
+                  <line pathLength="100" x1="8" y1="18" x2="21" y2="18"></line>
+                </svg>
+              }
+              @case ('pi pi-sitemap') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle pathLength="100" cx="12" cy="5" r="2"></circle>
+                  <circle pathLength="100" cx="5" cy="19" r="2"></circle>
+                  <circle pathLength="100" cx="19" cy="19" r="2"></circle>
+                  <path pathLength="100" d="M12 7v4M12 11l-7 6M12 11l7 6"></path>
+                </svg>
+              }
+              @case ('pi pi-check-square') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                  <path pathLength="100" d="M9 11l3 3L22 4"></path>
+                </svg>
+              }
+              @case ('pi pi-calendar') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect pathLength="100" x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line pathLength="100" x1="16" y1="2" x2="16" y2="6"></line>
+                  <line pathLength="100" x1="8" y1="2" x2="8" y2="6"></line>
+                  <line pathLength="100" x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+              }
+              @case ('pi pi-exclamation-triangle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line pathLength="100" x1="12" y1="9" x2="12" y2="13"></line>
+                  <line pathLength="100" x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              }
+              @case ('pi pi-comments') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
+              }
+              @case ('pi pi-file') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline pathLength="100" points="14 2 14 8 20 8"></polyline>
+                </svg>
+              }
+              @case ('pi pi-exclamation-circle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                  <line pathLength="100" x1="12" y1="8" x2="12" y2="12"></line>
+                  <line pathLength="100" x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              }
+              @case ('pi pi-file-edit') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline pathLength="100" points="14 2 14 8 20 8"></polyline>
+                  <path pathLength="100" d="M8.5 17.5l1-3 4-4 2 2-4 4-3 1z"></path>
+                </svg>
+              }
+              @default {
+                <i [class]="card.icon"></i>
+              }
+            }
+          </span>
+        </div>
+        <div class="stat-card__value">{{ card.value }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- ── Charts Row: Work Distribution | Task Status | Audit Progress ── -->
+  <div class="three-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorOverview.myWorkDistribution">My Work Distribution</span></h3>
+      <app-donut-status-chart [legend]="workDistLegend" [maxWidth]="200"></app-donut-status-chart>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorOverview.taskStatus">Task Status</span></h3>
+      <app-donut-status-chart [legend]="taskStatusLegend" [maxWidth]="200"></app-donut-status-chart>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> <span i18n="@@admin.auditorOverview.auditProgress">Audit Progress</span></h3>
+      <div class="progress-list">
+        @for (audit of pagedAuditProgress; track audit.name) {
+          <div class="progress-item">
+            <div class="progress-item__header">
+              <span class="progress-item__name">{{ audit.name }}</span>
+              <span class="progress-item__pct">{{ audit.progress }}%</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill"
+                [style.width.%]="audit.progress"
+                [style.background]="getProgressColor(audit.progress)">
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+      <p-paginator
+        [rows]="auditRows"
+        [totalRecords]="auditProgress.length"
+        [first]="auditFirst"
+        (onPageChange)="onAuditPageChange($event)"
+        styleClass="list-paginator">
+      </p-paginator>
+    </div>
+
+  </div>
+
+  <!-- ── Bottom Row: Deadlines | Notifications + Quick Actions ── -->
+  <div class="two-col-row">
+
+    <!-- Upcoming Deadlines -->
+    <div class="table-card">
+      <div class="table-card__header">
+        <app-draw-icon icon="pi pi-calendar-times" class="header-icon header-icon--warn"></app-draw-icon>
+        <span class="table-card__title" i18n="@@admin.auditorOverview.upcomingDeadlines">Upcoming Deadlines</span>
+      </div>
+      <p-table
+        [value]="deadlines"
+        [paginator]="true"
+        [rows]="DEADLINES_PAGE_SIZE"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} of {totalRecords}"
+        i18n-currentPageReportTemplate="@@common.currentPageReport"
+        sortMode="multiple"
+        styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th i18n="@@common.item">Item</th>
+            <th pSortableColumn="type" style="width: 145px"><span i18n="@@common.type">Type</span><p-sortIcon field="type" /></th>
+            <th i18n="@@common.audit">Audit</th>
+            <th pSortableColumn="dueDate" style="width: 110px"><span i18n="@@common.dueDate">Due Date</span><p-sortIcon field="dueDate" /></th>
+            <th pSortableColumn="priority" style="width: 100px"><span i18n="@@common.priority">Priority</span><p-sortIcon field="priority" /></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr>
+            <td>{{ row.item }}</td>
+            <td>
+              <span class="task-type-badge" [ngClass]="getTypeConfig(row.type).cls">
+                <i [class]="getTypeConfig(row.type).icon"></i>
+                {{ row.type }}
+              </span>
+            </td>
+            <td>{{ row.audit }}</td>
+            <td>
+              <span [ngClass]="{ 'due-today': row.dueDate === TASK_ROW_VALUES.DueToday, 'due-tomorrow': row.dueDate === TASK_ROW_VALUES.DueTomorrow }">
+                {{ row.dueDate }}
+              </span>
+            </td>
+            <td>
+              <p-tag [value]="row.priority" [severity]="getPrioritySeverity(row.priority)" [rounded]="true"></p-tag>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Right: Notifications + Quick Actions -->
+    <div class="right-col">
+
+      <div class="table-card">
+        <div class="table-card__header">
+          <app-draw-icon icon="pi pi-bell" class="header-icon header-icon--info"></app-draw-icon>
+          <span class="table-card__title" i18n="@@common.notifications">Notifications</span>
+        </div>
+        <div class="notif-list">
+          @for (n of pagedNotifications; track n.text) {
+            <div class="notif-item" [ngClass]="'notif-item--' + n.type">
+              <i [class]="n.icon + ' notif-icon notif-icon--' + n.type"></i>
+              <div class="notif-body">
+                <p class="notif-text">{{ n.text }}</p>
+                <span class="notif-time">{{ n.time }}</span>
+              </div>
+            </div>
+          }
+        </div>
+        <p-paginator
+          [rows]="notifRows"
+          [totalRecords]="notifications.length"
+          [first]="notifFirst"
+          (onPageChange)="onNotifPageChange($event)"
+          styleClass="list-paginator">
+        </p-paginator>
+      </div>
+
+      <div class="table-card">
+        <div class="table-card__header">
+          <app-draw-icon icon="pi pi-bolt" class="header-icon header-icon--blue"></app-draw-icon>
+          <span class="table-card__title" i18n="@@common.quickActions">Quick Actions</span>
+        </div>
+        <div class="quick-actions-grid">
+          @for (action of quickActions; track action.label) {
+            <p-button
+              [label]="action.label"
+              [icon]="action.icon"
+              [severity]="$any(action.severity)"
+              size="small"
+              [outlined]="true"
+              styleClass="quick-btn"
+              (onClick)="onQuickAction(action.action)">
+            </p-button>
+          }
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

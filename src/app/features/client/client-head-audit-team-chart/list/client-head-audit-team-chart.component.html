@@ -1,0 +1,315 @@
+<section class="chart-page">
+
+  <!-- =============================== HEADER =============================== -->
+  <header class="page-header" [formGroup]="filters">
+
+    <!-- Row 1: title + action buttons -->
+    <div class="page-header__top">
+      <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <div class="page-header__title-row">
+          <h1 class="page-header__title" i18n="@@client.auditTeamChart.title">Audit Team Chart</h1>
+          <span class="role-badge role-badge--cfo">
+            <app-draw-icon icon="pi pi-chart-bar"></app-draw-icon>
+            <span i18n="@@client.auditTeamChart.adminView">Admin View</span>
+          </span>
+        </div>
+        <p class="page-header__subtitle" i18n="@@client.auditTeamChart.fullTeamSubtitle">
+          View and filter the full audit team across all divisions and sub-divisions.
+        </p>
+      </div>
+      </div>
+
+      <div class="page-header__actions">
+        <!-- Expand / Collapse -->
+        <button type="button" class="header-action-btn"
+                pTooltip="Expand All" i18n-pTooltip="@@common.expandAll" tooltipPosition="bottom"
+                (click)="toggleAll(true)">
+          <app-draw-icon icon="pi pi-angle-double-down"></app-draw-icon>
+        </button>
+        <button type="button" class="header-action-btn"
+                pTooltip="Collapse All" i18n-pTooltip="@@common.collapseAll" tooltipPosition="bottom"
+                (click)="toggleAll(false)">
+          <app-draw-icon icon="pi pi-angle-double-up"></app-draw-icon>
+        </button>
+
+        <!-- Zoom + Pan (chart view only) -->
+        <ng-container *ngIf="viewMode() === 'chart'">
+          <button type="button" class="header-action-btn header-action-btn--pan"
+                  [class.is-active]="panModeEnabled()"
+                  [pTooltip]="panModeEnabled() ? exitPanModeLabel : panModeLabel" tooltipPosition="bottom"
+                  (click)="togglePanMode()">
+            <span class="pan-hand-icon">✋</span>
+          </button>
+          <button type="button" class="header-action-btn"
+                  pTooltip="Zoom In" i18n-pTooltip="@@common.zoomIn" tooltipPosition="bottom"
+                  (click)="zoomIn()">
+            <app-draw-icon icon="pi pi-search-plus"></app-draw-icon>
+          </button>
+          <button type="button" class="header-action-btn"
+                  pTooltip="Zoom Out" i18n-pTooltip="@@common.zoomOut" tooltipPosition="bottom"
+                  (click)="zoomOut()">
+            <app-draw-icon icon="pi pi-search-minus"></app-draw-icon>
+          </button>
+          <button type="button" class="header-action-btn"
+                  pTooltip="Reset Zoom" i18n-pTooltip="@@common.resetZoom" tooltipPosition="bottom"
+                  (click)="resetZoom()">
+            <app-draw-icon icon="pi pi-expand"></app-draw-icon>
+          </button>
+        </ng-container>
+
+        <!-- View toggle -->
+        <div class="view-toggle">
+          <button type="button" class="view-toggle__btn"
+                  [class.is-active]="viewMode() === 'list'"
+                  (click)="setViewMode('list')" aria-label="List view" i18n-aria-label="@@common.listView">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          </button>
+          <button type="button" class="view-toggle__btn"
+                  [class.is-active]="viewMode() === 'chart'"
+                  (click)="setViewMode('chart')" aria-label="Chart view" i18n-aria-label="@@common.chartView">
+            <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: filters -->
+    <div class="page-header__filters">
+      <div class="page-header__selects">
+
+        <p-select formControlName="division"
+                  [options]="divisionOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="All Divisions"
+                  i18n-placeholder="@@client.auditTeamChart.allDivisions"
+                  styleClass="filter-select filter-select--division">
+        </p-select>
+
+        <p-select formControlName="subDivision"
+                  [options]="subDivisionOptions()"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="All Sub-Divisions"
+                  i18n-placeholder="@@client.auditTeamChart.allSubDivisionsTitle"
+                  styleClass="filter-select filter-select--subdivision">
+        </p-select>
+
+        <p-select formControlName="scope"
+                  [options]="scopeOptions()"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="All Scopes"
+                  i18n-placeholder="@@client.auditTeamChart.allScopes"
+                  styleClass="filter-select filter-select--scope">
+        </p-select>
+
+        <!-- Active filter pills -->
+        <ng-container *ngIf="activeFilterCount() > 0">
+          <span *ngIf="filters.get('division')!.value as division" class="filter-pill filter-pill--division">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon> {{ divisionLabel(division) }}
+          </span>
+          <span *ngIf="filters.get('subDivision')!.value as subDivision" class="filter-pill filter-pill--subdivision">
+            <app-draw-icon icon="pi pi-briefcase"></app-draw-icon> {{ subDivision }}
+          </span>
+          <span *ngIf="filters.get('scope')!.value as s" class="filter-pill filter-pill--scope">
+            <app-draw-icon icon="pi pi-flag"></app-draw-icon> {{ scopeLabel(s) }}
+          </span>
+        </ng-container>
+
+      </div>
+
+      <!-- Clear + result count -->
+      <div class="page-header__filter-end">
+        <span *ngIf="activeFilterCount() > 0" class="filter-result-count" i18n="@@client.auditTeamChart.memberCount">
+          {{ flatMembers().length }} member{{ flatMembers().length !== 1 ? 's' : '' }}
+        </span>
+        <button *ngIf="activeFilterCount() > 0"
+                type="button"
+                class="clear-btn"
+                (click)="clearFilters()"
+                aria-label="Clear all filters"
+                i18n-aria-label="@@common.clearAllFilters">
+          <app-draw-icon icon="pi pi-filter-slash"></app-draw-icon>
+          <span i18n="@@common.clear">Clear</span>
+          <span class="clear-btn__count">{{ activeFilterCount() }}</span>
+        </button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- ============================= CHART VIEW ============================ -->
+  <div *ngIf="viewMode() === 'chart'" class="chart-wrap"
+       #chartWrap
+       [class.pan-mode-active]="panModeEnabled()"
+       [class.is-panning]="isPanning()"
+       (wheel)="onChartWheel($event)"
+       (mousedown)="onChartMouseDown($event)"
+       (dragstart)="onChartDragStart($event)">
+    <ng-container *ngIf="visibleTree().length > 0; else emptyState">
+      <div class="chart-inner" [style.zoom]="zoomLevel()">
+        <p-organizationChart [value]="visibleTree()"
+                             [collapsible]="true"
+                             styleClass="cfo-org-chart">
+          <ng-template let-node pTemplate="default">
+            <ng-container *ngTemplateOutlet="nodeCard; context: { $implicit: node.data }">
+            </ng-container>
+          </ng-template>
+        </p-organizationChart>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ============================= LIST VIEW ============================= -->
+  <!-- Flattened parent → child → sub-child tree (CFO → manager → senior
+       auditor → staff auditor): each row is indented by depth and a
+       subtree can be collapsed via its row's toggle chevron, matching the
+       Audit Team Chart page's list view. -->
+  <div *ngIf="viewMode() === 'list'" class="list-wrap">
+    <ng-container *ngIf="flatVisibleRows().length > 0; else emptyState">
+      <article *ngFor="let row of flatVisibleRows(); trackBy: trackByRow"
+               class="list-row"
+               [class.is-child]="row.depth > 0"
+               [style.--depth]="row.depth">
+
+        <button type="button" class="list-row__toggle"
+                [class.is-leaf]="!row.hasChildren"
+                [class.is-collapsed]="row.hasChildren && !row.expanded"
+                [disabled]="!row.hasChildren"
+                (click)="toggleNode(row.member.id, $event)"
+                [attr.aria-label]="row.hasChildren ? (row.expanded ? collapseLabel : expandLabel) : null"
+                [attr.tabindex]="row.hasChildren ? 0 : -1">
+          <app-draw-icon icon="pi pi-chevron-down"></app-draw-icon>
+        </button>
+
+        <div class="list-row__avatar">
+          <img [src]="row.member.avatarUrl || 'images/avatars/default-avatar.jpg'" [alt]="row.member.name" />
+        </div>
+
+        <div class="list-row__info">
+          <span class="list-row__name">{{ row.member.name }}</span>
+          <span class="list-row__title">{{ row.member.title }}</span>
+        </div>
+
+        <div class="list-row__context">
+          <span *ngIf="row.member.division" class="chip chip--division">{{ divisionLabel(row.member.division) }}</span>
+          <span *ngIf="row.member.subDivision" class="chip chip--subdivision">{{ row.member.subDivision }}</span>
+          <span *ngIf="row.member.scope" class="chip chip--scope">{{ scopeLabel(row.member.scope) }}</span>
+        </div>
+
+        <div class="list-row__expertise">
+          <span *ngFor="let e of row.member.expertise" class="chip chip--exp">{{ e }}</span>
+        </div>
+
+        <div class="list-row__workload">
+          <span class="value">{{ row.member.workloadPct }}%</span>
+          <div class="bar">
+            <span class="fill"
+                  [style.width.%]="row.member.workloadPct"
+                  [attr.data-tier]="workloadTier(row.member.workloadPct)"></span>
+          </div>
+        </div>
+
+        <div class="list-row__actions">
+          <button type="button" class="icon-btn icon-btn--view"
+                  (click)="viewMember(row.member, $event)"
+                  pTooltip="View Profile" i18n-pTooltip="@@common.viewProfile" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          </button>
+        </div>
+
+      </article>
+    </ng-container>
+  </div>
+
+  <!-- ========================== EMPTY STATE ============================== -->
+  <ng-template #emptyState>
+    <div class="empty-state">
+      <app-draw-icon icon="pi pi-filter-slash" class="empty-state__icon"></app-draw-icon>
+      <p class="empty-state__title" i18n="@@common.noResultsFound">No results found</p>
+      <p class="empty-state__text">
+        <span i18n="@@client.auditTeamChart.noMembersMatchFilters">No members match your current filters.</span>
+        <button type="button" class="empty-state__clear" (click)="clearFilters()" i18n="@@common.clearFilters">Clear filters</button>
+      </p>
+    </div>
+  </ng-template>
+
+  <!-- ===================== NODE CARD TEMPLATE =========================== -->
+  <ng-template #nodeCard let-member>
+    <div class="node-card" [class.node-card--root]="member.role === 'CFO'">
+
+      <!-- Level badge -->
+      <span class="node-card__level-badge"
+            [ngClass]="'node-card__level-badge--' + member.role.toLowerCase()">
+        {{ member.role }}
+      </span>
+
+      <!-- Risk badge -->
+      <span *ngIf="member.badge as b"
+            class="node-card__risk-badge"
+            [ngClass]="tierClass(b.tier)">
+        {{ b.label }}
+      </span>
+
+      <!-- Head -->
+      <div class="node-card__head">
+        <div class="node-card__avatar">
+          <img [src]="member.avatarUrl || 'images/avatars/default-avatar.jpg'" [alt]="member.name" />
+        </div>
+        <div class="node-card__title-block">
+          <h4 class="node-card__name">{{ member.name }}</h4>
+          <p class="node-card__role">{{ member.title }}</p>
+        </div>
+      </div>
+
+      <!-- Context chips -->
+      <div class="node-card__context">
+        <span *ngIf="member.division" class="chip chip--division">{{ member.division }}</span>
+        <span *ngIf="member.subDivision" class="chip chip--subdivision">{{ member.subDivision }}</span>
+        <span *ngIf="member.scope" class="chip chip--scope">{{ scopeLabel(member.scope) }}</span>
+      </div>
+
+      <!-- Body -->
+      <div class="node-card__body">
+        <div class="node-card__row">
+          <app-draw-icon icon="pi pi-clock" class="node-card__row-icon"></app-draw-icon>
+          <span class="node-card__row-label" i18n="@@common.experience">Experience</span>
+          <span class="chip chip--years" i18n="@@common.years"> {{ member.experience }} yrs</span>
+        </div>
+        <div class="node-card__row">
+          <app-draw-icon icon="pi pi-bookmark" class="node-card__row-icon"></app-draw-icon>
+          <span class="node-card__row-label" i18n="@@common.expertise">Expertise</span>
+          <div class="node-card__row-chips">
+            <span *ngFor="let e of member.expertise" class="chip chip--exp">{{ e }}</span>
+          </div>
+        </div>
+        <div class="node-card__workload">
+          <div class="node-card__workload-head">
+            <span class="label" i18n="@@common.workload">Workload</span>
+            <span class="value">{{ member.workloadPct }}%</span>
+          </div>
+          <div class="node-card__workload-bar">
+            <span class="node-card__workload-fill"
+                  [style.width.%]="member.workloadPct"
+                  [attr.data-tier]="workloadTier(member.workloadPct)"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="node-card__actions">
+        <button type="button" class="icon-btn icon-btn--view"
+                (click)="viewMember(member, $event)"
+                pTooltip="View Profile" i18n-pTooltip="@@common.viewProfile" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          <span class="icon-btn__label" i18n="@@common.viewProfile">View Profile</span>
+        </button>
+      </footer>
+
+    </div>
+  </ng-template>
+
+</section>

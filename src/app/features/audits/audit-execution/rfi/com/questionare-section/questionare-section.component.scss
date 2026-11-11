@@ -1,0 +1,748 @@
+// ── Design tokens (mirror manage/rfi.component.scss) ──────────────────────────────────────
+$primary-col:  var(--primary-color);
+$accent:        var(--primary-color);
+$border:        var(--surface-border);
+$muted:         var(--text-color-secondary);
+$heading:       var(--text-color);
+$input-border:  var(--surface-border);
+$text-main:     var(--text-color);
+$bg-readonly:   var(--surface-ground);
+$bg-table-head: var(--surface-ground);
+
+// ── Outer wrapper ─────────────────────────────────────────────────────────────
+.qs-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 20px 24px 32px;
+  min-height: 100%;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.qs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.qs-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qs-header-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 16px;
+    color: $primary-col;
+  }
+}
+
+.qs-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: $primary-col;
+  letter-spacing: 0.2px;
+}
+
+.qs-subtitle {
+  margin: 0;
+  font-size: 11px;
+  color: $muted;
+}
+
+.excel-upload-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-hover);
+  border: 1px dashed var(--surface-hover);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.excel-upload-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.excel-upload-icon {
+  font-size: 18px;
+  color: var(--p-green-500);
+}
+
+.excel-upload-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: $heading;
+}
+
+.excel-upload-subtitle {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: $muted;
+}
+
+:host ::ng-deep .excel-upload-btn.p-fileupload-choose {
+  height: 34px;
+  background: $primary-col !important;
+  border-color: $primary-col !important;
+  border-radius: 6px !important;
+  font-size: 12px;
+  font-weight: 600;
+
+  &:hover {
+    background: color-mix(in srgb, $primary-col, black 8%) !important;
+    border-color: color-mix(in srgb, $primary-col, black 8%) !important;
+  }
+}
+
+// ── Add-row button ────────────────────────────────────────────────────────────
+:host ::ng-deep .qs-add-btn.p-button {
+  height: 34px;
+  background: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+  border-radius: 6px !important;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+  padding: 0 14px;
+
+  &:hover {
+    background: color-mix(in srgb, $primary-col, black 8%) !important;
+    border-color: color-mix(in srgb, $primary-col, black 8%) !important;
+  }
+}
+
+// ── Scope info strip ──────────────────────────────────────────────────────────
+.qs-scope-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f0f4fb;
+  border: 1px solid var(--surface-hover);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.qs-scope-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.qs-scope-icon {
+  font-size: 12px;
+  color: $primary-col;
+}
+
+.qs-scope-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: $muted;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+:host ::ng-deep .qs-scope-tag.p-tag {
+  background: var(--surface-hover) !important;
+  color: $primary-col !important;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.qs-scope-divider {
+  font-size: 12px;
+  color: $border;
+}
+
+// ── Table container ───────────────────────────────────────────────────────────
+.qs-table-container {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid $border;
+}
+
+:host ::ng-deep .qs-table {
+  // ── Header ───────────────────────────────────────────────────────────────
+  .p-datatable-thead > tr > th {
+    background: $bg-table-head;
+    font-size: 11px;
+    font-weight: 700;
+    color: $muted;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 10px 12px;
+    border-bottom: 2px solid $border;
+    white-space: nowrap;
+  }
+
+  // ── Body ─────────────────────────────────────────────────────────────────
+  .p-datatable-tbody > tr > td {
+    padding: 8px 10px;
+    vertical-align: top;
+    border-color: $border;
+    border-bottom: 1px solid #f0f2f5;
+  }
+
+  .p-datatable-tbody > tr:last-child > td {
+    border-bottom: none;
+  }
+
+  .p-datatable-tbody > tr:hover > td {
+    background: #fafbff;
+  }
+
+  // ── Grid lines ────────────────────────────────────────────────────────────
+  &.p-datatable-gridlines .p-datatable-thead > tr > th,
+  &.p-datatable-gridlines .p-datatable-tbody > tr > td {
+    border-inline-end: 1px solid #eef0f4;
+
+    &:last-child {
+      border-inline-end: none;
+    }
+  }
+}
+
+// ── Column widths ─────────────────────────────────────────────────────────────
+.col-num      { width: 40px;  min-width: 40px;  }
+.col-scope    { width: 130px; min-width: 110px; }
+.col-subscope { width: 130px; min-width: 110px; }
+.col-question { min-width: 180px; }
+.col-answer   { min-width: 180px; }
+
+.col-answer--readonly {
+  background: var(--surface-hover);
+
+  input[pInputText]:disabled {
+    background: var(--surface-hover) !important;
+    color: var(--text-color-secondary) !important;
+    cursor: not-allowed;
+  }
+
+  .attach-trigger:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+.col-duedate  { width: 168px; min-width: 150px; }
+.col-action   { width: 44px;  min-width: 44px; text-align: center; }
+
+// ── Table header content ──────────────────────────────────────────────────────
+.th-content {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.th-icon {
+  font-size: 12px;
+  color: $muted;
+
+  &--question { color: #1a6fa8; }
+  &--answer   { color: #1a8a5a; }
+  &--duedate  { color: var(--p-purple-600); }
+}
+
+.th-lock {
+  margin-inline-start: 2px;
+  .pi { font-size: 9px; color: $muted; opacity: 0.6; }
+}
+
+.th-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-inline-start: 4px;
+
+  &--auditor {
+    background: color-mix(in srgb, var(--p-blue-500) 16%, transparent);
+    color: var(--p-blue-700);
+  }
+
+  &--client {
+    background: var(--p-emerald-100);
+    color: var(--p-emerald-800);
+  }
+}
+
+// ── Cell: row number ──────────────────────────────────────────────────────────
+.td-num {
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+.row-num-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: var(--surface-hover);
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+  color: $primary-col;
+}
+
+// ── Cell: read-only (scope / subscope) ────────────────────────────────────────
+.td-readonly {
+  vertical-align: middle !important;
+}
+
+.readonly-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: $bg-readonly;
+  border: 1px solid #e4e8f0;
+  border-radius: 5px;
+  padding: 5px 9px;
+  max-width: 100%;
+  cursor: default;
+}
+
+.readonly-lock {
+  font-size: 9px;
+  color: $muted;
+  opacity: 0.5;
+  flex-shrink: 0;
+}
+
+.readonly-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: $heading;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.readonly-unset {
+  font-size: 11px;
+  color: var(--text-color-secondary);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .pi { font-size: 11px; }
+}
+
+// ── Cell: action ──────────────────────────────────────────────────────────────
+.td-action {
+  text-align: center;
+  vertical-align: middle !important;
+}
+
+:host ::ng-deep .delete-row-btn.p-button {
+  width: 28px !important;
+  height: 28px !important;
+
+  .p-button-icon {
+    font-size: 12px;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-red-500) 10%, transparent) !important;
+  }
+}
+
+// ── Composite cell (question / answer) ────────────────────────────────────────
+.composite-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid $input-border;
+  border-radius: 6px;
+  background: var(--surface-card);
+  overflow: hidden;
+  transition: border-color 0.18s, box-shadow 0.18s;
+
+  &:focus-within {
+    border-color: $primary-col;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  &--question:focus-within {
+    border-color: #1a6fa8;
+    box-shadow: 0 0 0 3px rgba(26, 111, 168, 0.08);
+  }
+
+  &--answer:focus-within {
+    border-color: #1a8a5a;
+    box-shadow: 0 0 0 3px rgba(26, 138, 90, 0.08);
+  }
+}
+
+// ── Input row inside composite cell ──────────────────────────────────────────
+.composite-input-row {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+}
+
+// Read-only display for a question/answer cell — a plain wrapping block
+// instead of an <input>, since inputs are always single-line and can't wrap
+// long text onto the next line (they just clip it).
+.composite-readonly-text {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  font-size: 12px;
+  color: $text-main;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-align: start;
+}
+
+.composite-text-input {
+  flex: 1;
+  min-width: 0;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 7px 10px !important;
+  font-size: 12px;
+  color: $text-main;
+  height: 36px;
+  text-align: start;
+
+  &::placeholder {
+    color: var(--text-color-secondary);
+    font-size: 12px;
+  }
+
+  // Kill PrimeNG focus ring on the input itself
+  &:focus {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
+// ── Paperclip trigger button ──────────────────────────────────────────────────
+.attach-trigger {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  margin-inline-end: 3px;
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $muted;
+  transition: background 0.15s, color 0.15s;
+
+  .pi {
+    font-size: 13px;
+  }
+
+  &:hover {
+    background: #eef1f8;
+    color: $primary-col;
+  }
+
+  &:active {
+    background: var(--surface-hover);
+  }
+}
+
+// ── Attached files strip ──────────────────────────────────────────────────────
+.attached-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 5px 8px 6px;
+  border-top: 1px dashed #e4e8f0;
+  background: #fafbff;
+}
+
+// ── Individual file chip ──────────────────────────────────────────────────────
+.file-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-hover);
+  border-radius: 4px;
+  padding-block: 2px;
+  padding-inline-start: 6px;
+  padding-inline-end: 5px;
+  max-width: 200px;
+}
+
+.file-chip-sep {
+  font-size: 11px;
+  color: $muted;
+  flex-shrink: 0;
+  margin-inline-end: 1px;
+}
+
+.file-chip-body {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  max-width: 150px;
+  overflow: hidden;
+  text-decoration: none;
+  transition: color 0.13s;
+
+  &:hover {
+    .file-chip-name { text-decoration: underline; }
+    .file-chip-icon { color: $accent; }
+  }
+}
+
+.file-chip-icon {
+  font-size: 11px;
+  color: $primary-col;
+  flex-shrink: 0;
+}
+
+.file-chip-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: $primary-col;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-chip-remove {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color-secondary);
+  transition: background 0.13s, color 0.13s;
+  margin-inline-start: 1px;
+
+  .pi { font-size: 9px; }
+
+  &:hover {
+    background: color-mix(in srgb, var(--p-red-500) 10%, transparent);
+    color: var(--p-red-500);
+  }
+}
+
+// ── Cell: due date ────────────────────────────────────────────────────────────
+.td-duedate {
+  vertical-align: middle !important;
+}
+
+.duedate-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--invalid :host ::ng-deep .qs-datepicker .p-datepicker-input {
+    border-color: var(--p-red-400) !important;
+    background: #fff7f7 !important;
+  }
+}
+
+.duedate-error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--p-red-500);
+  font-weight: 500;
+
+  .pi { font-size: 10px; }
+}
+
+// ── PrimeNG DatePicker overrides ──────────────────────────────────────────────
+:host ::ng-deep .qs-datepicker {
+  width: 100%;
+
+  .p-datepicker-input {
+    font-size: 12px;
+    height: 34px;
+    padding: 0 8px;
+    border-color: $input-border;
+    border-radius: 6px;
+    color: $text-main;
+    width: 100%;
+    text-align: start;
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+      font-size: 12px;
+    }
+
+    &:focus {
+      border-color: var(--p-purple-600);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+
+    &:disabled {
+      background: $bg-readonly;
+      color: $muted;
+      cursor: not-allowed;
+    }
+  }
+
+  // Calendar icon button inside input
+  .p-datepicker-input-icon-container {
+    .p-icon-field-right {
+      inset-inline-end: 6px;
+    }
+    .pi {
+      font-size: 13px;
+      color: var(--p-purple-600);
+    }
+  }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.qs-empty-cell {
+  padding: 0 !important;
+}
+
+.qs-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.qs-empty-icon {
+  font-size: 40px;
+  color: var(--surface-border);
+  margin-bottom: 12px;
+  display: block;
+}
+
+.qs-empty-text {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $heading;
+}
+
+.qs-empty-hint {
+  margin: 0;
+  font-size: 12px;
+  color: $muted;
+
+  strong {
+    color: $primary-col;
+  }
+}
+
+// ── Client toolbar (export / import answers) ──────────────────────────────────
+.client-tools-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #f0f4fb;
+  border: 1px solid var(--surface-hover);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.client-tools-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.client-tools-icon-wrap {
+  width: 34px;
+  height: 34px;
+  background: var(--surface-hover);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 15px;
+    color: $primary-col;
+  }
+}
+
+.client-tools-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: $heading;
+}
+
+.client-tools-sub {
+  margin: 2px 0 0;
+  font-size: 11px;
+  color: $muted;
+}
+
+.client-tools-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep .client-tool-btn.p-button {
+  height: 34px;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  gap: 6px;
+  padding: 0 14px;
+}
+
+:host ::ng-deep .client-tool-btn--import.p-button {
+  border-color: $primary-col !important;
+  color: $primary-col !important;
+
+  &:hover {
+    background: var(--surface-hover) !important;
+  }
+}

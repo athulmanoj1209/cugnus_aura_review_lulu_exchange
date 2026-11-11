@@ -1,0 +1,128 @@
+<div class="tab-canvas">
+
+  <div class="notif-reports-grid">
+
+    <!-- Notifications -->
+    <p-card styleClass="dash-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-title"><app-draw-icon icon="pi pi-bell"></app-draw-icon> <span i18n="@@common.notifications">Notifications</span></span>
+            @if (unreadCount > 0) {
+              <span class="card-subtitle unread-label"><span i18n="@@client.clientDashboard.unread">{{ unreadCount }} unread</span></span>
+            }
+          </div>
+          @if (unreadCount > 0) {
+            <p-badge [value]="unreadCount.toString()" severity="danger" />
+          }
+        </div>
+      </ng-template>
+      <div class="notif-list">
+        @for (notif of notifications; track notif.title) {
+          <div class="notif-row"
+            [class.unread]="!notif.read"
+            [class.notif-danger]="notif.severity === 'danger'"
+            [class.notif-warn]="notif.severity === 'warn'"
+            [class.notif-info]="notif.severity === 'info'"
+            [class.notif-secondary]="notif.severity === 'secondary'"
+            (click)="openNotif(notif)"
+            role="button"
+            tabindex="0">
+            <i
+              [class]="notifIcon[notif.severity]"
+              [class.icon-danger]="notif.severity === 'danger'"
+              [class.icon-warning]="notif.severity === 'warn'"
+              [class.icon-info]="notif.severity === 'info'"
+              [class.icon-secondary]="notif.severity === 'secondary'"
+            ></i>
+            <div class="notif-body">
+              <div class="notif-header-row">
+                <span class="notif-title">{{ notif.title }}</span>
+                @if (!notif.read) { <div class="unread-dot"></div> }
+              </div>
+              <span class="notif-desc">{{ truncate(notif.description) }}</span>
+              <span class="notif-time">
+                <app-draw-icon icon="pi pi-clock"></app-draw-icon>
+                {{ notif.date | date:'MMM d, h:mm a' }}
+              </span>
+            </div>
+            @if (isTruncated(notif.description)) {
+              <app-draw-icon icon="pi pi-chevron-right" class="notif-expand-icon" pTooltip="View details" i18n-pTooltip="@@common.viewDetails"></app-draw-icon>
+            }
+          </div>
+        }
+      </div>
+    </p-card>
+
+    <!-- Reports -->
+    <p-card styleClass="dash-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-title"><app-draw-icon icon="pi pi-file-pdf"></app-draw-icon> <span i18n="@@common.reports">Reports</span></span>
+            <span class="card-subtitle" i18n="@@client.clientDashboard.documentsAvailable">{{ reports.length }} documents available</span>
+          </div>
+        </div>
+      </ng-template>
+      <div class="report-list">
+        @for (report of reports; track report.name) {
+          <div class="report-row">
+            <div class="report-icon-wrap" [class.draft]="report.status === 'draft'" [class.final]="report.status === 'final'">
+              <app-draw-icon icon="pi pi-file-pdf"></app-draw-icon>
+            </div>
+            <div class="report-body">
+              <span class="report-name">{{ report.name }}</span>
+              <span class="report-meta">
+                <span class="report-meta-item"><app-draw-icon icon="pi pi-calendar"></app-draw-icon> {{ report.uploadedDate | date:'MMM d, yyyy' }}</span>
+                <span class="report-sep">·</span>
+                <span class="report-meta-item"><app-draw-icon icon="pi pi-database"></app-draw-icon> {{ report.fileSize }}</span>
+                <span class="report-sep">·</span>
+                <p-tag
+                  [value]="report.status === 'final' ? finalLabel : draftLabel"
+                  [severity]="report.status === 'final' ? 'success' : 'secondary'"
+                  styleClass="status-tag" />
+              </span>
+            </div>
+            <p-button icon="pi pi-download" [text]="true" size="small" pTooltip="Download" i18n-pTooltip="@@common.download" (onClick)="downloadReport(report)" />
+          </div>
+        }
+      </div>
+    </p-card>
+
+  </div>
+</div>
+
+<!-- ── Notification detail dialog ─────────────────────────────────────── -->
+<p-dialog
+  [(visible)]="notifDialogVisible"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [style]="{ width: '480px' }"
+  (onHide)="closeNotifDialog()"
+>
+  <ng-template pTemplate="header">
+    @if (selectedNotif) {
+      <div class="notif-dialog-header">
+        <i
+          [class]="notifIcon[selectedNotif.severity]"
+          [class.icon-danger]="selectedNotif.severity === 'danger'"
+          [class.icon-warning]="selectedNotif.severity === 'warn'"
+          [class.icon-info]="selectedNotif.severity === 'info'"
+          [class.icon-secondary]="selectedNotif.severity === 'secondary'"
+        ></i>
+        <span>{{ selectedNotif.title }}</span>
+      </div>
+    }
+  </ng-template>
+  @if (selectedNotif) {
+    <div class="notif-dialog-body">
+      <p class="notif-dialog-desc">{{ selectedNotif.description }}</p>
+      <span class="notif-dialog-date">
+        <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+        {{ selectedNotif.date | date:'MMMM d, yyyy, h:mm a' }}
+      </span>
+    </div>
+  }
+</p-dialog>

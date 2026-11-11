@@ -1,0 +1,300 @@
+<ng-container *ngIf="m() as data; else emptyState">
+<div class="drawer-inner">
+
+  <!-- =========================== HEADER =========================== -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-user"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ data.name }}</h2>
+        <p class="drawer-subtitle">
+          <span *ngIf="data.title">{{ data.title }}</span>
+          <span *ngIf="data.title && data.subDivision"> · </span>
+          <span *ngIf="data.subDivision">{{ data.subDivision }}</span>
+        </p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+  <!-- ===================== STATS ===================== -->
+  <section class="profile-stats">
+    <div class="stat-card" *ngIf="data.yearsOfExperience != null">
+      <div class="stat-card__icon stat-card__icon--exp"><app-draw-icon icon="pi pi-clock"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ data.yearsOfExperience }}</span>
+        <span class="stat-card__label" i18n="@@audit.auditTeam.yearsOfExperience">Years of Experience</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--workload">
+        <app-draw-icon icon="pi pi-chart-line"></app-draw-icon>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ workload() }}%</span>
+        <span class="stat-card__label" i18n="@@audit.auditTeam.currentWorkload">Current Workload</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="data.hourlyCostRate != null">
+      <div class="stat-card__icon stat-card__icon--rate"><app-draw-icon icon="pi pi-dollar"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ hourlyRateLabel(data.hourlyCostRate) }}</span>
+        <span class="stat-card__label" i18n="@@audit.auditTeam.hourlyRate">Hourly Rate</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="data.totalCapacityHours != null">
+      <div class="stat-card__icon stat-card__icon--capacity"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ hoursLabel(data.totalCapacityHours) }}</span>
+        <span class="stat-card__label" i18n="@@audit.auditTeam.totalCapacity">Total Capacity</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== BODY GRID ===================== -->
+  <div class="profile-body">
+
+    <!-- Left column ---------------------------------------------- -->
+    <div class="profile-col profile-col--main">
+
+      <!-- Professional Details — mirrors the Add Member form -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-user" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditTeam.professionalDetails">Professional Details</h2>
+        </header>
+        <div class="panel__body info-grid info-grid--two">
+
+          <!-- Status (moved from the old hero banner) -->
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.status">Status</span>
+            <span class="info-row__value">
+              <span class="badge-pill" [ngClass]="data.blocked ? 'is-no' : 'is-yes'">
+                <i class="pi" [ngClass]="data.blocked ? 'pi-ban' : 'pi-check-circle'"></i>
+                {{ data.blocked ? blockedLabel : activeLabel }}
+              </span>
+            </span>
+          </div>
+
+          <div class="info-row info-row--span2" *ngIf="data.name">
+            <span class="info-row__label" i18n="@@audit.auditTeam.fullName">Full Name</span>
+            <span class="info-row__value">{{ data.name }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.title">
+            <span class="info-row__label" i18n="@@common.designation">Designation</span>
+            <span class="info-row__value">{{ data.title }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.yearsOfExperience != null">
+            <span class="info-row__label" i18n="@@audit.auditTeam.yearsOfExperience">Years of Experience</span>
+            <span class="info-row__value">{{ experienceYearsLabel(data.yearsOfExperience) }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.subDivision">
+            <span class="info-row__label" i18n="@@common.subDivision">Sub-Division</span>
+            <span class="info-row__value">{{ data.subDivision }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.region">
+            <span class="info-row__label" i18n="@@audit.auditTeam.region">Region</span>
+            <span class="info-row__value">{{ data.region }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-id-card" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditTeam.contactInformation">Contact Information</h2>
+        </header>
+
+        <div class="panel__body contact-grid">
+          <div class="contact-row" *ngIf="data.email">
+            <span class="contact-row__icon"><app-draw-icon icon="pi pi-envelope"></app-draw-icon></span>
+            <div class="contact-row__text">
+              <span class="contact-row__label" i18n="@@common.email">Email</span>
+              <a class="contact-row__value" [href]="'mailto:' + data.email">{{ data.email }}</a>
+            </div>
+            <button type="button" class="copy-btn"
+                    (click)="copy(MemberCopyFields.Email, data.email)"
+                    aria-label="Copy email"
+                    i18n-aria-label="@@audit.auditTeam.copyEmail">
+              <i class="pi"
+                 [ngClass]="copiedField() === MemberCopyFields.Email ? 'pi-check' : 'pi-copy'"></i>
+            </button>
+          </div>
+
+          <div class="contact-row" *ngIf="data.phone">
+            <span class="contact-row__icon"><app-draw-icon icon="pi pi-phone"></app-draw-icon></span>
+            <div class="contact-row__text">
+              <span class="contact-row__label" i18n="@@common.phone">Phone</span>
+              <a class="contact-row__value" [href]="'tel:' + data.phone">{{ data.phone }}</a>
+            </div>
+            <button type="button" class="copy-btn"
+                    (click)="copy(MemberCopyFields.Phone, data.phone)"
+                    aria-label="Copy phone"
+                    i18n-aria-label="@@audit.auditTeam.copyPhone">
+              <i class="pi"
+                 [ngClass]="copiedField() === MemberCopyFields.Phone ? 'pi-check' : 'pi-copy'"></i>
+            </button>
+          </div>
+
+          <div class="contact-row" *ngIf="data.teamsZoomId">
+            <span class="contact-row__icon"><app-draw-icon icon="pi pi-video"></app-draw-icon></span>
+            <div class="contact-row__text">
+              <span class="contact-row__label" i18n="@@audit.auditTeam.teamsZoom">Teams / Zoom</span>
+              <span class="contact-row__value">{{ data.teamsZoomId }}</span>
+            </div>
+          </div>
+
+          <div class="contact-row contact-row--empty"
+               *ngIf="!data.email && !data.phone && !data.teamsZoomId">
+            <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+            <span i18n="@@audit.auditTeam.noContactInformation">No contact information available.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Capacity & Cost -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-gauge" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditTeam.capacityAndCost">Capacity &amp; Cost</h2>
+        </header>
+
+        <div class="panel__body workload-block">
+
+          <!-- Workload meter -->
+          <div class="workload-meter">
+            <div class="workload-meter__bar">
+              <span class="workload-meter__fill"
+                    [style.width.%]="workload()"
+                    [attr.data-tier]="workloadTier()"></span>
+            </div>
+            <span class="workload-meter__value">{{ workload() }}%</span>
+          </div>
+
+          <!-- Hours breakdown -->
+          <div class="workload-breakdown"
+               *ngIf="data.assignedHours != null || data.totalCapacityHours != null">
+            <div class="workload-breakdown__item">
+              <span class="label" i18n="@@audit.auditTeam.assignedHours">Assigned Hours</span>
+              <span class="value">{{ hoursLabel(data.assignedHours ?? 0) }}</span>
+            </div>
+            <div class="workload-breakdown__item">
+              <span class="label" i18n="@@audit.auditTeam.totalCapacity">Total Capacity</span>
+              <span class="value">{{ hoursLabel(data.totalCapacityHours ?? 0) }}</span>
+            </div>
+            <div class="workload-breakdown__item">
+              <span class="label" i18n="@@audit.auditTeam.available">Available</span>
+              <span class="value">
+                {{ hoursLabel((data.totalCapacityHours ?? 0) - (data.assignedHours ?? 0) ) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Cost row -->
+          <div class="info-grid" *ngIf="data.hourlyCostRate != null">
+            <div class="info-row">
+              <span class="info-row__label" i18n="@@audit.auditTeam.hourlyCostRate">Hourly Cost Rate</span>
+              <span class="info-row__value">{{ hourlyCostLabel(data.hourlyCostRate) }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Right column --------------------------------------------- -->
+    <div class="profile-col profile-col--side">
+
+      <!-- Expertise -->
+      <section class="panel" *ngIf="data.expertise?.length">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-bookmark" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditTeam.expertise">Expertise</h2>
+        </header>
+        <div class="panel__body tag-grid">
+          <span *ngFor="let e of data.expertise" class="tag tag--exp">{{ e }}</span>
+        </div>
+      </section>
+
+      <!-- Sub-Divisions -->
+      <section class="panel" *ngIf="data.assignedSubDivisions?.length">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-building" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditTeam.assignedSubDivisions">Assigned Sub-Divisions</h2>
+        </header>
+        <div class="panel__body tag-grid">
+          <span *ngFor="let subDivision of data.assignedSubDivisions" class="tag tag--sub-division">{{ subDivision }}</span>
+        </div>
+      </section>
+
+      <!-- Reporting hierarchy -->
+      <section class="panel"
+               *ngIf="data.reportsTo || (data.directReports && data.directReports.length > 0)">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-sitemap" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditTeam.reporting">Reporting</h2>
+        </header>
+
+        <div class="panel__body reporting-block">
+          <div class="reporting-block__group" *ngIf="data.reportsTo as boss">
+            <span class="reporting-block__label" i18n="@@audit.auditTeam.reportsTo">Reports to</span>
+            <div class="mini-person">
+              <div class="mini-person__avatar">
+                <img *ngIf="boss.avatarUrl" [src]="boss.avatarUrl" [alt]="boss.name" />
+                <span *ngIf="!boss.avatarUrl">{{ boss.name[0] }}</span>
+              </div>
+              <div class="mini-person__text">
+                <span class="mini-person__name">{{ boss.name }}</span>
+                <span class="mini-person__title">{{ boss.title }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="reporting-block__group" *ngIf="data.directReports?.length">
+            <span class="reporting-block__label" i18n="@@audit.auditTeam.directReportsCount">
+              Direct reports ({{ data.directReports!.length }})
+            </span>
+            <div class="mini-people">
+              <div class="mini-person"
+                   *ngFor="let r of data.directReports; trackBy: trackById">
+                <div class="mini-person__avatar">
+                  <img *ngIf="r.avatarUrl" [src]="r.avatarUrl" [alt]="r.name" />
+                  <span *ngIf="!r.avatarUrl">{{ r.name[0] }}</span>
+                </div>
+                <div class="mini-person__text">
+                  <span class="mini-person__name">{{ r.name }}</span>
+                  <span class="mini-person__title">{{ r.title }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  </div>
+</div>
+</ng-container>
+
+<ng-template #emptyState>
+  <div class="profile-empty">
+    <app-draw-icon icon="pi pi-user"></app-draw-icon>
+    <p i18n="@@audit.auditTeam.noMemberSelected">No member selected.</p>
+  </div>
+</ng-template>

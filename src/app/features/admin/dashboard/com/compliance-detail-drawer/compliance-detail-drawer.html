@@ -1,0 +1,213 @@
+<p-drawer
+  [visible]="visible"
+  (visibleChange)="visibleChange.emit($event)"
+  position="right"
+  styleClass="compliance-profile-drawer"
+  [modal]="true"
+  [dismissible]="true"
+  [showCloseIcon]="false"
+  [style]="{ width: '720px' }">
+
+  <ng-template pTemplate="content">
+
+    @if (scope) {
+      <div class="profile-drawer">
+
+        <!-- ═══════════════ HERO HEADER (gradient) ═══════════════ -->
+        <header class="hero">
+          <div class="hero__avatar"><app-draw-icon icon="pi pi-shield"></app-draw-icon></div>
+          <div class="hero__text">
+            <h2 class="hero__title">{{ scope.name }}</h2>
+            <p class="hero__sub" i18n="@@dashboard.complianceDrawer.heroSub">{{ scope.regulation }} · Assessed {{ scope.lastAssessmentDate }}</p>
+          </div>
+          <span class="hero-badge" [ngClass]="getStatusBadgeClass(scope.status)">{{ statusText(scope.status) }}</span>
+          <button type="button" class="hero__close" pTooltip="Close" i18n-pTooltip="@@dashboard.complianceDrawer.close" tooltipPosition="bottom" (click)="close()">
+            <app-draw-icon icon="pi pi-times"></app-draw-icon>
+          </button>
+        </header>
+
+        <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+        <div class="drawer-body">
+
+          <!-- ── stat cards (overlap the hero) ── -->
+          <div class="stat-grid">
+            <div class="stat-card">
+              <span class="stat-ic" [ngClass]="getCoverageIconClass(scope.coverage)"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon></span>
+              <div class="stat-txt">
+                <span class="stat-num">{{ scope.coverage }}%</span>
+                <span class="stat-lbl" i18n="@@dashboard.complianceDrawer.statCoverage">Coverage</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-ic stat-ic--mint"><app-draw-icon icon="pi pi-check-circle"></app-draw-icon></span>
+              <div class="stat-txt">
+                <span class="stat-num">{{ scope.controlsMapped }}/{{ scope.totalControls }}</span>
+                <span class="stat-lbl" i18n="@@dashboard.complianceDrawer.statControlsMapped">Controls Mapped</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-ic stat-ic--violet"><app-draw-icon icon="pi pi-list-check"></app-draw-icon></span>
+              <div class="stat-txt">
+                <span class="stat-num">{{ scope.requirements.length }}</span>
+                <span class="stat-lbl" i18n="@@dashboard.complianceDrawer.statRequirements">Requirements</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+              <div class="stat-txt">
+                @if (scope.nextRenewal !== '-') {
+                  <span class="stat-num">{{ scope.nextRenewal }}</span>
+                } @else {
+                  <span class="stat-num" i18n="@@dashboard.complianceDrawer.renewalNone">None</span>
+                }
+                <span class="stat-lbl" i18n="@@dashboard.complianceDrawer.statNextRenewal">Next Renewal</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════════ SCOPE OVERVIEW ═══════════════ -->
+          <div class="sec-card">
+            <div class="sec-head">
+              <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+              <h3 i18n="@@dashboard.complianceDrawer.scopeOverview">Scope Overview</h3>
+            </div>
+
+            <div class="kv-grid">
+              <div class="kv">
+                <span class="kv__k" i18n="@@dashboard.complianceDrawer.kvRegulation">Regulation</span>
+                <span class="kv__v kv__v--accent"><strong>{{ scope.regulation }}</strong></span>
+              </div>
+              <div class="kv">
+                <span class="kv__k" i18n="@@common.status">Status</span>
+                <span class="kv__v"><span class="type-badge" [ngClass]="getStatusBadgeClass(scope.status)">{{ statusText(scope.status) }}</span></span>
+              </div>
+              <div class="kv">
+                <span class="kv__k" i18n="@@dashboard.complianceDrawer.kvNextRenewal">Next Renewal</span>
+                <span class="kv__v"><app-draw-icon icon="pi pi-calendar" class="kv-ic"></app-draw-icon>{{ scope.nextRenewal }}</span>
+              </div>
+              <div class="kv">
+                <span class="kv__k" i18n="@@dashboard.complianceDrawer.kvLastAssessed">Last Assessed</span>
+                <span class="kv__v"><app-draw-icon icon="pi pi-clock" class="kv-ic"></app-draw-icon>{{ scope.lastAssessmentDate }}</span>
+              </div>
+            </div>
+
+            @if (scope.description) {
+              <div class="notes">
+                <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <ng-container i18n="@@dashboard.complianceDrawer.description">Description</ng-container></span>
+                <p class="notes__v">{{ scope.description }}</p>
+              </div>
+            }
+          </div>
+
+          <!-- ═══════════════ COVERAGE DETAILS ═══════════════ -->
+          <div class="sec-card">
+            <div class="sec-head">
+              <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon></span>
+              <h3 i18n="@@dashboard.complianceDrawer.coverageDetails">Coverage Details</h3>
+            </div>
+
+            <div class="coverage-wrap">
+              <div class="coverage-summary">
+                <div class="coverage-pct-display" [ngClass]="getCoverageColor(scope.coverage)">
+                  {{ scope.coverage }}%
+                </div>
+                <div class="coverage-stats">
+                  <div class="coverage-stat">
+                    <span class="coverage-stat__val text-green">{{ scope.controlsMapped }}</span>
+                    <span class="coverage-stat__lbl" i18n="@@dashboard.complianceDrawer.coverageControlsMapped">Controls Mapped</span>
+                  </div>
+                  <div class="stat-divider"></div>
+                  <div class="coverage-stat">
+                    <span class="coverage-stat__val text-red">{{ controlsNotMapped }}</span>
+                    <span class="coverage-stat__lbl" i18n="@@dashboard.complianceDrawer.coverageNotMapped">Not Mapped</span>
+                  </div>
+                  <div class="stat-divider"></div>
+                  <div class="coverage-stat">
+                    <span class="coverage-stat__val">{{ scope.totalControls }}</span>
+                    <span class="coverage-stat__lbl" i18n="@@dashboard.complianceDrawer.totalControls">Total Controls</span>
+                  </div>
+                </div>
+              </div>
+              <div class="coverage-bar-wrap">
+                <p-progressbar [value]="scope.coverage" [showValue]="false" styleClass="coverage-bar"></p-progressbar>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════════ PEOPLE ═══════════════ -->
+          <div class="sec-card">
+            <div class="sec-head">
+              <span class="sec-ic sec-ic--violet"><app-draw-icon icon="pi pi-users"></app-draw-icon></span>
+              <h3 i18n="@@dashboard.complianceDrawer.people">People</h3>
+              <span class="sec-count">2</span>
+            </div>
+
+            <!-- scope owner — highlighted primary card -->
+            <div class="primary-card">
+              <span class="primary-card__avatar">{{ getInitials(scope.owner) }}</span>
+              <div class="primary-card__text">
+                <span class="primary-card__eyebrow" i18n="@@dashboard.complianceDrawer.scopeOwner">Scope Owner</span>
+                <span class="primary-card__name">{{ scope.owner }}</span>
+                <span class="primary-card__role" i18n="@@dashboard.complianceDrawer.complianceOfficer">Compliance Officer</span>
+              </div>
+              <span class="member-badge member-badge--organizer"><app-draw-icon icon="pi pi-user"></app-draw-icon> <ng-container i18n="@@dashboard.complianceDrawer.ownerBadge">Owner</ng-container></span>
+            </div>
+
+            <div class="member-rows">
+              <div class="member-row">
+                <span class="member-row__avatar">{{ getInitials(scope.auditor) }}</span>
+                <div class="member-row__text">
+                  <span class="member-row__name">{{ scope.auditor }}</span>
+                  <span class="member-row__role" i18n="@@dashboard.complianceDrawer.internalAuditor">Internal Auditor</span>
+                </div>
+                <span class="member-badge member-badge--participant"><app-draw-icon icon="pi pi-users"></app-draw-icon> <ng-container i18n="@@dashboard.complianceDrawer.leadAuditorBadge">Lead Auditor</ng-container></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ═══════════════ REQUIREMENTS ═══════════════ -->
+          @if (scope.requirements.length) {
+            <div class="sec-card">
+              <div class="sec-head">
+                <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-list-check"></app-draw-icon></span>
+                <h3 i18n="@@dashboard.complianceDrawer.regulatoryRequirements">Regulatory Requirements</h3>
+                <span class="sec-count">{{ scope.requirements.length }}</span>
+              </div>
+
+              <div class="req-list">
+                @for (req of scope.requirements; track req) {
+                  <div class="req-item">
+                    <div class="req-item__icon"><app-draw-icon icon="pi pi-check"></app-draw-icon></div>
+                    <span>{{ req }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- ═══════════════ GAPS (only if Partial or Not Mapped) ═══════════════ -->
+          @if (scope.gaps.length && scope.status !== 'Mapped') {
+            <div class="sec-card sec-card--alert">
+              <div class="sec-head">
+                <span class="sec-ic sec-ic--red"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+                <h3 i18n="@@dashboard.complianceDrawer.identifiedGaps">Identified Gaps</h3>
+                <span class="sec-count sec-count--danger">{{ scope.gaps.length }}</span>
+              </div>
+
+              <div class="gap-list">
+                @for (gap of scope.gaps; track gap) {
+                  <div class="gap-item">
+                    <div class="gap-item__icon"><app-draw-icon icon="pi pi-times"></app-draw-icon></div>
+                    <span>{{ gap }}</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+  </ng-template>
+</p-drawer>

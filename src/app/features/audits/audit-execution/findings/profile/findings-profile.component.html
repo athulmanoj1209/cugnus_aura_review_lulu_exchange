@@ -1,0 +1,212 @@
+<div class="drawer-inner">
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ f.title }}</h2>
+        <p class="drawer-subtitle">{{ f.id }}<ng-container *ngIf="f.scope"> · {{ f.scope }}</ng-container></p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="close()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="fp-body">
+
+    <!-- ── stat cards (overlap the hero) ── -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-ic" [ngClass]="'stat-ic--' + f.severity"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num" [ngClass]="'stat-num--' + f.severity">{{ severityLabel(f.severity) }}</span>
+          <span class="stat-lbl" i18n="@@common.severity">Severity</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-flag"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ statusLabel(f.status) }}</span>
+          <span class="stat-lbl" i18n="@@common.status">Status</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--amber"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ f.dueDate ? (f.dueDate | date:'MMM d, y') : '—' }}</span>
+          <span class="stat-lbl" [class.stat-lbl--danger]="f.daysOverdue">
+            <ng-container *ngIf="f.daysOverdue; else dueLbl">{{ daysOverdueLabel(f.daysOverdue) }}</ng-container>
+            <ng-template #dueLbl ><span i18n="@@common.dueDate">Due Date</span></ng-template>
+          </span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--teal"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ f.documents?.length || 0 }}</span>
+          <span class="stat-lbl">{{ filesSizeLabel(f.documents?.length || 0, totalFileSize) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── repeated / escalation flags ── -->
+    <div class="fp-flags" *ngIf="f.isRepeated || f.flaggedForEscalation">
+      <span *ngIf="f.isRepeated" class="flag-chip flag-chip--repeated">
+        <app-draw-icon icon="pi pi-replay"></app-draw-icon> <span i18n="@@audit.findings.repeatedFinding">Repeated Finding</span>
+      </span>
+      <span *ngIf="f.flaggedForEscalation" class="flag-chip flag-chip--escalated">
+        <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon> <span i18n="@@audit.findings.flaggedForEscalation">Flagged for Escalation</span>
+      </span>
+    </div>
+
+    <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3 i18n="@@audit.findings.basicInformation">Basic Information</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.findings.findingId">Finding ID</span>
+          <span class="kv__v"><strong>{{ f.id }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.severity">Severity</span>
+          <span class="kv__v">
+            <span class="severity" [ngClass]="'severity--' + f.severity">
+              <span class="severity__dot"></span>{{ severityLabel(f.severity) }}
+            </span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.status">Status</span>
+          <span class="kv__v">
+            <span class="status-chip" [ngClass]="'status-chip--' + f.status">{{ statusLabel(f.status) }}</span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.findings.task">Task</span>
+          <span class="kv__v">
+            <span *ngIf="f.taskId" class="task-chip">{{ f.taskId }}</span>
+            <span *ngIf="!f.taskId">—</span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.scope">Scope</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-sitemap" class="kv-ic"></app-draw-icon>{{ f.scope ?? '—' }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.subScope">Sub-Scope</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-tag" class="kv-ic"></app-draw-icon>{{ f.subscope ?? '—' }}</span>
+        </div>
+        <div class="kv" *ngIf="f.division">
+          <span class="kv__k" i18n="@@common.division">Division</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-map-marker" class="kv-ic"></app-draw-icon>{{ f.division }}</span>
+        </div>
+        <div class="kv" *ngIf="f.company">
+          <span class="kv__k" i18n="@@common.company">Company</span>
+          <span class="kv__v">
+            <span class="org-avatar">{{ f.company.slice(0, 2).toUpperCase() }}</span>{{ f.company }}
+          </span>
+        </div>
+        <div class="kv" *ngIf="f.subDivision">
+          <span class="kv__k" i18n="@@common.subDivision">Sub-Division</span>
+          <span class="kv__v"><span class="sub-division-badge">{{ f.subDivision }}</span></span>
+        </div>
+        <div class="kv" *ngIf="f.risk">
+          <span class="kv__k" i18n="@@audit.findings.risk">Risk</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-shield" class="kv-ic"></app-draw-icon>{{ f.risk }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.dueDate">Due Date</span>
+          <span class="kv__v">
+            <ng-container *ngIf="f.dueDate; else noDue">
+              {{ f.dueDate | date:'MMM d, y' }}
+              <small *ngIf="f.daysOverdue" class="overdue-badge">
+                <app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> {{ daysOverdueLabel(f.daysOverdue) }}
+              </small>
+            </ng-container>
+            <ng-template #noDue>—</ng-template>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.findings.owner">Owner</span>
+          <span class="kv__v">
+            <span class="cell-owner">
+              <span class="cell-owner__avatar">
+                <img *ngIf="f.owner.avatarUrl" [src]="f.owner.avatarUrl" [alt]="f.owner.fullName" />
+                <span *ngIf="!f.owner.avatarUrl">{{ initials(f.owner.fullName) }}</span>
+              </span>
+              <span class="cell-owner__name">{{ f.owner.fullName }}</span>
+            </span>
+          </span>
+        </div>
+        <div class="kv kv--full" *ngIf="f.documents?.length">
+          <span class="kv__k" i18n="@@common.files">Files</span>
+          <span class="kv__v">
+            {{ filesSizeLabel(f.documents!.length, totalFileSize) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="notes" *ngIf="f.description">
+        <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <span i18n="@@common.description">Description</span></span>
+        <p class="notes__v">{{ f.description }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ LINKED OBSERVATIONS ═══════════════ -->
+    <div class="sec-card" *ngIf="f.observationIds?.length">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--violet"><app-draw-icon icon="pi pi-link"></app-draw-icon></span>
+        <h3 i18n="@@audit.findings.linkedObservations">Linked Observations</h3>
+        <span class="sec-count">{{ f.observationIds!.length }}</span>
+      </div>
+      <div class="chip-wrap">
+        <span *ngFor="let obs of f.observationIds" class="obs-chip">
+          <app-draw-icon icon="pi pi-eye"></app-draw-icon> {{ obs }}
+        </span>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ATTACHED FILES ═══════════════ -->
+    <div class="sec-card" *ngIf="f.documents?.length">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon></span>
+        <h3 i18n="@@audit.findings.attachedFiles">Attached Files</h3>
+        <span class="sec-count">{{ f.documents!.length }}</span>
+      </div>
+
+      <ul class="file-rows">
+        <li *ngFor="let doc of f.documents" class="file-row">
+          <div class="file-row__icon"><i [ngClass]="fileIcon(doc.name)"></i></div>
+          <div class="file-row__info">
+            <span class="file-row__name">{{ doc.name }}</span>
+            <span class="file-row__size">{{ formatFileSize(doc.size) }}</span>
+          </div>
+          <button type="button" class="file-row__dl"
+                  pTooltip="Download" i18n-pTooltip="@@common.download" tooltipPosition="left"
+                  (click)="onDownload(doc)" [attr.aria-label]="downloadFileLabel(doc.name)">
+            <app-draw-icon icon="pi pi-download"></app-draw-icon>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+  </div><!-- /fp-body -->
+
+  <!-- ══════════════════════════════ FOOTER ════════════════════════════════ -->
+  <div class="drawer-footer">
+    <p-button label="Close"
+              i18n-label="@@common.close"
+              styleClass="cancel-btn"
+              (onClick)="close()" type="button"></p-button>
+  </div>
+
+</div><!-- /drawer-inner -->

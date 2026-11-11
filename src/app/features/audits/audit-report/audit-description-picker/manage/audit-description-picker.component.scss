@@ -1,0 +1,252 @@
+@use 'sass:color';
+
+// ── Tokens (shared with auditor-reassignment / assignment-row) ──────────────────
+$primary:        var(--primary-color);
+$primary-light:  color-mix(in srgb, var(--primary-color) 16%, transparent);
+$accent-blue:    var(--primary-color);
+$scope-hue:      var(--p-indigo-400);   // purple rail for scope
+$surface:        var(--surface-card);
+$surface-alt:    var(--surface-ground);
+$border:         var(--surface-border);
+$text-primary:   var(--text-color);
+$text-secondary: var(--text-color-secondary);
+$text-muted:     var(--text-color-secondary);
+$radius-sm:      8px;
+$radius-md:      10px;
+$radius-lg:      14px;
+$shadow-md:      0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+
+// ── Card ─────────────────────────────────────────────────────────────────────
+.adp-card {
+  position: relative;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────────
+.adp-header {
+  display: flex; align-items: center; gap: 14px;
+
+  &__icon {
+    width: 42px; height: 42px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: #1e3a6e;
+    border-radius: $radius-md; color: #fff;
+    box-shadow: 0 2px 8px color-mix(in srgb, $accent-blue 30%, transparent);
+  }
+  &__title    { margin: 0; font-size: 17px; font-weight: 700; color: $primary; }
+  &__subtitle { margin: 2px 0 0; font-size: .85rem; color: $text-secondary; }
+}
+
+// ── Box (single card wrapping toolbar + body + footer) ────────────────────────
+.adp-box {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+// ── Toolbar ──────────────────────────────────────────────────────────────────
+.adp-toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 28px; border-bottom: 1px solid $border; background: $surface;
+}
+
+.adp-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 13px; font-weight: 600; height: 38px;
+  border: 1px solid $border; border-radius: $radius-sm;
+  background: $surface; color: $text-secondary; cursor: pointer; transition: all .15s;
+  &:hover { border-color: color-mix(in srgb, $border, black 12%); }
+  &--on {
+    border-color: $accent-blue; color: color-mix(in srgb, $accent-blue, black 8%);
+    background: color-mix(in srgb, $accent-blue 35%, transparent);
+  }
+}
+
+.adp-filter {
+  display: flex; align-items: center; gap: 7px;
+  height: 38px; padding: 0 10px; background: $surface;
+  border: 1px solid $border; border-radius: $radius-sm;
+  svg { color: $text-muted; flex-shrink: 0; }
+  select {
+    border: none; outline: none; background: transparent; cursor: pointer;
+    font-size: 13px; font-weight: 600; color: $text-secondary; padding-inline-end: 2px;
+  }
+}
+
+.adp-searchbox {
+  margin-inline-start: auto; flex: 1; max-width: 380px;
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid $border; border-radius: $radius-sm;
+  padding: 10px 10px; background: $surface;
+  svg { color: $text-muted; flex-shrink: 0; }
+  input { border: none; outline: none; width: 100%; font-size: 13px; color: $text-primary; background: transparent; }
+}
+
+// ── Body ─────────────────────────────────────────────────────────────────────
+.adp-body { min-height: 60px; }
+
+.adp-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 48px 20px; text-align: center; color: $text-secondary;
+  svg { color: $text-muted; }
+  p { margin: 0; font-size: 14px; }
+}
+
+// ── Shared checkbox + chevron ────────────────────────────────────────────────
+.adp-check {
+  width: 16px; height: 16px; accent-color: $accent-blue; cursor: pointer; flex-shrink: 0;
+  &--sm { width: 15px; height: 15px; }
+}
+
+.adp-chevron {
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 22px; height: 22px; border: none; background: transparent;
+  color: $text-secondary; cursor: pointer; border-radius: $radius-sm;
+  &:hover { background: $border; color: $text-primary; }
+  &--sm { width: 20px; height: 20px; }
+}
+
+// ── Scope (white tier) ───────────────────────────────────────────────────────
+.adp-scope {
+  border-top: 1px solid $border;
+  border-inline-start: 3px solid $scope-hue;
+  &:first-child { border-top: none; }
+  &--open { background: var(--surface-card); }
+}
+
+.adp-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; background: $surface; cursor: pointer; transition: background .12s;
+  &:hover { background: var(--surface-card); }
+}
+.adp-scope__icon { color: $scope-hue; flex-shrink: 0; }
+.adp-row__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.adp-scope-name { font-size: 13.5px; font-weight: 700; color: $text-primary; }
+.adp-scope-sub  { font-size: 12px; color: $text-secondary; margin-top: 1px; }
+
+// ── Count pill ───────────────────────────────────────────────────────────────
+.adp-count-pill {
+  flex-shrink: 0; font-size: 11px; font-weight: 700; white-space: nowrap;
+  padding: 4px 11px; border-radius: 20px;
+  background: var(--surface-hover); color: var(--primary-color); border: 1px solid #c7cbf5;
+}
+
+// ── Jobs (tinted tier) ───────────────────────────────────────────────────────
+.adp-jobs { background: var(--surface-card); border-top: 1px solid var(--p-blue-100); }
+
+.adp-job-wrap {
+  border-bottom: 1px solid var(--p-blue-100);
+  &--last { border-bottom: none; }
+}
+
+.adp-job {
+  display: flex; align-items: center; gap: 10px;
+  padding-block: 11px; padding-inline-start: 46px; padding-inline-end: 16px; cursor: pointer; transition: background .12s;
+  &:hover { background: var(--p-blue-50); }
+  &--open { background: var(--p-blue-50); }
+}
+.adp-job__icon { color: $text-muted; flex-shrink: 0; }
+.adp-job__main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.adp-job__name { font-size: 13px; font-weight: 600; color: $text-primary; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.adp-job__sub  { font-size: 11.5px; color: $text-secondary; margin-top: 1px; }
+
+// ── Types + items (deep tier) ────────────────────────────────────────────────
+.adp-types { background: $surface; }
+
+.adp-type__head {
+  display: flex; align-items: center; gap: 8px;
+  padding-block: 8px; padding-inline-start: 52px; padding-inline-end: 16px; background: var(--surface-card); border-top: 1px solid var(--surface-border);
+  cursor: pointer; transition: background .12s;
+  &:hover { background: var(--surface-hover); }
+  &--collapsed { background: var(--surface-card); }
+}
+.adp-type__label {
+  font-size: 10.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase;
+  color: $text-secondary;
+  &[data-kind="findings"]        { color: var(--p-red-600); }
+  &[data-kind="recommendations"] { color: var(--p-blue-600); }
+  &[data-kind="evidenceNotes"]   { color: var(--primary-color); }
+  &[data-kind="observations"]    { color: var(--p-green-600); }
+  &[data-kind="scopeJobCompletionNotes"] { color: var(--p-teal-600); }
+  &[data-kind="workingPapers"] { color: var(--p-orange-600); }
+}
+.adp-type__count {
+  font-size: 10.5px; font-weight: 700; color: $text-muted;
+  min-width: 18px; height: 18px; padding: 0 6px; border-radius: 9px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface-hover);
+}
+
+.adp-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding-block: 11px; padding-inline-start: 66px; padding-inline-end: 16px; border-top: 1px solid var(--surface-border);
+  transition: background .12s;
+  &:hover { background: $surface-alt; }
+  &--on { background: var(--surface-card); }
+  .adp-check { margin-top: 2px; }
+  .adp-kind-pill { margin-top: 1px; }
+}
+.adp-item__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.adp-item__title { font-size: 13px; font-weight: 600; color: $text-primary; line-height: 1.35; }
+.adp-item__desc { font-size: 12px; color: $text-secondary; line-height: 1.5; }
+
+.adp-viewmore {
+  border: none; background: transparent; padding: 0; margin-inline-start: 4px; cursor: pointer;
+  font-size: 11.5px; font-weight: 700; color: $accent-blue; white-space: nowrap;
+  &:hover { text-decoration: underline; }
+}
+
+// ── Level tag on scope / job header rows ─────────────────────────────────────
+.adp-tag {
+  flex-shrink: 0; white-space: nowrap;
+  font-size: 10.5px; font-weight: 700; letter-spacing: .2px;
+  padding: 3px 11px; border-radius: 20px; border: 1px solid transparent;
+  &--scope { background: var(--surface-hover); color: var(--p-indigo-700); border-color: var(--p-indigo-100); }
+  &--job   { background: var(--surface-card); color: var(--p-blue-700); border-color: var(--p-blue-100); }
+}
+
+// ── Kind pill (like role badge) ──────────────────────────────────────────────
+.adp-kind-pill {
+  flex-shrink: 0; font-size: 10.5px; font-weight: 700; white-space: nowrap;
+  padding: 3px 10px; border-radius: 20px; border: 1px solid transparent;
+  background: var(--surface-hover); color: $text-secondary;
+  &[data-kind="findings"]        { background: var(--p-red-50); color: var(--p-red-600); border-color: #fbcaca; }
+  &[data-kind="recommendations"] { background: var(--p-blue-50); color: var(--p-blue-600); border-color: var(--p-blue-100); }
+  &[data-kind="evidenceNotes"]   { background: var(--surface-hover); color: var(--primary-color); border-color: #c7cbf5; }
+  &[data-kind="observations"]    { background: var(--p-green-50); color: var(--p-green-600); border-color: var(--p-green-100); }
+  &[data-kind="scopeJobCompletionNotes"] { background: var(--p-teal-50); color: var(--p-teal-600); border-color: var(--p-teal-100); }
+  &[data-kind="workingPapers"] { background: var(--p-orange-50); color: var(--p-orange-600); border-color: var(--p-orange-100); }
+}
+
+// ── Sticky footer ────────────────────────────────────────────────────────────
+.adp-footer {
+  display: flex; align-items: center; gap: 12px;
+  padding: 18px 28px; border-top: 1px solid $border;
+
+  &__label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: $primary; white-space: nowrap;
+    svg { color: $accent-blue; } }
+  &__spacer { flex: 1; }
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+.adp-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; font-size: 13px; font-weight: 600; height: 40px;
+  border: none; border-radius: $radius-sm; cursor: pointer; transition: all .18s ease;
+
+  &--primary {
+    background: linear-gradient(135deg, $primary, $primary-light);
+    color: #fff; box-shadow: 0 2px 8px color-mix(in srgb, $primary 28%, transparent);
+    &:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+  &--ghost {
+    background: $surface; color: $text-primary; border: 1px solid var(--p-blue-200);
+    &:hover:not(:disabled) { background: $surface-alt; border-color: color-mix(in srgb, $border, black 10%); }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+}

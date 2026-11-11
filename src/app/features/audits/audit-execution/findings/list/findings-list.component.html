@@ -1,0 +1,637 @@
+<div class="ft-wrap">
+  <p-toast></p-toast>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MAIN COLUMN
+  ═══════════════════════════════════════════════════════════ -->
+  <div class="ft-main">
+ <div class="ft-heading">
+      <div class="ft-heading__lead">
+        <app-back-button></app-back-button>
+        <div class="ft-heading__text">
+          <h2 class="ft-heading__title" i18n="@@audit.findings.title">Audit Findings</h2>
+          <p class="ft-heading__sub" i18n="@@audit.findings.subtitle">Track and manage all findings across sub-divisions</p>
+        </div>
+      </div>
+      <span class="ft-heading__count">{{ findingsCountLabel(filteredFindings().length) }}</span>
+    </div>
+    <!-- Severity KPI cards (matches Admin/audit-overview's kpi-grid layout) -->
+    <div class="sev-cards">
+      <div class="sev-kpi-card sev-kpi-card--critical">
+        <div class="sev-kpi-icon"><app-draw-icon icon="pi pi-exclamation-triangle" [size]="18"></app-draw-icon></div>
+        <div class="sev-kpi-body">
+          <span class="sev-kpi-label" i18n="@@common.critical">Critical</span>
+          <span class="sev-kpi-value">{{ counts().critical }}</span>
+        </div>
+      </div>
+      <div class="sev-kpi-card sev-kpi-card--high">
+        <div class="sev-kpi-icon"><app-draw-icon icon="pi pi-exclamation-triangle" [size]="18"></app-draw-icon></div>
+        <div class="sev-kpi-body">
+          <span class="sev-kpi-label" i18n="@@common.high">High</span>
+          <span class="sev-kpi-value">{{ counts().high }}</span>
+        </div>
+      </div>
+      <div class="sev-kpi-card sev-kpi-card--medium">
+        <div class="sev-kpi-icon"><app-draw-icon icon="pi pi-exclamation-triangle" [size]="18"></app-draw-icon></div>
+        <div class="sev-kpi-body">
+          <span class="sev-kpi-label" i18n="@@common.medium">Medium</span>
+          <span class="sev-kpi-value">{{ counts().medium }}</span>
+        </div>
+      </div>
+      <div class="sev-kpi-card sev-kpi-card--low">
+        <div class="sev-kpi-icon"><app-draw-icon icon="pi pi-exclamation-triangle" [size]="18"></app-draw-icon></div>
+        <div class="sev-kpi-body">
+          <span class="sev-kpi-label" i18n="@@common.low">Low</span>
+          <span class="sev-kpi-value">{{ counts().low }}</span>
+        </div>
+      </div>
+      <div class="sev-kpi-card sev-kpi-card--repeated">
+        <div class="sev-kpi-icon"><app-draw-icon icon="pi pi-replay" [size]="18"></app-draw-icon></div>
+        <div class="sev-kpi-body">
+          <span class="sev-kpi-label" i18n="@@audit.findings.previousOccurrences">Repeated</span>
+          <span class="sev-kpi-value">{{ sideStats().repeatedCount }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+
+
+
+
+
+
+      <!-- Filters trigger -->
+      <button type="button" class="filter-bar__trigger"
+              (click)="findingsPanel.toggle($event)">
+        <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+        <span i18n="@@common.filters">Filters</span>
+        <span *ngIf="activeFilterCount() > 0" class="filter-bar__badge">
+          {{ activeFilterCount() }}
+        </span>
+      </button>
+
+      <!-- Active chips -->
+      <div *ngIf="hasActiveFilters()" class="filter-bar__chips">
+        <span *ngFor="let chip of activeFilterChips()" class="filter-chip">
+          {{ chip.label }}
+          <button type="button" (click)="removeFilter(chip.key)" aria-label="Remove filter" i18n-aria-label="@@common.removeFilter">
+            <app-draw-icon icon="pi pi-times"></app-draw-icon>
+          </button>
+        </span>
+        <button type="button" class="filter-bar__clear" (click)="clearFilters()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon> <span i18n="@@common.clearAll">Clear all</span>
+        </button>
+      </div>
+
+      <!-- Search -->
+      <span class="filter-bar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input pInputText type="text"
+               [ngModel]="searchQuery()"
+               (ngModelChange)="onSearchChange($event)"
+               placeholder="Search by ID or title…"
+               i18n-placeholder="@@audit.findings.searchPlaceholder" />
+      </span>
+    </div>
+
+    <!-- Filter popover -->
+    <p-popover #findingsPanel styleClass="fp-panel">
+      <div class="fp-header">
+        <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> <span i18n="@@common.filters">Filters</span></span>
+        <button type="button" class="fp-clear-link" *ngIf="hasActiveFilters()" (click)="clearFilters()">
+          <span i18n="@@common.clearAll">Clear all</span>
+        </button>
+      </div>
+      <div class="fp-grid">
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@common.severity">Severity</label>
+          <p-multiSelect [options]="severityFilterOptions" [ngModel]="selectedSeverities()"
+                         (ngModelChange)="onSeveritiesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All severities" i18n-placeholder="@@audit.findings.allSeverities" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} severities" i18n-selectedItemsLabel="@@audit.findings.selectedSeverities"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@common.status">Status</label>
+          <p-multiSelect [options]="statusFilterOptions" [ngModel]="selectedStatuses()"
+                         (ngModelChange)="onStatusesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All statuses" i18n-placeholder="@@audit.findings.allStatuses" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} statuses" i18n-selectedItemsLabel="@@audit.findings.selectedStatuses"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@common.company">Company</label>
+          <p-multiSelect [options]="companyFilterOptions()" [ngModel]="selectedCompanies()"
+                         (ngModelChange)="onCompaniesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All companies" i18n-placeholder="@@audit.findings.allCompanies" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} companies" i18n-selectedItemsLabel="@@audit.findings.selectedCompanies"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@common.division">Division</label>
+          <p-multiSelect [options]="divisionFilterOptions()" [ngModel]="selectedDivisions()"
+                         (ngModelChange)="onDivisionsChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All divisions" i18n-placeholder="@@audit.findings.allDivisions" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions" i18n-selectedItemsLabel="@@audit.findings.selectedDivisions"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@common.subDivision">Sub-Division</label>
+          <p-multiSelect [disabled]="!subDivisionFilterVisible()" [options]="subdivisionFilterOptions()" [ngModel]="selectedSubdivisions()"
+                         (ngModelChange)="onSubdivisionsChange($event)"
+                         optionLabel="label" optionValue="value"
+                         [placeholder]="subDivisionFilterVisible() ? allSubDivisionsLabel : noSubDivisionsLabel" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-divisions" i18n-selectedItemsLabel="@@audit.findings.selectedSubDivisions"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@common.scope">Scope</label>
+          <p-multiSelect [options]="scopeFilterOptions()" [ngModel]="selectedScopes()"
+                         (ngModelChange)="onScopesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All scopes" i18n-placeholder="@@audit.findings.allScopes" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} scopes" i18n-selectedItemsLabel="@@audit.findings.selectedScopes"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@common.subScope">Sub-Scope</label>
+          <p-multiSelect [options]="subscopeFilterOptions()" [ngModel]="selectedSubscopes()"
+                         (ngModelChange)="onSubscopesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All sub-scopes" i18n-placeholder="@@audit.findings.allSubScopes" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-scopes" i18n-selectedItemsLabel="@@audit.findings.selectedSubScopes"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+        <div class="fp-field">
+          <label class="fp-label" i18n="@@audit.findings.auditor">Auditor</label>
+          <p-multiSelect [options]="auditorFilterOptions()" [ngModel]="selectedAuditors()"
+                         (ngModelChange)="onAuditorsChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All auditors" i18n-placeholder="@@audit.findings.allAuditors" display="chip"
+                         [filter]="true"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} auditors" i18n-selectedItemsLabel="@@audit.findings.selectedAuditors"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+        <div class="fp-field fp-field--full">
+          <label class="fp-label" i18n="@@audit.findings.dueDateRange">Due Date Range</label>
+          <p-datepicker [ngModel]="dateRange()" (ngModelChange)="onDateRangeChange($event)"
+                        selectionMode="range" placeholder="Select date range" i18n-placeholder="@@audit.findings.selectDateRange"
+                        dateFormat="dd M y" [showIcon]="true" [readonlyInput]="true"
+                        styleClass="fp-date"></p-datepicker>
+        </div>
+      </div>
+      <div class="fp-footer">
+        <button type="button" class="fp-btn fp-btn--ghost"
+                (click)="clearFilters(); findingsPanel.hide()"><span i18n="@@common.reset">Reset</span></button>
+        <button type="button" class="fp-btn fp-btn--primary" (click)="findingsPanel.hide()">
+          <span i18n="@@common.apply">Apply</span><span *ngIf="activeFilterCount() > 0"> ({{ activeFilterCount() }})</span>
+        </button>
+      </div>
+    </p-popover>
+
+    <!-- ══ LIST VIEW ══════════════════════════════════════════ -->
+    <div *ngIf="viewMode() === FindingViewModes.List" class="findings-card">
+      <table class="findings-table">
+        <thead>
+          <tr>
+            <th class="col-id sortable" (click)="onSort(FindingSortColumns.Id)" [class.is-sorted]="sortColumn() === FindingSortColumns.Id">
+              <span i18n="@@audit.findings.findingId">Finding ID</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(FindingSortColumns.Id)"></i>
+            </th>
+            <th class="col-title sortable" (click)="onSort(FindingSortColumns.Title)" [class.is-sorted]="sortColumn() === FindingSortColumns.Title">
+              <span i18n="@@common.title">Title</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(FindingSortColumns.Title)"></i>
+            </th>
+            <th class="col-subdivision sortable" (click)="onSort(FindingSortColumns.Subdivision)" [class.is-sorted]="sortColumn() === FindingSortColumns.Subdivision">
+              <span i18n="@@common.subDivision">Sub-Division</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(FindingSortColumns.Subdivision)"></i>
+            </th>
+            <th class="col-severity sortable" (click)="onSort(FindingSortColumns.Severity)" [class.is-sorted]="sortColumn() === FindingSortColumns.Severity">
+              <span i18n="@@common.severity">Severity</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(FindingSortColumns.Severity)"></i>
+            </th>
+            <th class="col-status sortable" (click)="onSort(FindingSortColumns.Status)" [class.is-sorted]="sortColumn() === FindingSortColumns.Status">
+              <span i18n="@@common.status">Status</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(FindingSortColumns.Status)"></i>
+            </th>
+            <th class="col-due sortable" (click)="onSort(FindingSortColumns.DueDate)" [class.is-sorted]="sortColumn() === FindingSortColumns.DueDate">
+              <span i18n="@@common.dueDate">Due Date</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(FindingSortColumns.DueDate)"></i>
+            </th>
+            <th class="col-owner sortable" (click)="onSort(FindingSortColumns.Owner)" [class.is-sorted]="sortColumn() === FindingSortColumns.Owner">
+              <span i18n="@@audit.findings.owner">Owner</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(FindingSortColumns.Owner)"></i>
+            </th>
+            <th class="col-actions" i18n="@@common.actions">Actions</th>
+
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Empty state -->
+          <tr *ngIf="paginatedFindings().length === 0">
+            <td colspan="8" class="findings-empty">
+              <i class="pi pi-search-minus"></i>
+              <span i18n="@@audit.findings.noFindingsMatch">No findings match your filters.</span>
+              <button *ngIf="hasActiveFilters()" type="button" class="findings-empty__btn"
+                      (click)="clearFilters()" i18n="@@common.clearFilters">Clear filters</button>
+            </td>
+          </tr>
+          <!-- Data rows -->
+          <tr *ngFor="let f of paginatedFindings(); trackBy: trackById"
+              class="findings-row"
+              [class.is-inactive]="!isActive(f.id)"
+              [attr.data-status]="isActive(f.id) ? f.status : 'inactive'">
+            <td class="col-id">
+              <div class="cell-id">
+                <span class="cell-id__num">{{ f.id }}</span>
+                <button *ngIf="f.isRepeated" type="button" class="chip chip--repeated"
+                        [class.chip--flagged]="f.flaggedForEscalation"
+                        [disabled]="!f.previousOccurrenceId"
+                        [title]="f.previousOccurrenceId ? previousOccurrenceTooltip(f.previousOccurrenceId) : repeatedTooltip"
+                        (click)="$event.stopPropagation(); viewPreviousOccurrence(f)">
+                  <i class="pi pi-replay"></i>
+                  <span i18n="@@audit.findings.repeated">Repeated</span>
+                </button>
+              </div>
+            </td>
+            <td class="col-title">{{ f.title }}</td>
+            <td class="col-subdivision">
+              <span class="subdivision-badge" [title]="f.subDivision">{{ f.subDivision }}</span>
+            </td>
+            <td class="col-severity">
+              <span class="severity" [ngClass]="'severity--' + f.severity">
+                <span class="severity__dot"></span>
+                {{ severityLabel(f.severity) }}
+              </span>
+            </td>
+            <td class="col-status">
+              <span class="status-chip" [ngClass]="'status-chip--' + f.status">
+                {{ statusLabel(f.status) }}
+              </span>
+            </td>
+            <td class="col-due">
+              <span class="cell-due__date">{{ f.dueDate | date:'MMM d, y' }}</span>
+              <small *ngIf="f.daysOverdue !== undefined" class="cell-due__sla">
+                <i class="pi pi-exclamation-circle"></i> {{ daysOverdueLabel(f.daysOverdue) }}
+              </small>
+            </td>
+            <td class="col-owner">
+              <div class="cell-owner">
+                <span class="cell-owner__avatar">
+                  <img *ngIf="f.owner.avatarUrl" [src]="f.owner.avatarUrl" [alt]="f.owner.fullName" />
+                  <span *ngIf="!f.owner.avatarUrl">{{ initials(f.owner.fullName) }}</span>
+                </span>
+                <span class="cell-owner__name">{{ f.owner.fullName }}</span>
+              </div>
+            </td>
+            <td class="col-actions">
+              <div class="row-actions">
+                <!-- View -->
+                <button type="button" class="icon-btn" title="View" i18n-title="@@common.view"
+                        [disabled]="loadingId() === f.id"
+                        (click)="onViewFinding(f)" aria-label="View finding" i18n-aria-label="@@audit.findings.viewFinding">
+                  <i class="pi" [ngClass]="loadingId() === f.id ? loadingIcon : viewIcon" style="color:rgb(4,4,62)"></i>
+                </button>
+                <!-- Edit -->
+                <button type="button" class="icon-btn icon-btn--edit" title="Edit" i18n-title="@@common.edit"
+                        (click)="$event.stopPropagation(); onEditFinding(f)"
+                        aria-label="Edit Finding" i18n-aria-label="@@audit.findings.editFinding">
+                  <i class="pi pi-pencil" style="color:#F59E0B"></i>
+                </button>
+                <!-- Activate / Deactivate -->
+                <button type="button"
+                        class="icon-btn"
+                        [class.icon-btn--deactivate]="isActive(f.id)"
+                        [class.icon-btn--activate]="!isActive(f.id)"
+                        [title]="isActive(f.id) ? activeLabels.Deactivate : activeLabels.Activate"
+                        (click)="$event.stopPropagation(); onToggleActive(f)"
+                        [attr.aria-label]="isActive(f.id) ? activeLabels.DeactivateAria : activeLabels.ActivateAria">
+                  <i class="pi" [ngClass]="isActive(f.id) ? activeIcons.Deactivate : activeIcons.Activate"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      @if (filteredFindings().length > 0) {
+        <app-pagination-bar
+          [pageSize]="pageSize()"
+          [totalRecords]="filteredFindings().length"
+          [currentPage]="currentPage() - 1"
+          [rowsPerPageOptions]="pageSizeOptions"
+          entityLabel="findings"
+          i18n-entityLabel="@@audit.findings.findings"
+          (pageChange)="onPageChange($event)"
+          (rowsChange)="onPageSizeChange($event)">
+        </app-pagination-bar>
+      }
+    </div>
+
+    <!-- ══ CARD / GRID VIEW ═══════════════════════════════════ -->
+    <ng-container *ngIf="viewMode() === FindingViewModes.Grid">
+
+      <!-- Empty state -->
+      <div *ngIf="paginatedFindings().length === 0" class="grid-empty">
+        <app-draw-icon icon="pi pi-search-minus"></app-draw-icon>
+        <span i18n="@@audit.findings.noFindingsMatch">No findings match your filters.</span>
+        <button *ngIf="hasActiveFilters()" type="button" class="findings-empty__btn"
+                (click)="clearFilters()" i18n="@@common.clearFilters">Clear filters</button>
+      </div>
+
+      <div *ngIf="paginatedFindings().length > 0" class="finding-grid">
+        <article *ngFor="let f of paginatedFindings(); trackBy: trackById"
+                 class="fcard"
+                 [class.is-inactive]="!isActive(f.id)"
+                 [attr.data-status]="isActive(f.id) ? f.status : 'inactive'">
+
+          <span *ngIf="!isActive(f.id)" class="inactive-badge" i18n="@@common.inactive">Inactive</span>
+          <span class="status-chip status-tag--corner" [ngClass]="'status-chip--' + f.status">
+            {{ statusLabel(f.status) }}
+          </span>
+
+          <!-- Card header -->
+          <div class="card-header">
+            <div class="fcard-avatar-wrap">
+              <div class="fcard-badge" [ngClass]="'fcard-badge--' + f.severity">
+                <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon>
+              </div>
+              <svg class="fcard-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+                <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+              </svg>
+            </div>
+            <h3 class="fcard-title">{{ f.title }}</h3>
+            <span class="fcard-id">
+              <app-draw-icon icon="pi pi-hashtag"></app-draw-icon>{{ f.id }}
+            </span>
+          </div>
+
+          <!-- Key info grid -->
+          <div class="info-grid">
+            <div class="info-item" pTooltip="Sub-Division" i18n-pTooltip="@@common.subDivision" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-building"></app-draw-icon></span>
+              <div class="info-content"><span class="info-value">{{ f.subDivision }}</span></div>
+            </div>
+            <div class="info-item" pTooltip="Due Date" i18n-pTooltip="@@common.dueDate" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="info-value">
+                  {{ f.dueDate | date:'MMM d, y' }}
+                  <small *ngIf="f.daysOverdue !== undefined" class="cell-due__sla">· {{ daysOverdueLabel(f.daysOverdue) }}</small>
+                </span>
+              </div>
+            </div>
+            <div class="info-item" pTooltip="Severity" i18n-pTooltip="@@common.severity" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="info-value severity" [ngClass]="'severity--' + f.severity">
+                  <span class="severity__dot"></span>{{ severityLabel(f.severity) }}
+                </span>
+              </div>
+            </div>
+            <div class="info-item" pTooltip="Owner" i18n-pTooltip="@@audit.findings.owner" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+              <div class="info-content"><span class="info-value">{{ f.owner.fullName }}</span></div>
+            </div>
+          </div>
+
+          <!-- Repeated-finding tag -->
+          <div class="tags-row" *ngIf="f.isRepeated">
+            <button type="button" class="chip chip--repeated"
+                    [class.chip--flagged]="f.flaggedForEscalation"
+                    [disabled]="!f.previousOccurrenceId"
+                    (click)="viewPreviousOccurrence(f)">
+              <app-draw-icon icon="pi pi-replay"></app-draw-icon> <span i18n="@@audit.findings.repeated">Repeated</span>
+            </button>
+          </div>
+
+          <!-- Card footer -->
+          <div class="card-footer">
+            <span class="company-label">
+              <span class="cell-owner__avatar">
+                <img *ngIf="f.owner.avatarUrl" [src]="f.owner.avatarUrl" [alt]="f.owner.fullName" />
+                <span *ngIf="!f.owner.avatarUrl">{{ initials(f.owner.fullName) }}</span>
+              </span>
+              {{ f.owner.fullName }}
+            </span>
+            <div class="card-actions">
+              <div class="card-actions__icons">
+                <!-- Edit -->
+                <button type="button" class="icon-btn"
+                        (click)="onEditFinding(f)" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top">
+                  <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+                </button>
+                <!-- Activate / Deactivate -->
+                <button type="button"
+                          class="icon-btn"
+                          [class.icon-btn--deactivate]="isActive(f.id)"
+                          [class.icon-btn--activate]="!isActive(f.id)"
+                          [pTooltip]="isActive(f.id) ? activeLabels.Deactivate : activeLabels.Activate"
+                          tooltipPosition="top"
+                          (click)="$event.stopPropagation(); onToggleActive(f)"
+                          [attr.aria-label]="isActive(f.id) ? activeLabels.DeactivateAria : activeLabels.ActivateAria">
+                    <app-draw-icon [icon]="isActive(f.id) ? activeIcons.DeactivateFull : activeIcons.ActivateFull"></app-draw-icon>
+                  </button>
+              </div>
+
+              <button type="button" class="btn-view"
+                      [disabled]="loadingId() === f.id"
+                      (click)="onViewFinding(f)">
+                <i class="pi" [ngClass]="loadingId() === f.id ? loadingIcon : ''"></i>
+                <span i18n="@@common.view">View</span>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <!-- Pagination -->
+      @if (filteredFindings().length > 0) {
+        <app-pagination-bar
+          class="card-footer--standalone"
+          [pageSize]="pageSize()"
+          [totalRecords]="filteredFindings().length"
+          [currentPage]="currentPage() - 1"
+          [rowsPerPageOptions]="pageSizeOptions"
+          entityLabel="findings"
+          i18n-entityLabel="@@audit.findings.findings"
+          (pageChange)="onPageChange($event)"
+          (rowsChange)="onPageSizeChange($event)">
+        </app-pagination-bar>
+      }
+    </ng-container>
+
+  </div><!-- /ft-main -->
+
+  <!-- ══════════════════════════════════════════════════════════
+       SIDE COLUMN
+  ═══════════════════════════════════════════════════════════ -->
+  <aside class="ft-side">
+
+    <!-- Actions -->
+   <div class="side-actions">
+  <div class="side-actions__row">
+    <p-button label="Import Findings" i18n-label="@@audit.findings.importFindings" icon="pi pi-upload" styleClass="import-btn" (onClick)="openImportDrawer()" type="button"></p-button>
+    <p-button label="+ New Finding" i18n-label="@@audit.findings.newFinding" styleClass="add-btn" (onClick)="onAddFinding()" type="button"></p-button>
+    <div class="view-toggle">
+      <button type="button" class="view-toggle__btn"
+              [class.is-active]="viewMode() === FindingViewModes.List"
+              (click)="setViewMode(FindingViewModes.List)" title="List view" i18n-title="@@common.listView">
+        <app-draw-icon icon="pi pi-list"></app-draw-icon>
+      </button>
+      <button type="button" class="view-toggle__btn"
+              [class.is-active]="viewMode() === FindingViewModes.Grid"
+              (click)="setViewMode(FindingViewModes.Grid)" title="Card view" i18n-title="@@audit.findings.cardView">
+        <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+      </button>
+    </div>
+  </div>
+  <p-button label="EXPORT PDF" i18n-label="@@audit.findings.exportPdf"   icon="pi pi-file-pdf"   styleClass="export-btn" (onClick)="onExportPdf()"   type="button"></p-button>
+  <p-button label="EXPORT EXCEL" i18n-label="@@audit.findings.exportExcel" icon="pi pi-file-excel" styleClass="export-btn" (onClick)="onExportExcel()" type="button"></p-button>
+</div>
+    <!-- KPI cards -->
+    <div class="kpi-stack">
+      <article class="kpi-card">
+        <div class="kpi-card__icon kpi-card__icon--alert">
+          <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ sideStats().openCount }}</div>
+          <div class="kpi-card__label" i18n="@@audit.findings.openFindings">Open Findings</div>
+          <div class="kpi-card__sub" i18n="@@audit.findings.requireImmediateAttention">Require immediate attention</div>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-card__icon kpi-card__icon--overdue">
+          <app-draw-icon icon="pi pi-shield"></app-draw-icon>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ sideStats().overdueCount }}</div>
+          <div class="kpi-card__label" i18n="@@common.overdue">Overdue</div>
+          <div class="kpi-card__sub">{{ sideStats().overdueDateRange }}</div>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-card__icon kpi-card__icon--closure">
+          <app-draw-icon icon="pi pi-chart-bar"></app-draw-icon>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">
+            <span class="kpi-pill">{{ sideStats().closedCount }}</span>
+            <span class="kpi-total">/ {{ sideStats().totalCount }}</span>
+          </div>
+          <div class="kpi-card__label" i18n="@@audit.findings.closureRate">Closure Rate</div>
+          <div class="kpi-card__sub">{{ completedCountLabel(sideStats().closedCount) }}</div>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-card__icon kpi-card__icon--money">
+          <app-draw-icon icon="pi pi-dollar"></app-draw-icon>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">${{ sideStats().repeatedImpact | number:'1.0-0' }}</div>
+          <div class="kpi-card__label" i18n="@@audit.findings.repeatedFindings">Repeated Findings</div>
+          <div class="kpi-card__sub">
+            {{ repeatedFindingCountLabel(sideStats().repeatedCount) }}
+          </div>
+        </div>
+      </article>
+
+      <article class="kpi-card">
+        <div class="kpi-card__icon kpi-card__icon--severity">
+          <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+        </div>
+        <div class="kpi-card__body">
+          <div class="kpi-card__value">{{ sideStats().criticalHigh }}</div>
+          <div class="kpi-card__label" i18n="@@audit.findings.criticalHigh">Critical / High</div>
+          <div class="kpi-card__sub" i18n="@@audit.findings.requireEscalation">Findings requiring escalation</div>
+        </div>
+      </article>
+    </div>
+
+    <!-- Aging analysis -->
+    <div class="aging">
+      <h4 class="aging__title" i18n="@@audit.findings.agingAnalysisOverdue">Aging Analysis – Overdue</h4>
+      <article class="aging__card">
+        <div class="aging__icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+        <div class="aging__body">
+          <div class="aging__count">{{ sideStats().aged30 }}</div>
+          <div class="aging__label" i18n="@@audit.findings.lessThan30DaysOverdue">&lt;30 Days overdue</div>
+        </div>
+      </article>
+    </div>
+
+  </aside>
+
+  <p-dialog [(visible)]="importDrawerVisible" [modal]="true" [closable]="false" [draggable]="false" [resizable]="false" styleClass="findings-import-modal" [style]="{ width: 'min(700px, calc(100vw - 2rem))' }">
+    <div class="import-drawer">
+      <div class="import-drawer__header">
+        <div class="import-drawer__icon"><app-draw-icon icon="pi pi-file-import"></app-draw-icon></div>
+        <div><h2 i18n="@@audit.findings.importTitle">Import Findings</h2><p i18n="@@audit.findings.importSubtitle">Upload a CSV or Excel file to bulk-import findings</p></div>
+        <button type="button" class="import-drawer__close" (click)="closeImportDrawer()" aria-label="Close"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+      </div>
+      <div class="import-drawer__body">
+        <div class="import-template"><div><strong i18n="@@audit.findings.downloadTemplate">Download the Excel template</strong><span i18n="@@audit.findings.templateHint">Fill in your findings and upload the completed file below.</span></div><button type="button" class="template-btn" (click)="downloadImportTemplate()"><app-draw-icon icon="pi pi-download"></app-draw-icon> <span i18n="@@audit.findings.downloadTemplateButton">Download Template</span></button></div>
+        <div class="import-required"><strong i18n="@@audit.findings.requiredColumns">Required columns</strong><div><span>Finding Title*</span><span>Finding Type*</span><span>Company*</span><span>Division*</span><span>Sub-Division*</span><span>Scope*</span><span class="optional">Sub-Scope</span><span>Task*</span><span>Description*</span></div></div>
+        <input #importInput type="file" hidden accept=".csv,.xlsx,.xls" (change)="onImportFileSelected($event)" />
+        <div class="import-dropzone" [class.is-dragging]="isDraggingImportFile()" (dragover)="$event.preventDefault(); isDraggingImportFile.set(true)" (dragleave)="isDraggingImportFile.set(false)" (drop)="onImportFileDrop($event)">
+          <ng-container *ngIf="!importFile(); else selectedImportFile"><app-draw-icon icon="pi pi-cloud-upload"></app-draw-icon><strong i18n="@@audit.findings.dropFile">Drag &amp; drop your file here</strong><span i18n="@@common.or">or</span><button type="button" class="browse-btn" (click)="importInput.click()"><app-draw-icon icon="pi pi-folder"></app-draw-icon> <span i18n="@@common.browseFile">Browse File</span></button><small i18n="@@audit.findings.acceptedFiles">Accepts .csv, .xlsx, .xls — max 10 MB</small></ng-container>
+          <ng-template #selectedImportFile><app-draw-icon icon="pi pi-file-excel"></app-draw-icon><strong>{{ importFile()?.name }}</strong><small>{{ importFileSize(importFile()!) }}</small><button type="button" class="browse-btn" (click)="importInput.click()" i18n="@@audit.findings.chooseAnother">Choose another</button></ng-template>
+        </div>
+        <p class="import-error" *ngIf="importError()">{{ importError() }}</p>
+        <p class="import-success" *ngIf="importSuccess()">{{ importSuccess() }}</p>
+      </div>
+      <div class="import-drawer__footer"><button type="button" class="upload-btn" [disabled]="!importFile()" (click)="uploadImportedFindings()" i18n="@@audit.findings.uploadFindings">Upload Findings</button></div>
+    </div>
+  </p-dialog>
+
+</div><!-- /ft-wrap -->
+<!-- ══════════════════════════════════════════════════════════
+     CONFIRMATION DIALOG
+═══════════════════════════════════════════════════════════ -->
+<ng-container *ngIf="confirmPending() as pending">
+  <!-- Backdrop -->
+  <div class="" (click)="cancelToggle()"></div>
+
+  <!-- Dialog card -->
+  <div class="confirm-dialog" role="dialog" aria-modal="true"
+       [attr.aria-label]="pending.action === FindingBlockActions.Deactivate ? deactivateConfirmationLabel : activateConfirmationLabel">
+
+    <div class="confirm-dialog__header">
+      <span class="confirm-dialog__title" i18n="@@common.confirmation">Confirmation</span>
+    </div>
+
+    <div class="confirm-dialog__body">
+      <span class="confirm-dialog__warning-icon">
+        <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon>
+      </span>
+      <p class="confirm-dialog__message">
+        Are you sure you want to
+        <ng-container *ngIf="pending.action === FindingBlockActions.Deactivate">
+          <strong>deactivate {{ pending.finding.id }}</strong>?
+        </ng-container>
+        <ng-container *ngIf="pending.action === FindingBlockActions.Activate">
+          <strong>activate {{ pending.finding.id }}</strong>?
+        </ng-container>
+      </p>
+    </div>
+
+    <div class="confirm-dialog__footer">
+      <button type="button" class="confirm-btn confirm-btn--no" (click)="cancelToggle()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon> <span i18n="@@common.no">No</span>
+      </button>
+      <button type="button"
+              class="confirm-btn"
+              [class.confirm-btn--deactivate]="pending.action === FindingBlockActions.Deactivate"
+              [class.confirm-btn--activate]="pending.action === FindingBlockActions.Activate"
+              (click)="confirmToggle()">
+        <app-draw-icon icon="pi pi-check"></app-draw-icon>
+        Yes, {{ pending.action === FindingBlockActions.Deactivate ? activeLabels.Deactivate : activeLabels.Activate }}
+      </button>
+    </div>
+  </div>
+
+</ng-container>

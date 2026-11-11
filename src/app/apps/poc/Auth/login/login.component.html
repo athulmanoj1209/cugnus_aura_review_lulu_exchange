@@ -1,0 +1,65 @@
+<app-auth-layout>
+
+  <h1 class="auth-greeting">Welcome</h1>
+
+  <!-- Server error banner -->
+  <div *ngIf="serverError() as msg" class="auth-banner auth-banner--error" role="alert">
+    <app-draw-icon icon="pi pi-times-circle"></app-draw-icon>
+    <span>{{ msg }}</span>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="auth-form">
+
+    <!-- Name -->
+    <div class="form-field">
+      <label class="field-label" for="name">NAME</label>
+      <input pInputText id="name"
+             formControlName="name"
+             placeholder="Your name"
+             autocomplete="username"
+             [invalid]="isInvalid('name')" />
+      <small *ngIf="getError('name') as err" class="error-text">{{ err }}</small>
+    </div>
+
+    <!-- Password -->
+    <div class="form-field">
+      <label class="field-label" for="password">PASSWORD</label>
+      <p-password id="password"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  [feedback]="false"
+                  [toggleMask]="true"
+                  [invalid]="isInvalid('password')"
+                  styleClass="w-full"
+                  inputStyleClass="w-full"></p-password>
+      <small *ngIf="getError('password') as err" class="error-text">{{ err }}</small>
+    </div>
+
+    <!-- Keep me signed in + Trouble Sign in row -->
+    <div class="signin-row">
+      <label class="signin-row__remember">
+        <p-checkbox formControlName="rememberMe"
+                    [binary]="true"
+                    inputId="rememberMe"></p-checkbox>
+        <span>Keep me signed in</span>
+      </label>
+
+      <!-- <a routerLink="/forgot-password" class="signin-row__trouble">
+        Trouble Sign in
+      </a> -->
+    </div>
+
+    <!-- Primary CTA -->
+    <p-button label="Cygnus it !"
+              styleClass="cta-button"
+              [loading]="submitting()"
+              type="submit"></p-button>
+
+    <!-- Footer link -->
+    <a href="#" class="auth-footer-link" aria-label="Payments and subscriptions">
+      Payments &amp; subscriptions
+    </a>
+  </form>
+
+</app-auth-layout>

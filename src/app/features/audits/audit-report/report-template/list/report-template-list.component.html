@@ -1,0 +1,352 @@
+<div class="report-template-list-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+
+    <!-- Row 1: title + action button -->
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title" i18n="@@audit.reportTemplate.managementTitle">Report Template Management</h2>
+          <p class="page-subtitle" i18n="@@audit.reportTemplate.managementSubtitle">Define, manage, and monitor report templates across all companies and divisions</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+        <p-button label="+ New Report Template" i18n-label="@@audit.reportTemplate.newReportTemplateButton" styleClass="report-template-btn" (onClick)="addNewReportTemplate()">
+        </p-button>
+
+        <!-- View toggle -->
+        <div class="view-toggle" role="group" aria-label="View mode" i18n-aria-label="@@common.viewMode">
+          <button type="button" class="view-toggle__btn"
+            [class.is-active]="viewMode === ReportTemplateViewModes.Grid"
+            (click)="setViewMode(ReportTemplateViewModes.Grid)" aria-label="Grid view" i18n-aria-label="@@common.gridView">
+            <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+          </button>
+          <button type="button" class="view-toggle__btn"
+            [class.is-active]="viewMode === ReportTemplateViewModes.List"
+            (click)="setViewMode(ReportTemplateViewModes.List)" aria-label="List view" i18n-aria-label="@@common.listView">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: filters + search -->
+    <div class="page-header__filters">
+      <div class="page-header__selects">
+
+        <p-multiselect
+          [options]="companyFilterOptions"
+          [(ngModel)]="selectedCompanies"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="All Companies"
+          i18n-placeholder="@@audit.reportTemplate.allCompanies"
+          [showClear]="true"
+          [showToggleAll]="true"
+          class="filter-multiselect"
+          appendTo="self"
+          panelStyleClass="report-filter-panel"
+          (onChange)="onCompanyFilter()"
+          [maxSelectedLabels]="2"
+          selectedItemsLabel="{0} companies"
+          i18n-selectedItemsLabel="@@audit.reportTemplate.companiesSelected"
+          [filter]="true"
+          filterPlaceholder="Search company…"
+          i18n-filterPlaceholder="@@audit.reportTemplate.searchCompany">
+          <ng-template pTemplate="item" let-item>
+            <div class="filter-option">
+              <span class="filter-dot" [style.background]="getCompanyColor(item.value)"></span>
+              <span>{{ item.label }}</span>
+            </div>
+          </ng-template>
+        </p-multiselect>
+
+        <p-multiselect
+          [options]="divisionFilterOptions"
+          [(ngModel)]="selectedDivisionCodes"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="All Divisions"
+          i18n-placeholder="@@audit.reportTemplate.allDivisions"
+          [showClear]="true"
+          [showToggleAll]="true"
+          class="filter-multiselect"
+          appendTo="self"
+          panelStyleClass="report-filter-panel"
+          (onChange)="onDivisionFilter()"
+          [maxSelectedLabels]="2"
+          selectedItemsLabel="{0} divisions"
+          i18n-selectedItemsLabel="@@audit.reportTemplate.divisionsSelected"
+          [filter]="true"
+          filterPlaceholder="Search division…"
+          i18n-filterPlaceholder="@@audit.reportTemplate.searchDivision">
+          <ng-template pTemplate="item" let-item>
+            <div class="filter-option">
+              <app-draw-icon icon="pi pi-building" [size]="12" style="color:#64748b;"></app-draw-icon>
+              <span>{{ item.label }}</span>
+            </div>
+          </ng-template>
+        </p-multiselect>
+
+      </div>
+
+      <span class="p-input-icon-left search-wrapper page-header__search relative">
+        <app-draw-icon icon="pi pi-search" class="search-icon"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search report templates…" i18n-placeholder="@@audit.reportTemplate.searchTemplates"
+          class="search-input"
+          [(ngModel)]="searchQuery"
+          (input)="onSearch()" />
+      </span>
+    </div>
+
+  </div>
+
+  <!-- Results summary -->
+  <div class="results-bar">
+    <span class="results-count">
+      <app-draw-icon icon="pi pi-file-edit"></app-draw-icon>
+      {{ templatesFoundLabel(filteredTemplates.length) }}
+    </span>
+  </div>
+
+  <!-- ═══════════════════════ GRID VIEW ═══════════════════════ -->
+  @if (viewMode === ReportTemplateViewModes.Grid) {
+    @if (pagedTemplates.length > 0) {
+      <div class="sub-divisions-grid">
+        @for (tpl of pagedTemplates; track tpl.id) {
+          <div class="dept-card" [class.is-blocked]="isBlocked(tpl.id)">
+
+            <!-- Card Header -->
+            <div class="card-header">
+              <div class="dept-identity">
+                <div class="company-badge" [style.background]="getCompanyColor(tpl.companyId)">
+                  {{ getCompanyTag(tpl.companyId) }}
+                </div>
+                <div class="dept-title-group">
+                  <h3 class="dept-name" [pTooltip]="tpl.templateName" tooltipPosition="top">{{ tpl.templateName }}</h3>
+                  <span class="dept-division">
+                    <app-draw-icon icon="pi pi-building"></app-draw-icon>
+                    {{ tpl.divisionName }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Key Info Grid -->
+            <div class="info-grid">
+              <div class="info-item" pTooltip="Company" i18n-pTooltip="@@common.company" tooltipPosition="top">
+                <span class="info-icon"><app-draw-icon icon="pi pi-building"></app-draw-icon></span>
+                <div class="info-content">
+                  <span class="info-value">{{ getCompanyLabel(tpl.companyId) }}</span>
+                </div>
+              </div>
+              <div class="info-item" pTooltip="Industry Type" i18n-pTooltip="@@audit.reportTemplate.industryType" tooltipPosition="top">
+                <span class="info-icon"><app-draw-icon icon="pi pi-briefcase"></app-draw-icon></span>
+                <div class="info-content">
+                  <span class="info-value">{{ getIndustryLabel(tpl.industryType) }}</span>
+                </div>
+              </div>
+              <div class="info-item" pTooltip="Template File" i18n-pTooltip="@@audit.reportTemplate.templateFile" tooltipPosition="top">
+                <span class="info-icon"><app-draw-icon icon="pi pi-file"></app-draw-icon></span>
+                <div class="info-content">
+                  <span class="info-value dept-id-badge">{{ tpl.templateFileName }}</span>
+                </div>
+              </div>
+              <div class="info-item" pTooltip="Submitted By" i18n-pTooltip="@@audit.reportTemplate.submittedBy" tooltipPosition="top">
+                <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+                <div class="info-content">
+                  <span class="info-value">{{ tpl.submittedByName }}</span>
+                  <span class="info-role">{{ tpl.submittedByRole }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Description -->
+            @if (tpl.templateDescription) {
+              <div class="dept-description">
+                <p>{{ tpl.templateDescription }}</p>
+              </div>
+            }
+
+            <p-divider class="card-divider"></p-divider>
+
+            <!-- Card Footer -->
+            <div class="card-footer">
+              <span class="company-label">
+                <app-draw-icon icon="pi pi-building"></app-draw-icon>
+                {{ getCompanyLabel(tpl.companyId) }}
+              </span>
+              <div class="card-actions">
+                <button type="button" class="icon-btn" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top"
+                  (click)="viewTemplate(tpl)">
+                  <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+                </button>
+                <button type="button" class="icon-btn" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top"
+                  [disabled]="isBlocked(tpl.id)" (click)="openEdit(tpl)">
+                  <app-draw-icon icon="pi pi-pencil" style="color:rgb(4,4,62)"></app-draw-icon>
+                </button>
+                <button type="button" class="icon-btn"
+                  [class.icon-btn--activate]="isBlocked(tpl.id)"
+                  [class.icon-btn--deactivate]="!isBlocked(tpl.id)"
+                  [pTooltip]="isBlocked(tpl.id) ? activateLabel : deactivateLabel"
+                  [attr.aria-label]="isBlocked(tpl.id) ? activateLabel : deactivateLabel" tooltipPosition="top"
+                  (click)="openConfirm(tpl.id, tpl.templateName)">
+                  <app-draw-icon [icon]="isBlocked(tpl.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <app-draw-icon icon="pi pi-file-edit" class="empty-icon"></app-draw-icon>
+        <h3 i18n="@@audit.reportTemplate.noTemplatesFound">No report templates found</h3>
+        <p i18n="@@audit.reportTemplate.adjustSearchFilters">Try adjusting your search or filter criteria.</p>
+      </div>
+    }
+  }
+
+  <!-- ═══════════════════════ LIST VIEW ═══════════════════════ -->
+  @if (viewMode === ReportTemplateViewModes.List) {
+    @if (pagedTemplates.length > 0) {
+      <div class="sub-divisions--list">
+        <div class="list-header">
+          <span class="list-header__cell col-name" i18n="@@audit.reportTemplate.templateName">Template Name</span>
+          <span class="list-header__cell col-division" i18n="@@common.division">Division</span>
+          <span class="list-header__cell col-industry" i18n="@@audit.reportTemplate.industryType">Industry Type</span>
+          <span class="list-header__cell col-submitted" i18n="@@audit.reportTemplate.submittedBy">Submitted By</span>
+          <span class="list-header__cell col-status" i18n="@@common.status">Status</span>
+          <span class="list-header__cell col-actions" i18n="@@common.actions">Actions</span>
+        </div>
+
+        @for (tpl of pagedTemplates; track tpl.id) {
+          <article class="dept-row">
+
+            <div class="col-name">
+              <div class="cell-name">
+                <div class="company-badge company-badge--sm" [style.background]="getCompanyColor(tpl.companyId)">
+                  {{ getCompanyTag(tpl.companyId) }}
+                </div>
+                <div class="cell-name__text-group">
+                  <span class="cell-name__title">{{ tpl.templateName }}</span>
+                  <span class="cell-name__id">{{ tpl.templateFileName }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-division">
+              <div class="cell-division">
+                <app-draw-icon icon="pi pi-building"></app-draw-icon>
+                <span>{{ tpl.divisionName }}</span>
+              </div>
+            </div>
+
+            <div class="col-industry">
+              <p-tag
+                [value]="getIndustryLabel(tpl.industryType)"
+                severity="info"
+                class="meta-tag">
+              </p-tag>
+            </div>
+
+            <div class="col-submitted">
+              <div class="cell-submitted">
+                <span class="cell-submitted__name">{{ tpl.submittedByName }}</span>
+                <span class="cell-submitted__role">{{ tpl.submittedByRole }}</span>
+              </div>
+            </div>
+
+            <div class="col-status">
+              <p-tag
+                [value]="STATUS_LABELS[tpl.status]"
+                [severity]="STATUS_SEVERITY[tpl.status]"
+                class="status-tag">
+              </p-tag>
+            </div>
+
+            <div class="col-actions">
+              <div class="row-actions">
+                <button type="button" class="icon-btn" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top"
+                  (click)="viewTemplate(tpl)">
+                  <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+                </button>
+                <button type="button" class="icon-btn" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top" [disabled]="isBlocked(tpl.id)" 
+                  (click)="openEdit(tpl)">
+                  <app-draw-icon icon="pi pi-pencil" style="color:rgb(4,4,62)"></app-draw-icon>
+                </button>
+                <button type="button" class="icon-btn"
+                  [class.icon-btn--activate]="isBlocked(tpl.id)"
+                  [class.icon-btn--deactivate]="!isBlocked(tpl.id)"
+                  [pTooltip]="isBlocked(tpl.id) ? activateLabel : deactivateLabel"
+                  [attr.aria-label]="isBlocked(tpl.id) ? activateLabel : deactivateLabel" tooltipPosition="top"
+                  (click)="openConfirm(tpl.id, tpl.templateName)">
+                  <app-draw-icon [icon]="isBlocked(tpl.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+                </button>
+              </div>
+            </div>
+
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <app-draw-icon icon="pi pi-file-edit" class="empty-icon"></app-draw-icon>
+        <h3 i18n="@@audit.reportTemplate.noTemplatesFound">No report templates found</h3>
+        <p i18n="@@audit.reportTemplate.adjustSearchFilters">Try adjusting your search or filter criteria.</p>
+      </div>
+    }
+  }
+
+  <!-- Paginator -->
+  @if (filteredTemplates.length > 0) {
+    <app-pagination-bar
+      [pageSize]="PAGE_SIZE"
+      [totalRecords]="filteredTemplates.length"
+      [currentPage]="currentPage"
+      [rowsPerPageOptions]="[6, 12, 18, 24, 40, 56]"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onRowsChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>
+
+<app-confirm-action-dialog
+  [visible]="showConfirmDialog"
+  [action]="isBlocked(confirmTarget?.id ?? '') ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()"
+  (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>
+
+<!-- Add Report Template Dialog -->
+<p-dialog [(visible)]="showAddReportDialog" [modal]="true" [draggable]="false" [resizable]="false"
+  [style]="{ width: reportDialogWidth, height: '90vh' }"
+  [styleClass]="'report-template-dialog' + (isProcessingWide ? ' report-template-dialog--wide' : '')"
+  appendTo="body"
+  (onHide)="closeAddReportDialog()">
+  <ng-template pTemplate="header">
+    <span class="report-template-dialog__title" i18n="@@audit.reportTemplate.newReportTemplate">New Report Template</span>
+  </ng-template>
+
+  @if (showAddReportDialog) {
+    <app-report-template (processingStarted)="onProcessingStarted($event)" (created)="onTemplateCreated($event)"></app-report-template>
+  }
+</p-dialog>
+
+<!-- Edit Report Template Dialog -->
+<p-dialog [(visible)]="showEditDialog" [modal]="true" [draggable]="false" [resizable]="false"
+  [style]="{ width: 'min(760px, 95vw)', height: '90vh' }" styleClass="report-template-dialog" appendTo="body"
+  (onHide)="closeEditDialog()">
+  <ng-template pTemplate="header">
+    <span class="report-template-dialog__title">Edit Report Template</span>
+  </ng-template>
+
+  @if (showEditDialog && editTarget) {
+    <app-report-template [mode]="ReportTemplateDialogModes.Edit" [editTemplate]="editTarget" (saved)="onTemplateSaved($event)"></app-report-template>
+  }
+</p-dialog>

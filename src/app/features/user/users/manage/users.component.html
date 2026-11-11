@@ -1,0 +1,215 @@
+<div class="add-user-content">
+
+  <p-toast></p-toast>
+
+  <!-- ============================= HEADER ============================= -->
+  <div class="drawer-header">
+    <div class="drawer-header__icon">
+        <app-draw-icon icon="pi pi-user-plus"></app-draw-icon>
+    </div>
+    <div class="drawer-header__text">
+      <h2 class="drawer-header__title">{{ headerTitle }}</h2>
+      <p class="drawer-header__subtitle">{{ headerSubtitle }}</p>
+    </div>
+    <button type="button" class="drawer-header__close" (click)="onCancel()" aria-label="Close" i18n-aria-label="@@common.close">
+     <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+  <!-- ============================= BODY =============================== -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="drawer-body">
+    <div class="form-grid">
+
+      <!-- Full name -->
+      <div class="form-field form-field--full">
+        <label for="fullName" class="form-label"><span i18n="@@common.fullName">Full Name</span> *</label>
+        <input pInputText id="fullName" formControlName="fullName"
+               placeholder="Full Name" i18n-placeholder="@@common.fullName"
+               [invalid]="isInvalid('fullName')" />
+        <small *ngIf="getError('fullName', fieldLabels.fullName) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Email -->
+      <div class="form-field">
+         <label for="email" class="form-label"><span i18n="@@common.email">Email</span> *</label>
+        <input pInputText id="email" type="email" formControlName="email"
+               placeholder="Email" i18n-placeholder="@@common.email"
+               [invalid]="isInvalid('email')" />
+        <small *ngIf="getError('email',fieldLabels.email) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Phone -->
+      <div class="form-field">
+        <label for="phone" class="form-label"><span i18n="@@common.phone">Phone</span> *</label>
+        <input pInputText id="phone" formControlName="phone"
+               placeholder="Phone" i18n-placeholder="@@common.phone"
+               [invalid]="isInvalid('phone')" />
+        <small *ngIf="getError('phone',fieldLabels.phone) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Role -->
+      <div class="form-field">
+          <label for="role" class="form-label"><span i18n="@@common.role">Role</span> *</label>
+        <p-select id="role" formControlName="role"
+                  [options]="roles" optionLabel="label" optionValue="value"
+                  placeholder="Role" i18n-placeholder="@@common.roleRequired"
+                  [invalid]="isInvalid('role')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('role',fieldLabels.role) as err" class="error-text">{{ err }}</small>
+      </div>
+
+        <!-- Company (sourced from ORG_STATIC_DATA, see component) -->
+        <div class="form-field">
+          <label class="form-label"><span i18n="@@common.company">Company</span> *</label>
+          <p-select formControlName="company" [options]="companyOptions()" optionLabel="label" optionValue="value"
+                    placeholder="Select company" i18n-placeholder="@@user.form.selectCompany" [invalid]="isInvalid('company')" styleClass="w-full"></p-select>
+          <!-- <p-select formControlName="company" [options]="companyOptions()" optionLabel="label" optionValue="value"
+                    placeholder="Select type" [invalid]="isInvalid('company')" styleClass="w-full"></p-select> -->
+          <small *ngIf="getError('company',fieldLabels.company) as e" class="error-text">{{ e }}</small>
+        </div>
+
+
+  <!-- Division (cascades off selected Company) -->
+  <div class="form-field">
+          <label class="form-label"><span i18n="@@common.division">Division</span> *</label>
+          <p-select formControlName="division" [options]="divisionOptions()" optionLabel="label" optionValue="value"
+                    [placeholder]="divisionPlaceholder()"
+                    [disabled]="!form.get('company')?.value"
+                    [invalid]="isInvalid('division')" styleClass="w-full"></p-select>
+          <small *ngIf="getError('division',fieldLabels.division) as e" class="error-text">{{ e }}</small>
+        </div>
+
+
+      <!-- Sub-Division (cascades off selected Division) -->
+      <div class="form-field">
+         <label for="subDivision" class="form-label" i18n="@@common.subDivision">Sub-Division</label>
+        <p-select id="subDivision" formControlName="subDivision"
+                  [options]="subDivisionOptions()" optionLabel="label" optionValue="value"
+                  [placeholder]="subDivisionPlaceholder()"
+                  [disabled]="!form.get('division')?.value || !divisionHasSubDivision()"
+                  [invalid]="isInvalid('subDivision')"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Designation -->
+      <div class="form-field">
+         <label for="designation" class="form-label" i18n="@@common.designation">Designation</label>
+        <input pInputText id="designation" formControlName="designation"
+               placeholder="Designation" i18n-placeholder="@@common.designation"
+               [invalid]="isInvalid('designation')" />
+        <small *ngIf="getError('designation',fieldLabels.designation) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Employee ID -->
+      <div class="form-field">
+        <label for="employeeId" class="form-label" i18n="@@common.employeeId">Employee ID</label>
+        <input pInputText id="employeeId" formControlName="employeeId"
+               placeholder="Employee ID" i18n-placeholder="@@common.employeeId"
+               [invalid]="isInvalid('employeeId')" />
+        <small *ngIf="getError('employeeId',fieldLabels.employeeId) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Joining Date -->
+      <div class="form-field">
+        <label for="joiningDate" class="form-label" i18n="@@common.joiningDate">Joining Date</label>
+        <p-datepicker id="joiningDate" formControlName="joiningDate"
+                      placeholder="Joining Date" i18n-placeholder="@@common.joiningDate"
+                      dateFormat="dd/mm/yy" [showIcon]="true"
+                      [invalid]="isInvalid('joiningDate')"
+                      styleClass="w-full" inputStyleClass="w-full"></p-datepicker>
+      </div>
+
+      <!-- Location -->
+      <div class="form-field">
+        <label for="location" class="form-label" i18n="@@common.officeLocation">Office Location</label>
+        <p-select id="location" formControlName="location"
+                  [options]="locationOptions" optionLabel="label" optionValue="value"
+                  placeholder="Office Location" i18n-placeholder="@@common.officeLocation"
+                  [invalid]="isInvalid('location')"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Areas of Expertise -->
+      <div class="form-field form-field--full">
+         <label for="expertise" class="form-label" i18n="@@common.areasOfExpertise">Areas of Expertise</label>
+        <p-multiSelect id="expertise" formControlName="expertise"
+                       [options]="expertiseOptions" optionLabel="label" optionValue="value"
+                       placeholder="Areas of Expertise" i18n-placeholder="@@common.areasOfExpertise"
+                       display="chip"
+                       styleClass="w-full expertise-select"></p-multiSelect>
+      </div>
+
+      <!-- Reports To -->
+      <div class="form-field form-field--full">
+         <label for="reportsToId" class="form-label" i18n="@@common.reportsTo">Reports To</label>
+        <p-select id="reportsToId" formControlName="reportsToId"
+                  [options]="managerOptions" optionLabel="fullName" optionValue="id"
+                  placeholder="Reports To" i18n-placeholder="@@common.reportsTo"
+                  [filter]="true" filterBy="fullName,designation"
+                  [showClear]="true"
+                  styleClass="w-full reports-to-select">
+          <ng-template pTemplate="selectedItem" let-selected>
+            <span class="reports-to-selected" *ngIf="selected">
+              <app-draw-icon icon="pi pi-user"></app-draw-icon>
+              <span>{{ selected.fullName }}</span>
+              <small *ngIf="selected.designation">· {{ selected.designation }}</small>
+            </span>
+          </ng-template>
+          <ng-template pTemplate="item" let-option>
+            <div class="reports-to-option">
+              <span class="name">{{ option.fullName }}</span>
+              <small *ngIf="option.designation">{{ option.designation }}</small>
+            </div>
+          </ng-template>
+        </p-select>
+      </div>
+
+
+
+     <!-- User name -->
+      <div class="form-field form-field--full">
+        <label for="username" class="form-label" i18n="@@common.username">User name</label>
+        <input pInputText id="username" formControlName="username"
+               placeholder="User name" i18n-placeholder="@@common.username"
+               [invalid]="isInvalid('username')" />
+        <small *ngIf="getError('username',fieldLabels.username) as err" class="error-text">{{ err }}</small>
+         <div class="user-id-preview" *ngIf="form.get('username')?.value">
+
+    <span class="value">
+      <span i18n="@@common.userId">User ID</span> :
+      EMP#{{ form.get('username')?.value }}
+    </span>
+  </div>
+      </div>
+
+
+
+
+      <!-- Send invitation (visible only when status === 'pending' && !isEdit) -->
+      <div class="form-field form-field--full checkbox-row"
+           *ngIf="form.controls.status.value === 'pending' && !isEdit">
+        <p-checkbox formControlName="sendInvitation"
+                    [binary]="true" inputId="sendInvitation"></p-checkbox>
+        <label for="sendInvitation" i18n="@@user.form.sendInvitation">
+          Send invitation email so the user can set their own password
+        </label>
+      </div>
+
+      <!-- 2FA -->
+
+
+    </div>
+
+    
+ 
+  <!-- ============================ FOOTER ============================ -->
+    <div class="drawer-footer">
+      <p-button label="Cancel" i18n-label="@@common.cancel"
+                styleClass="p-button-secondary cancel-btn"
+                (onClick)="onCancel()" type="button"></p-button>
+
+      <p-button [label]="submitLabel"
+                styleClass="submit-btn"
+                type="submit"></p-button>
+    </div>
+     </form>
+</div>

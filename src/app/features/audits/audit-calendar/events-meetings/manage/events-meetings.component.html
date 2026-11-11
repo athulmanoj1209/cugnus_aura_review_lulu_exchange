@@ -1,0 +1,379 @@
+<p-toast position="top-right" />
+
+<!-- ══════════════════════════════════════════════
+     HEADER  (uses shared .drawer-header)
+══════════════════════════════════════════════════ -->
+<div class="drawer-header">
+  <div class="drawer-header-left">
+    <div class="drawer-icon-wrap">
+      <app-draw-icon icon="pi pi-building"></app-draw-icon>
+    </div>
+    <div class="drawer-title-block">
+      <h2 class="drawer-title">
+        {{ isEditMode() ? drawerTitles.Edit : drawerTitles.Add }}
+      </h2>
+      <p class="drawer-subtitle">
+        {{ isEditMode() ? drawerSubtitles.Edit : drawerSubtitles.Add }}
+      </p>
+    </div>
+  </div>
+  <button class="close-btn" pTooltip="Close" i18n-pTooltip="@@common.close" tooltipPosition="left" (click)="cancel()">
+    <app-draw-icon icon="pi pi-times"></app-draw-icon>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BODY  (uses shared .drawer-body — scrollable)
+══════════════════════════════════════════════════ -->
+<div class="drawer-body">
+  <form [formGroup]="form" novalidate autocomplete="off" class="event">
+
+    <!-- Row 1: Title | Event Type -->
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">
+   <span i18n="@@common.title">Title</span><span class="required">*</span>
+  </label>
+
+        <input
+          pInputText
+          formControlName="title"
+          placeholder="Title"
+          i18n-placeholder="@@common.title"
+          [maxlength]="fieldLimits.TitleMax"
+          [class.p-invalid]="invalid('title')"
+        />
+        @if (invalid('title') && form.get('title')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.titleRequired">Title is required.</small>
+        }
+        @if (invalid('title') && form.get('title')?.errors?.['maxlength']) {
+          <small class="error-text">{{ maxCharactersLabel(fieldLimits.TitleMax) }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.eventType">Event Type</span> <span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="eventType"
+          [options]="eventTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Event Type"
+          i18n-placeholder="@@audit.eventMeeting.eventType"
+          [class.p-invalid]="invalid('eventType')"
+        />
+        @if (invalid('eventType') && form.get('eventType')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.eventTypeRequired">Event type is required.</small>
+        }
+      </div>
+    </div>
+
+    <!-- Row 2: Description -->
+    <div class="form-grid">
+      <div class="form-field form-field--full">
+        <label class="field-label">
+          <span i18n="@@common.description">Description</span> <span class="required">*</span>
+        </label>
+        <textarea
+          pInputTextarea
+          formControlName="description"
+          rows="4"
+          [maxlength]="fieldLimits.DescriptionMax"
+          [autoResize]="false"
+          placeholder="Description"
+          i18n-placeholder="@@common.description"
+          [class.p-invalid]="invalid('description')"
+        ></textarea>
+        <div class="char-count">{{ descLen }}/{{ fieldLimits.DescriptionMax }}</div>
+      </div>
+    </div>
+
+    <!-- Row 3: Start Date | Start Time -->
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.startDate">Start Date</span><span class="required">*</span>
+  </label>
+        <p-datepicker
+          formControlName="startDate"
+          placeholder="Start Date"
+          i18n-placeholder="@@audit.eventMeeting.startDate"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          [class.p-invalid]="invalid('startDate')"
+        />
+        @if (invalid('startDate') && form.get('startDate')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.startDateRequired">Start date is required.</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.startTime">Start Time</span> <span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="startTime"
+          [options]="timeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Start Time"
+          i18n-placeholder="@@audit.eventMeeting.startTime"
+          [filter]="true"
+          filterBy="label"
+          [class.p-invalid]="invalid('startTime')"
+        />
+        @if (invalid('startTime') && form.get('startTime')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.startTimeRequired">Start time is required.</small>
+        }
+      </div>
+    </div>
+
+    <!-- Row 4: End Date | End Time -->
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">
+   <span i18n="@@audit.eventMeeting.endDate">End Date</span><span class="required">*</span>
+  </label>
+        <p-datepicker
+          formControlName="endDate"
+          placeholder="End Date"
+          i18n-placeholder="@@audit.eventMeeting.endDate"
+          [showIcon]="true"
+          dateFormat="dd/mm/yy"
+          [class.p-invalid]="invalid('endDate')"
+        />
+        @if (invalid('endDate') && form.get('endDate')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.endDateRequired">End date is required.</small>
+        }
+        @if (groupError('endBeforeStart')) {
+          <small class="error-text" i18n="@@audit.eventMeeting.endAfterStart">End must be after start.</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.endTime">End Time</span> <span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="endTime"
+          [options]="timeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="End Time"
+          i18n-placeholder="@@audit.eventMeeting.endTime"
+          [filter]="true"
+          filterBy="label"
+          [class.p-invalid]="invalid('endTime')"
+        />
+        @if (invalid('endTime') && form.get('endTime')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.endTimeRequired">End time is required.</small>
+        }
+      </div>
+    </div>
+
+    <!-- Row 5: Location Type | Location -->
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.locationType">Location Type</span> <span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="locationType"
+          [options]="locationTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Location Type"
+          i18n-placeholder="@@audit.eventMeeting.locationType"
+          [class.p-invalid]="invalid('locationType')"
+        />
+        @if (invalid('locationType') && form.get('locationType')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.locationTypeRequired">Location type is required.</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.locationAddress">Location / Address</span> <span class="required">*</span>
+  </label>
+        <input
+          pInputText
+          formControlName="locationDetail"
+          [placeholder]="form.get('locationType')?.value === LocationType.Virtual
+            ? locationPlaceholders.Virtual
+            : locationPlaceholders.Physical"
+          [class.p-invalid]="form.hasError('virtualLinkRequired') && form.get('locationDetail')?.touched"
+        />
+        @if (form.hasError('virtualLinkRequired') && form.get('locationDetail')?.touched) {
+          <small class="error-text" i18n="@@audit.eventMeeting.virtualMeetingLinkRequired">Virtual meeting link is required.</small>
+        }
+      </div>
+    </div>
+
+    <!-- Row 6: Organizer | Participants -->
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.organizer">Organizer</span> <span class="required">*</span>
+  </label>
+   <p-select
+          formControlName="organizer"
+          [options]="organizerOptions"
+          optionLabel="name"
+          placeholder="Organizer"
+          i18n-placeholder="@@audit.eventMeeting.organizer"
+          [filter]="true"
+          filterBy="name"
+          [class.p-invalid]="invalid('organizer')"
+        />
+        @if (invalid('organizer') && form.get('organizer')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.organizerRequired">Organizer is required.</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.participants">Participants</span> <span class="required">*</span>
+  </label>
+        <p-multiSelect
+          formControlName="participants"
+          [options]="participantOptions"
+          optionLabel="name"
+          placeholder="Participants"
+          i18n-placeholder="@@audit.eventMeeting.participants"
+          [filter]="true"
+          filterBy="name"
+          [class.p-invalid]="invalid('participants')"
+        />
+        @if (invalid('participants') && form.get('participants')?.errors?.['required']) {
+          <small class="error-text" i18n="@@audit.eventMeeting.participantRequired">At least one participant is required.</small>
+        }
+      </div>
+    </div>
+
+    <!-- Linked Entities heading -->
+    <p class="section-label" i18n="@@audit.eventMeeting.linkedEntities">Linked Entities</p>
+
+    <!-- Row 7: Scope | Task -->
+    <div class="form-grid">
+     
+      <div class="form-field">
+         <label class="field-label">
+    <span i18n="@@common.scope">Scope</span> <span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="linkedScope"
+          [options]="scopeOptions"
+          optionLabel="label"
+          placeholder="Scope"
+          i18n-placeholder="@@common.scope"
+        />
+      </div>
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.task">Task</span> <span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="linkedTask"
+          [options]="taskOptions"
+          optionLabel="label"
+          placeholder="Task"
+          i18n-placeholder="@@audit.eventMeeting.task"
+        />
+      </div>
+    </div>
+
+    <!-- Row 8: RFI | Findings -->
+    <div class="form-grid">
+      
+      <div class="form-field">
+        <label class="field-label">
+   <span i18n="@@common.rfi">RFI</span><span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="linkedRFI"
+          [options]="rfiOptions"
+          optionLabel="label"
+          placeholder="RFI"
+          i18n-placeholder="@@common.rfi"
+        />
+      </div>
+      <div class="form-field">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.findings">Findings</span><span class="required">*</span>
+  </label>
+        <p-select
+          formControlName="linkedFindings"
+          [options]="findingOptions"
+          optionLabel="label"
+          placeholder="Findings"
+          i18n-placeholder="@@audit.eventMeeting.findings"
+        />
+      </div>
+    </div>
+
+    <!-- File upload -->
+    <div class="form-grid">
+      <div class="form-field form-field--full">
+        <label class="field-label">
+    <span i18n="@@audit.eventMeeting.relatedDocuments">Related Documents</span> <span class="required">*</span>
+  </label>
+        <input #fileInput type="file" class="file-input-hidden" multiple (change)="onNativeFileSelect($event)" />
+        <div
+          class="upload-zone"
+          [class.upload-zone--active]="isDragOver"
+          (click)="fileInput.click()"
+          (dragover)="$event.preventDefault(); isDragOver = true"
+          (dragleave)="isDragOver = false"
+          (drop)="onDrop($event)"
+        >
+          <app-draw-icon icon="pi pi-cloud-upload" class="upload-zone__icon"></app-draw-icon>
+          <span class="upload-zone__text">
+            <span class="upload-zone__link" i18n="@@common.chooseFiles">Choose Files</span> <span i18n="@@audit.eventMeeting.orDragAndDrop">or drag and drop</span>
+          </span>
+          <span class="upload-zone__hint" i18n="@@audit.eventMeeting.uploadHint">PDF, Word, Excel, JPEG, PNG · Max 10 MB</span>
+        </div>
+
+        @if (uploadedFiles.length) {
+          <div class="uploaded-files">
+            @for (f of uploadedFiles; track f.name; let i = $index) {
+              <div class="file-preview">
+                <div class="file-preview__icon">
+                  <app-draw-icon icon="pi pi-file"></app-draw-icon>
+                </div>
+                <div class="file-preview__info">
+                  <span class="file-preview__name">{{ f.name }}</span>
+                  <span class="file-preview__size">{{ (f.size / 1024).toFixed(0) }} KB</span>
+                </div>
+                <button type="button" class="file-preview__remove" (click)="removeFile(i)">
+                  <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER  (uses shared .drawer-footer)
+══════════════════════════════════════════════════ -->
+<div class="drawer-footer">
+  <p-button
+    label="Cancel"
+    i18n-label="@@common.cancel"
+    styleClass="cancel-btn"
+    [disabled]="submitting()"
+    (onClick)="cancel()"
+  />
+  <p-button
+    [label]="isEditMode() ? submitLabels.Edit : submitLabels.Add"
+    styleClass="submit-btn"
+    [loading]="submitting()"
+    (onClick)="submit()"
+  />
+</div>

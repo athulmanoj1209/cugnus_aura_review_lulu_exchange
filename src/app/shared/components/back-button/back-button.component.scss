@@ -1,0 +1,49 @@
+:host {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.back-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--p-indigo-800);
+    border-color: var(--p-indigo-800);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  /* Light-on-dark variant for brand-coloured headers */
+  &--on-dark {
+    width: 34px;
+    height: 34px;
+    border-color: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.22);
+      border-color: rgba(255, 255, 255, 0.45);
+      color: #fff;
+    }
+  }
+
+  /* Arrow points the other way in RTL layouts */
+  &:dir(rtl) app-draw-icon { transform: scaleX(-1); }
+}

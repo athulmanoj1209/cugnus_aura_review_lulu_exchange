@@ -1,0 +1,113 @@
+<div class="heatmap-wrap">
+
+  <div class="heatmap-header">
+    <h3 class="heatmap-header__title"><app-draw-icon icon="pi pi-chart-scatter"></app-draw-icon> Risk Heat Map — Inherent Risk</h3>
+
+    <div class="heatmap-header__right">
+      <div class="heatmap-legend">
+        <span class="legend-dot legend-dot--low"></span><span>Low (1–{{ levelThresholds.LowMax }})</span>
+        <span class="legend-dot legend-dot--medium"></span><span>Medium ({{ levelThresholds.LowMax + 1 }}–{{ levelThresholds.MediumMax }})</span>
+        <span class="legend-dot legend-dot--high"></span><span>High ({{ levelThresholds.MediumMax + 1 }}–{{ maxScore }})</span>
+      </div>
+
+      <!-- Export buttons -->
+      <div class="export-group">
+        <button type="button" class="export-btn"
+                [disabled]="exporting() !== null"
+                (click)="exportPNG()"
+                pTooltip="Download as PNG image" tooltipPosition="top">
+          <i class="pi" [ngClass]="exporting() === RiskExportFormats.Png ? 'pi-spin pi-spinner' : 'pi-image'"></i>
+          {{ exporting() === RiskExportFormats.Png ? exportingLabel : 'PNG' }}
+        </button>
+        <button type="button" class="export-btn export-btn--pdf"
+                [disabled]="exporting() !== null"
+                (click)="exportPDF()"
+                pTooltip="Download as PDF (A4 landscape)" tooltipPosition="top">
+          <i class="pi" [ngClass]="exporting() === RiskExportFormats.Pdf ? 'pi-spin pi-spinner' : 'pi-file-pdf'"></i>
+          {{ exporting() === RiskExportFormats.Pdf ? exportingLabel : 'PDF' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="heatmap-container" #heatmapExportTarget>
+
+    <!-- Y-axis label -->
+    <div class="axis-label axis-label--y">
+      <span>Impact ↑</span>
+    </div>
+
+    <div class="heatmap-body">
+
+      <!-- Y-axis numbers + rows -->
+      <div class="heatmap-grid-wrap">
+
+        <!-- Y axis numbers -->
+        <div class="y-axis">
+          <div *ngFor="let y of yLabels" class="y-axis__tick">
+            <span class="y-axis__num">{{ y }}</span>
+            <span class="y-axis__label">{{ impactLabels[y] }}</span>
+          </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="heatmap-grid">
+          <div *ngFor="let row of cells" class="heatmap-row">
+            <div *ngFor="let cell of row"
+                 class="heatmap-cell heatmap-cell--{{ cell.level }}"
+                 [pTooltip]="cellTooltip(cell)"
+                 tooltipPosition="top">
+
+              <!-- Score -->
+              <span class="heatmap-cell__score">{{ cell.score }}</span>
+
+              <!-- Risk dots -->
+              <div class="heatmap-cell__dots">
+                <button *ngFor="let r of cell.risks"
+                        type="button"
+                        class="risk-dot risk-dot--{{ r.status }}"
+                        [pTooltip]="r.id + ': ' + r.title"
+                        tooltipPosition="top"
+                        (click)="onRiskClick(r, $event)"
+                        [attr.aria-label]="r.id + ' ' + r.title">
+                  {{ shortId(r) }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- X-axis -->
+          <div class="x-axis">
+            <div *ngFor="let x of xLabels" class="x-axis__tick">
+              <span class="x-axis__num">{{ x }}</span>
+              <span class="x-axis__label">{{ likelihoodLabels[x] }}</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- X-axis label -->
+    <div class="axis-label axis-label--x">
+      <span>Likelihood →</span>
+    </div>
+
+  </div>
+
+  <!-- Summary below map -->
+  <div class="heatmap-summary" *ngIf="risks.length > 0">
+    <span class="heatmap-summary__total">{{ risksPlottedLabel(risks.length) }}</span>
+    <span class="summary-chip summary-chip--high">
+      <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon>
+      High: {{ countLevel(RiskResidualLevels.High) }}
+    </span>
+    <span class="summary-chip summary-chip--medium">
+      Medium: {{ countLevel(RiskResidualLevels.Medium) }}
+    </span>
+    <span class="summary-chip summary-chip--low">
+      Low: {{ countLevel(RiskResidualLevels.Low) }}
+    </span>
+  </div>
+
+</div>

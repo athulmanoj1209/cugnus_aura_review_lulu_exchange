@@ -1,0 +1,455 @@
+<p-toast></p-toast>
+
+<!-- ══════════════════════════════════════════════════════
+     AUDIT SCHEDULE TIMELINE
+════════════════════════════════════════════════════════ -->
+<div class="schedule-host">
+
+  <!-- Header -->
+  <div class="schedule-header">
+    <div class="schedule-header-left">
+      <p class="schedule-title">Audit Schedule Timeline</p>
+      <p class="schedule-subtitle">Chronological view of all scopes</p>
+    </div>
+    <div class="schedule-header-right">
+      <p-button
+        label="PDF"
+        icon="pi pi-plus-circle"
+        styleClass="export-btn"
+        (onClick)="exportPdf()">
+      </p-button>
+      <p-button
+        label="EXCEL"
+        icon="pi pi-plus-circle"
+        styleClass="export-btn"
+        (onClick)="exportExcel()">
+      </p-button>
+    </div>
+  </div>
+
+  <!-- Timeline List -->
+  <div class="timeline-list">
+    <div
+      class="timeline-item"
+      *ngFor="let scope of sortedScopes; let i = index; let last = last">
+
+      <!-- Left: icon circle + connecting line -->
+      <div class="tl-left">
+        <div class="tl-icon-wrap">
+          <i class="pi" [ngClass]="getScopeIcon(scope.scopeType)"></i>
+        </div>
+        <div class="tl-connector" *ngIf="!last"></div>
+      </div>
+
+      <!-- Row content -->
+      <div class="tl-row">
+
+        <div class="tl-col tl-col-name">
+          <span class="tl-val tl-name">{{ scope.scopeName }}</span>
+          <span class="tl-lbl">{{ getScopeTypeLabel(scope.scopeType) }}</span>
+        </div>
+
+        <div class="tl-col tl-col-date">
+          <span class="tl-val">{{ scope.startDate | date:'MMM d, yyyy' }}</span>
+          <span class="tl-lbl">Start Date</span>
+        </div>
+
+        <div class="tl-col tl-col-date">
+          <span class="tl-val">{{ scope.endDate | date:'MMM d, yyyy' }}</span>
+          <span class="tl-lbl">End Date</span>
+        </div>
+
+        <div class="tl-col tl-col-dur">
+          <span class="tl-val">{{ getDurationDays(scope) }} Days</span>
+          <span class="tl-lbl">Duration</span>
+        </div>
+
+        <div class="tl-col tl-col-auditors">
+          <span class="tl-lbl">Auditors</span>
+          <div
+            class="avatar-stack avatar-stack-clickable"
+            (click)="openAuditorDialog(scope)"
+            pTooltip="Click to view all auditors"
+            tooltipPosition="top">
+            <span
+              class="av"
+              *ngFor="let a of scope.assignedAuditors.slice(0, 3); let ai = index"
+              [ngStyle]="{'z-index': 10 - ai}">
+              {{ getAuditorInitials(a) }}
+            </span>
+            <span
+              class="av av-more"
+              *ngIf="scope.assignedAuditors.length > 3"
+              [ngStyle]="{'z-index': 6}">
+              +{{ scope.assignedAuditors.length - 3 }}
+            </span>
+          </div>
+        </div>
+
+        <div class="tl-col tl-col-action">
+          <button
+            class="tl-eye-btn"
+            pTooltip="View Details"
+            tooltipPosition="top"
+            (click)="openViewDrawer(scope)">
+            <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="schedule-footer">
+    <span class="showing-text">
+      Showing 1 to {{ sortedScopes.length }} of {{ sortedScopes.length }} entries
+    </span>
+  </div>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     AUDITOR LIST DIALOG
+════════════════════════════════════════════════════════ -->
+<p-dialog
+  [(visible)]="auditorDialogVisible"
+  [modal]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="auditor-list-dialog"
+  [style]="{ width: '420px' }">
+
+  <ng-template pTemplate="header">
+    <div class="ald-header">
+      <div class="ald-icon-wrap"><app-draw-icon icon="pi pi-users"></app-draw-icon></div>
+      <div>
+        <p class="ald-title">Assigned Auditors</p>
+        <p class="ald-sub">{{ auditorDialogName }}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <ul class="ald-list">
+      <li class="ald-item" *ngFor="let a of auditorDialogList; let i = index">
+        <span class="ald-av" [attr.data-idx]="i % 4">{{ getAuditorInitials(a) }}</span>
+        <div class="ald-info">
+          <span class="ald-name">{{ getAuditorLabel(a) }}</span>
+          <span class="ald-role">Auditor</span>
+        </div>
+      </li>
+    </ul>
+    <p class="ald-count">
+      {{ auditorDialogList.length }} auditor{{ auditorDialogList.length !== 1 ? 's' : '' }} assigned
+    </p>
+  </ng-template>
+
+</p-dialog>
+
+<!-- ══════════════════════════════════════════════════════
+     VIEW DRAWER (read-only)
+════════════════════════════════════════════════════════ -->
+<p-drawer
+  [(visible)]="drawerVisible"
+  position="right"
+  styleClass="audit-scope-drawer"
+  [modal]="true"
+  [dismissible]="true"
+  [showCloseIcon]="false"
+  (onHide)="onDrawerClose()">
+
+  <ng-template pTemplate="content">
+    <ng-container *ngIf="scopeForm">
+      <div class="drawer-inner" [formGroup]="scopeForm">
+
+        <!-- Drawer Header -->
+        <div class="drawer-header">
+          <div class="drawer-header-left">
+            <div class="drawer-icon-wrap">
+              <app-draw-icon icon="pi pi-building"></app-draw-icon>
+            </div>
+            <div class="drawer-title-block">
+              <h2 class="drawer-title">Scope <strong>Details</strong></h2>
+              <p class="drawer-subtitle">Read-only — schedule view</p>
+            </div>
+          </div>
+          <div class="drawer-header-right">
+            <button class="close-btn" (click)="onDrawerClose()">
+              <app-draw-icon icon="pi pi-times"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Form body (all fields disabled / readonly) -->
+        <div class="drawer-scroll-body">
+          <div class="tab-content">
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Parent Scope <span class="field-optional">(optional)</span></label>
+                <p-select
+                  formControlName="parentScope"
+                  [options]="availableScopeOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="No parent scope"
+                  styleClass="form-dropdown"
+                  [showClear]="true"
+                  [disabled]="true">
+                </p-select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Scope Name</label>
+                <input pInputText type="text" formControlName="scopeName"
+                       class="form-input" [readonly]="true" />
+              </div>
+              <div class="form-col">
+                <label class="field-label">Scope Type</label>
+                <p-select
+                  formControlName="scopeType"
+                  [options]="scopeTypeOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  [disabled]="true">
+                </p-select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Linked Department(s) / Node(s)</label>
+                <p-multiselect
+                  formControlName="linkedDepartments"
+                  [options]="departmentOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  display="chip"
+                  [disabled]="true">
+                </p-multiselect>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Audit Frequency</label>
+                <p-select
+                  formControlName="auditFrequency"
+                  [options]="auditFrequencyOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  [disabled]="true">
+                </p-select>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Mode of Audit</label>
+                <p-select
+                  formControlName="modeOfAudit"
+                  [options]="modeOfAuditOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  [disabled]="true">
+                </p-select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Objective</label>
+                <textarea pTextarea formControlName="objective" rows="4"
+                          class="form-textarea" [readonly]="true"></textarea>
+                <div class="char-counter">{{ objectiveLength }} / 500</div>
+              </div>
+            </div>
+
+            <p class="section-label">Timeframe</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Start Date</label>
+                <p-datepicker
+                  formControlName="startDate"
+                  placeholder="Start Date"
+                  dateFormat="dd/mm/yy"
+                  [showIcon]="true"
+                  class="form-datepicker"
+                  [disabled]="true">
+                </p-datepicker>
+              </div>
+              <div class="form-col">
+                <label class="field-label">End Date</label>
+                <p-datepicker
+                  formControlName="endDate"
+                  placeholder="End Date"
+                  dateFormat="dd/mm/yy"
+                  [showIcon]="true"
+                  class="form-datepicker"
+                  [disabled]="true">
+                </p-datepicker>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Assigned Auditor(s)</label>
+                <p-multiselect
+                  formControlName="assignedAuditors"
+                  [options]="auditorOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  display="chip"
+                  [disabled]="true">
+                </p-multiselect>
+              </div>
+            </div>
+
+            <p class="section-label">Budget</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Hourly Rate</label>
+                <p-select
+                  formControlName="hourlyRate"
+                  [options]="hourlyRateOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  [disabled]="true">
+                </p-select>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Estimated Hours</label>
+                <p-inputnumber
+                  formControlName="estimatedHours"
+                  placeholder="—"
+                  [min]="1"
+                  class="w-full !h-[40.4px]"
+                  inputStyleClass="form-input"
+                  [readonly]="true">
+                </p-inputnumber>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Budget (Auto-calculated)</label>
+                <input pInputText type="text" [value]="computedBudget"
+                       placeholder="—" class="form-input" readonly />
+                <small class="field-hint">
+                  <app-draw-icon icon="pi pi-info-circle"></app-draw-icon> Calculated as Hourly Rate × Estimated Hours
+                </small>
+              </div>
+            </div>
+
+            <p class="section-label">Sampling Methodology</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Methodology</label>
+                <p-select
+                  formControlName="samplingMethodology"
+                  [options]="methodologyOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  [disabled]="true">
+                </p-select>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Sampling Size</label>
+                <p-inputnumber
+                  formControlName="samplingSize"
+                  placeholder="—"
+                  [min]="1"
+                  class="w-full !h-[40.4px]"
+                  inputStyleClass="form-input"
+                  [readonly]="true">
+                </p-inputnumber>
+              </div>
+            </div>
+
+            <div class="form-row" *ngIf="isJudgmental">
+              <div class="form-col full">
+                <label class="field-label">Justification for Sampling</label>
+                <textarea pTextarea formControlName="justificationForSampling"
+                          rows="3" class="form-textarea" [readonly]="true"></textarea>
+              </div>
+            </div>
+
+            <p class="section-label">Risk Information</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Risk Reference ID</label>
+                <input pInputText type="text" formControlName="riskReferenceId"
+                       placeholder="—" class="form-input" [readonly]="true" />
+                <small class="field-hint">
+                  <app-draw-icon icon="pi pi-link"></app-draw-icon> Links to Risk Register item
+                </small>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Risk Rating</label>
+                <p-select
+                  formControlName="riskRating"
+                  [options]="riskRatingOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  [disabled]="true">
+                </p-select>
+              </div>
+            </div>
+
+            <p class="section-label">Scope Status</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Status</label>
+                <p-select
+                  formControlName="status"
+                  [options]="statusOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="—"
+                  styleClass="form-dropdown"
+                  [disabled]="true">
+                </p-select>
+              </div>
+              <div class="form-col"></div>
+            </div>
+
+            <p class="section-label">Evidence Uploads</p>
+            <div class="evidence-empty">
+              <span class="field-hint">
+                <app-draw-icon icon="pi pi-info-circle"></app-draw-icon> No evidence files attached.
+              </span>
+            </div>
+
+            <p class="section-label">Completion</p>
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Completion Notes</label>
+                <textarea pTextarea formControlName="completionNote"
+                          rows="4" class="form-textarea" [readonly]="true"></textarea>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </ng-container>
+  </ng-template>
+</p-drawer>

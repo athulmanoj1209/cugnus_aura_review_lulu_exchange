@@ -1,0 +1,346 @@
+/* ============================================================
+ *  Add / Edit User drawer content
+ * ============================================================ */
+@use '../../../../../assets/drawer-modal.scss' as *;
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+.add-user-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--surface-card);
+}
+
+/* ---------- Header (matches rfi-client.component.scss shell) -------- */
+// The shared drawer-modal.scss partial defines its own (older) .drawer-header
+// BEM classes; these local rules take precedence for this component so its
+// shell matches the standardized "Add ___" drawer pattern.
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left { display: flex; align-items: center; gap: 12px; }
+
+.drawer-icon-wrap {
+  width: 40px; height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  .pi { font-size: 18px; color: var(--primary-color); }
+}
+
+.drawer-title-block { display: flex; flex-direction: column; gap: 2px; }
+
+.drawer-title {
+  font-size: 16px; font-weight: 400; color: var(--text-color); margin: 0;
+  strong { font-weight: 700; color: var(--primary-color); }
+}
+
+.drawer-subtitle { font-size: 11px; color: var(--text-color-secondary); margin: 0; }
+
+.close-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi { font-size: 13px; color: var(--text-color-secondary); }
+  &:hover { background: var(--surface-hover); }
+}
+
+/* ---------- Body ----------------------------------------------------- */
+// .drawer-body {
+//   display: flex;
+//   flex-direction: column;
+//   flex: 1;
+//   min-height: 0;
+//   padding: 1rem 1.75rem 1.5rem;
+//   overflow-y: auto;
+//}
+
+/* ---------- Form grid ----------------------------------------------- */
+// .form-grid {
+//   display: grid;
+//   grid-template-columns: 1fr 1fr;
+//   gap: 1rem;
+// }
+
+// .form-field {
+//   display: flex;
+//   flex-direction: column;
+
+//   &--full { grid-column: 1 / -1; }
+// }
+
+// .field-label {
+//   font-size: 0.9rem;
+//   font-weight: 600;
+//   color: var(--text-color);
+//   margin-bottom: 0.65rem;
+// }
+
+// :host ::ng-deep .form-field {
+//   .p-inputtext,
+//   .p-select,
+//   .p-multiselect,
+//   .p-datepicker { width: 100%; }
+
+//   .p-inputtext:not(.p-invalid),
+//   .p-select:not(.p-invalid),
+//   .p-multiselect:not(.p-invalid),
+//   .p-datepicker .p-inputtext:not(.p-invalid) {
+//     border-radius: 8px;
+//     padding: 0.55rem 0.9rem;
+//     font-size: 0.92rem;
+//     color: var(--primary-color);
+//     background: var(--surface-card);
+//     border: 1px solid var(--surface-border);
+//     height:44px;
+//   }
+
+//   .p-inputtext.p-invalid {
+//     border-radius: 8px;
+//     padding: 0.75rem 0.9rem;
+//     font-size: 0.92rem;
+//     color: var(--text-color);
+//     background: var(--surface-card);
+//      height:44px;
+//   }
+
+//   .p-inputtext::placeholder,
+//   .p-select .p-select-label,
+//   .p-multiselect .p-multiselect-label { color: var(--text-color-secondary); }
+
+//   /* MultiSelect "chip" mode — make tokens look like the rest of the UI */
+//   .p-multiselect .p-multiselect-token {
+//     background: var(--surface-hover);
+//     color: var(--primary-color);
+//     border-radius: 999px;
+//     padding: 0.18rem 0.55rem;
+//     font-size: 0.75rem;
+//     font-weight: 600;
+//   }
+// }
+.form-grid {
+  background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 12px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1rem;
+}
+
+/* Defensive text-truncation for the p-select/p-multiselect fields in this
+ * form. .form-grid isn't a CSS Grid here (its `display: grid` rule above is
+ * commented out — fields stack in normal block flow at 100% width), so this
+ * isn't the same track-overflow bug seen on the Regulation Library filter
+ * grid. But Company/Division/Sub-division now pull real org names from
+ * company-org-data.ts (e.g. "Al Waha Construction & Contracting"), which are
+ * long enough to want ellipsis truncation rather than wrapping/overflowing
+ * inside the 640px drawer, so the same min-width:0 + ellipsis pairing is
+ * applied here too, just without the grid-item half.
+ */
+:host ::ng-deep .form-field {
+  .p-select,
+  .p-multiselect {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .p-select-label,
+  .p-multiselect-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+}
+
+/* Reports-To select — custom item template styling */
+:host ::ng-deep .reports-to-select.p-select {
+  .reports-to-selected {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+
+    i { color: var(--primary-color); }
+    small { color: var(--text-color-secondary); font-weight: 400; }
+  }
+}
+.reports-to-option {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+
+  .name { font-weight: 600; color: var(--text-color); font-size: 0.9rem; }
+  small { color: var(--text-color-secondary); font-size: 0.75rem; }
+}
+
+.error-text {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--p-red-500);
+  line-height: 1.3;
+}
+
+:host ::ng-deep {
+  input.ng-invalid.ng-touched {
+    border-color: var(--p-red-500) !important;
+    &:focus {
+      border-color: var(--p-red-500) !important;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+    }
+  }
+  p-select.ng-invalid.ng-touched .p-select {
+    border-color: var(--p-red-500) !important;
+  }
+}
+
+/* ---------- Status radio "pills" ------------------------------------ */
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.radio-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text-color-secondary);
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  user-select: none;
+
+  &:hover { border-color: var(--p-indigo-200); }
+  &.is-checked {
+    border-color: var(--primary-color);
+    background: var(--surface-hover);
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
+  :host ::ng-deep .p-radiobutton .p-radiobutton-box {
+    width: 16px; height: 16px;
+    border-color: var(--surface-border);
+  }
+}
+
+/* ---------- Checkbox row -------------------------------------------- */
+.checkbox-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.6rem;
+
+  label { font-size: 0.9rem; color: var(--text-color); cursor: pointer; }
+}
+
+/* ---------- Footer (matches rfi-client.component.scss shell) -------- */
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--surface-border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+::ng-deep .cancel-btn.p-button {
+  background: var(--surface-hover) !important;
+  border: none !important;
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  &:hover { background: var(--surface-hover) !important; }
+}
+
+::ng-deep .submit-btn.p-button {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  margin-inline-start: auto;
+  &:hover { opacity: 0.9; }
+}
+.p-select.p-invalid
+{
+  height:44px !important;
+  padding-top: 5px;
+}
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+.user-id-preview {
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: var(--surface-card);
+  //border: 1px solid #d6e4f0;
+  border-radius: 8px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .label {
+    font-size: 12px;
+    color: var(--text-color-secondary);
+    font-weight: 500;
+  }
+
+  .value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary-color);
+    letter-spacing: 0.5px;
+  }
+}
+/* ---------- Responsive ---------------------------------------------- */
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .drawer-footer { flex-wrap: wrap; }
+
+  ::ng-deep .submit-btn.p-button {
+    margin-inline-start: 0;
+    width: 100%;
+  }
+}

@@ -1,0 +1,193 @@
+<div class="staff-perf">
+
+  <!-- ========================= KPI CARDS ========================= -->
+  <div class="kpi-grid">
+    <div *ngFor="let kpi of kpis"
+         class="kpi-card"
+         [class.kpi-card--green]="kpi.variant === 'green'">
+      <div class="kpi-card__header">
+        <span class="kpi-card__label">{{ kpi.label }}</span>
+        <span class="kpi-card__icon">
+          <ng-container [ngSwitch]="kpi.icon">
+            <svg *ngSwitchCase="'pi pi-users'" class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path pathLength="100" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle pathLength="100" cx="9" cy="7" r="4"></circle>
+              <path pathLength="100" d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path pathLength="100" d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <svg *ngSwitchCase="'pi pi-arrow-up-right'" class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line pathLength="100" x1="7" y1="17" x2="17" y2="7"></line>
+              <polyline pathLength="100" points="7 7 17 7 17 17"></polyline>
+            </svg>
+            <svg *ngSwitchCase="'pi pi-check-circle'" class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <svg *ngSwitchCase="'pi pi-clipboard'" class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path pathLength="100" d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+              <rect pathLength="100" x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            </svg>
+            <i *ngSwitchDefault [class]="kpi.icon"></i>
+          </ng-container>
+        </span>
+      </div>
+      <div class="kpi-card__value">{{ kpi.value }}</div>
+      <div *ngIf="kpi.sub" class="kpi-card__sub"
+           [class.kpi-card__sub--up]="kpi.sub.startsWith('↑')">
+        {{ kpi.sub }}
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== ROW 1: Staff Utilization (H-Bar) + Radar ============ -->
+  <div class="chart-row">
+
+    <div class="chart-card">
+      <h3 class="chart-card__title" i18n="@@dashboard.staff.staffUtilizationTitle">Staff Utilization</h3>
+      <div class="chart-wrap">
+        <p-chart #utilizationChart type="bar" [data]="utilizationData" [options]="hBarOptions()" [plugins]="utilizationHoverBandPlugins"></p-chart>
+      </div>
+
+      <div class="donut-legend">
+        @for (item of utilizationLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="utilizationHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="utilizationHidden[i]"
+               [attr.aria-label]="legendToggleAriaLabel(utilizationHidden[i], item.label)"
+               (click)="toggleUtilizationDataset(i)"
+               (keydown.enter)="toggleUtilizationDataset(i)"
+               (keydown.space)="$event.preventDefault(); toggleUtilizationDataset(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-card__title" i18n="@@dashboard.staff.performanceComparisonTitle">Performance Comparison</h3>
+      <div class="chart-wrap">
+        <p-chart type="radar" [data]="radarData" [options]="radarOptions()"></p-chart>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== ROW 2: Workload Distribution + Utilization by Role === -->
+  <div class="chart-row">
+
+    <div class="chart-card">
+      <h3 class="chart-card__title" i18n="@@dashboard.staff.workloadDistributionTitle">Workload Distribution</h3>
+      <div class="chart-wrap">
+        <p-chart #workloadChart type="bar" [data]="workloadData" [options]="stackedOptions()" [plugins]="workloadHoverBandPlugins"></p-chart>
+      </div>
+
+      <div class="donut-legend">
+        @for (item of workloadLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="workloadHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="workloadHidden[i]"
+               [attr.aria-label]="legendToggleAriaLabel(workloadHidden[i], item.label)"
+               (click)="toggleWorkloadDataset(i)"
+               (keydown.enter)="toggleWorkloadDataset(i)"
+               (keydown.space)="$event.preventDefault(); toggleWorkloadDataset(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-card__title" i18n="@@dashboard.staff.utilizationByRoleTitle">Utilization by Role</h3>
+      <div class="chart-wrap">
+        <p-chart #roleChart type="bar" [data]="roleData" [options]="dualAxisOptions()" [plugins]="roleHoverBandPlugins"></p-chart>
+      </div>
+
+      <div class="donut-legend">
+        @for (item of roleLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="roleHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="roleHidden[i]"
+               [attr.aria-label]="legendToggleAriaLabel(roleHidden[i], item.label)"
+               (click)="toggleRoleDataset(i)"
+               (keydown.enter)="toggleRoleDataset(i)"
+               (keydown.space)="$event.preventDefault(); toggleRoleDataset(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- =================== TEAM PERFORMANCE TABLE ================== -->
+  <div class="data-card">
+    <h3 class="data-card__title">
+      <app-draw-icon icon="pi pi-users"></app-draw-icon> <ng-container i18n="@@dashboard.staff.teamPerformanceTitle">Team Performance Overview</ng-container>
+    </h3>
+
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th><ng-container i18n="@@common.name">Name</ng-container> <app-draw-icon icon="pi pi-sort-alt" class="sort-icon"></app-draw-icon></th>
+            <th><ng-container i18n="@@common.role">Role</ng-container> <app-draw-icon icon="pi pi-sort-alt" class="sort-icon"></app-draw-icon></th>
+            <th><ng-container i18n="@@dashboard.staff.colUtilization">Utilization</ng-container> <app-draw-icon icon="pi pi-sort-alt" class="sort-icon"></app-draw-icon></th>
+            <th i18n="@@dashboard.staff.colHours">Hours</th>
+            <th><ng-container i18n="@@dashboard.staff.colAssigned">Assigned</ng-container> <app-draw-icon icon="pi pi-sort-alt" class="sort-icon"></app-draw-icon></th>
+            <th><ng-container i18n="@@common.completed">Completed</ng-container> <app-draw-icon icon="pi pi-sort-alt" class="sort-icon"></app-draw-icon></th>
+            <th><ng-container i18n="@@dashboard.staff.colClosureRate">Closure Rate</ng-container> <app-draw-icon icon="pi pi-sort-alt" class="sort-icon"></app-draw-icon></th>
+            <th i18n="@@common.actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of staffTable">
+            <td>{{ row.name }}</td>
+            <td>{{ roleDisplay(row.role) }}</td>
+            <td>
+              <div class="util-cell">
+                <div class="util-bar">
+                  <div class="util-bar__fill"
+                       [style.width.%]="row.utilization"
+                       [attr.data-tier]="utilTier(row.utilization)">
+                  </div>
+                </div>
+                <span class="util-pct">{{ row.utilization }}%</span>
+              </div>
+            </td>
+            <td>{{ row.hours }}</td>
+            <td>{{ row.assigned }}</td>
+            <td>{{ row.completed }}</td>
+            <td>{{ row.closureRate }}</td>
+            <td>
+              <button type="button" class="icon-btn" aria-label="View" i18n-aria-label="@@common.view">
+                <svg class="draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,331 @@
+:host {
+  display: block;
+  margin: 10px;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.staff-perf {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@keyframes staff-perf-icon-draw {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+/* ── KPI Grid ────────────────────────────────────────────────────────────── */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.kpi-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+
+  &--green { background: var(--surface-card); border-color: var(--p-green-100); }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    font-weight: 500;
+    line-height: 1.35;
+    flex: 1;
+  }
+
+  &__icon {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: inline-flex;
+
+    .draw-icon {
+      overflow: visible;
+
+      path, circle, rect, line, polyline {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 0;
+      }
+    }
+  }
+
+  &:hover &__icon .draw-icon {
+    path, circle, rect, line, polyline {
+      animation: staff-perf-icon-draw 0.6s ease;
+    }
+
+    > :not(:first-child) {
+      animation-delay: 0.35s;
+    }
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  &__sub {
+    font-size: 0.74rem;
+    color: var(--text-color-secondary);
+
+    &--up { color: var(--p-green-600); }
+  }
+}
+
+/* ── Chart Row ───────────────────────────────────────────────────────────── */
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  @media (max-width: 860px) { grid-template-columns: 1fr; }
+}
+
+/* ── Chart Card ──────────────────────────────────────────────────────────── */
+
+.chart-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+
+  &__title {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+.chart-wrap {
+  height: 280px;
+  position: relative;
+}
+
+p-chart{height: stretch;}
+
+/* Custom legend for the Staff Utilization / Workload Distribution /
+ * Utilization by Role bar charts, rendered outside the canvas — styled to
+ * match the donut chart's legend (see shared donut-status-chart.scss)
+ * instead of Chart.js's built-in in-canvas legend. Same treatment as the
+ * Audits by Department / Risk Rating Distribution charts on the Audit
+ * Overview page. */
+.donut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  width: 100%;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    user-select: none;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.75; }
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+
+    &--disabled {
+      opacity: 0.4;
+
+      .donut-legend__dot { background: var(--text-color-secondary) !important; }
+      .donut-legend__label,
+      .donut-legend__value { text-decoration: line-through; }
+    }
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__value {
+    margin-inline-start: 0.35rem;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+/* ── Data Card & Table ───────────────────────────────────────────────────── */
+
+.data-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+
+  &__title {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    i { color: var(--text-color-secondary); }
+  }
+}
+
+.table-wrap { overflow-x: auto; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 720px;
+
+  th {
+    text-align: start;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface-hover);
+    color: var(--text-color-secondary);
+    font-weight: 600;
+    font-size: 0.77rem;
+    border-bottom: 1px solid var(--surface-border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--text-color);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface-hover); }
+}
+
+.sort-icon {
+  font-size: 0.7rem;
+  color: var(--text-color-secondary);
+  margin-inline-start: 3px;
+}
+
+/* ── Utilization bar cell ────────────────────────────────────────────────── */
+
+.util-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.util-bar {
+  flex: 1;
+  min-width: 80px;
+  height: 6px;
+  background: var(--surface-hover);
+  border-radius: 999px;
+  overflow: hidden;
+
+  &__fill {
+    height: 100%;
+    background: var(--p-green-500);
+    border-radius: inherit;
+    transition: width 0.25s ease;
+
+    &[data-tier='mid']  { background: var(--p-orange-500); }
+    &[data-tier='high'] { background: var(--p-red-500); }
+  }
+}
+
+.util-pct {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  min-width: 32px;
+  text-align: end;
+}
+
+/* ── Icon button ─────────────────────────────────────────────────────────── */
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--primary-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: background 0.15s, color 0.15s;
+
+  .draw-icon {
+    overflow: visible;
+
+    path, circle, rect, line, polyline {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--primary-color);
+
+    .draw-icon {
+      path, circle, rect, line, polyline {
+        animation: staff-perf-icon-draw 0.5s ease;
+      }
+
+      > :not(:first-child) {
+        animation-delay: 0.35s;
+      }
+    }
+  }
+}

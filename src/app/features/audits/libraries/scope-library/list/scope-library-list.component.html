@@ -1,0 +1,291 @@
+<div class="scope-library-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title">Audit Scope Library</h2>
+          <p class="page-subtitle">Manage reusable audit scope templates and risk frameworks</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+
+        <!-- Add button -->
+        <p-button label="+ New Scope Library"
+          styleClass="scope-library-btn" (onClick)="onAddScope()"></p-button>
+
+        <!-- View toggle -->
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button type="button" class="view-toggle__btn"
+            [class.is-active]="viewMode === ScopeLibraryViewModes.List"
+            (click)="setViewMode(ScopeLibraryViewModes.List)" aria-label="List view">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          </button>
+          <button type="button" class="view-toggle__btn"
+            [class.is-active]="viewMode === ScopeLibraryViewModes.Grid"
+            (click)="setViewMode(ScopeLibraryViewModes.Grid)" aria-label="Grid view">
+            <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Search toolbar (second row, right-aligned) -->
+    <div class="page-header__toolbar">
+      <app-filter-modal
+        [showType]="false"
+        [showRisk]="false"
+        [showScope]="true"
+        [companyOptions]="companyOptions"
+        [divisionOptions]="divisionOptions"
+        [subDivisionOptions]="subDivisionOptions"
+        [scopeOptions]="scopeOptions"
+        [selectedCompanies]="selectedCompanies"
+        [selectedDivisions]="selectedDivisions"
+        [selectedSubDivisions]="selectedSubDivisions"
+        [selectedScopes]="selectedScopes"
+        [subDivisionDisabledMessage]="subDivisionDisabledMessage"
+        (companiesChange)="onCompaniesChange($event)"
+        (divisionsChange)="onDivisionsChange($event)"
+        (subDivisionsChange)="onSubDivisionsChange($event)"
+        (scopesChange)="selectedScopes=$event; applyFilters()"
+        (filtersCleared)="clearFilters()">
+      </app-filter-modal>
+      <span class="search-wrapper">
+        <app-draw-icon icon="pi pi-search" class="search-icon"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search by scope name..."
+          class="search-input" [(ngModel)]="searchQuery" (input)="onSearch()" />
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ GRID VIEW ═══════════════════════ -->
+  @if (viewMode === ScopeLibraryViewModes.Grid) {
+    @if (pagedItems.length > 0) {
+      <div class="scope-library-grid">
+        @for (item of pagedItems; track item.id) {
+          <div class="library-card" [class.library-card--inactive]="isBlocked(item.id)">
+
+            <!-- Card header: level badge + risk tag -->
+            <div class="card-header">
+              <div class="scope-level-badge" [class]="'badge-' + item.scopeLevel">
+                <i class="pi" [class.pi-folder]="item.scopeLevel === ScopeLevels.Scope"
+                  [class.pi-file-check]="item.scopeLevel === ScopeLevels.SubScope"></i>
+                <span>{{ item.scopeLevel === ScopeLevels.Scope ? 'Scope' : 'Sub Scope' }}</span>
+              </div>
+              <p-tag [value]="item.riskCategory"
+                [severity]="getRiskSeverity(item.riskCategory)"
+                class="risk-tag"></p-tag>
+              <p-tag [value]="scopeLibraryStatusLabel[item.status]"
+                [severity]="scopeLibraryStatusSeverity[item.status]"
+                class="status-tag"></p-tag>
+            </div>
+
+            <!-- Title -->
+            <h3 class="card-title">{{ item.title }}</h3>
+
+            <!-- Objective -->
+            <p class="card-objective">{{ truncate(item.objective, OBJECTIVE_TRUNCATE.Grid) }}</p>
+
+            <!-- Basis: division-level (no sub-division) vs sub-division-level item -->
+            <div class="info-item">
+              <span class="info-icon"><app-draw-icon [icon]="item.subDivision ? 'pi pi-sitemap' : 'pi pi-building'"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="info-label">Scope Library Basis</span>
+                <span class="info-value">
+                  <span class="basis-chip" [class.basis-chip--division]="!item.subDivision">{{ item.subDivision ? 'Sub-Divisional' : 'Divisional' }}</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Parent / Sub info -->
+            @if (item.scopeLevel === ScopeLevels.Scope && item.subScopes?.length) {
+              <div class="info-item">
+                <span class="info-icon"><app-draw-icon icon="pi pi-folder-open"></app-draw-icon></span>
+                <div class="info-content">
+                  <span class="info-label">Sub Scopes</span>
+                  <span class="info-value">{{ item.subScopes!.length }}
+                    sub scope{{ item.subScopes!.length !== 1 ? 's' : '' }}</span>
+                </div>
+              </div>
+            }
+            @if (item.scopeLevel === ScopeLevels.SubScope && item.parentScopeTitle) {
+              <div class="info-item">
+                <span class="info-icon"><app-draw-icon icon="pi pi-folder"></app-draw-icon></span>
+                <div class="info-content">
+                  <span class="info-label">Parent Scope</span>
+                  <span class="info-value">{{ item.parentScopeTitle }}</span>
+                </div>
+              </div>
+            }
+
+            <!-- Frameworks -->
+            <div class="frameworks-row">
+              @for (fw of item.applicableFrameworks; track fw) {
+                <span class="framework-chip">{{ fw }}</span>
+              }
+            </div>
+
+            <!-- Card footer -->
+            <div class="card-footer">
+              <span class="card-id-label">
+                <app-draw-icon icon="pi pi-tag"></app-draw-icon>
+                {{ item.id }}
+              </span>
+              <div class="card-actions">
+                <button type="button" class="icon-btn" (click)="viewScope(item)" pTooltip="View Details" tooltipPosition="top">
+                  <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+                </button>
+                <button type="button" class="icon-btn" (click)="editScope(item)" pTooltip="Edit" tooltipPosition="top">
+                  <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+                </button>
+                <button type="button" class="icon-btn"
+                  [class.icon-btn--activate]="isBlocked(item.id)"
+                  [class.icon-btn--deactivate]="!isBlocked(item.id)"
+                  [pTooltip]="isBlocked(item.id) ? 'Activate' : 'Deactivate'" tooltipPosition="top"
+                  (click)="openConfirm(item.id, item.title)">
+                  <app-draw-icon [icon]="isBlocked(item.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <app-draw-icon icon="pi pi-book" class="empty-icon"></app-draw-icon>
+        <h3>No scope libraries found</h3>
+        <p>Try adjusting your search or add a new scope library.</p>
+      </div>
+    }
+  }
+
+  <!-- ═══════════════════════ LIST VIEW ═══════════════════════ -->
+  @if (viewMode === ScopeLibraryViewModes.List) {
+    @if (pagedItems.length > 0) {
+      <div class="scope-library-list">
+        <div class="list-header">
+          <span class="list-header__cell col-title">Scope Title</span>
+          <span class="list-header__cell col-level">Level</span>
+          <span class="list-header__cell col-basis">Basis</span>
+          <span class="list-header__cell col-relation">Parent / Sub Scopes</span>
+          <span class="list-header__cell col-category">Risk Category</span>
+          <span class="list-header__cell col-frameworks">Frameworks</span>
+          <span class="list-header__cell col-actions">Actions</span>
+        </div>
+
+        @for (item of pagedItems; track item.id) {
+          <article class="library-row">
+
+            <div class="col-title">
+              <div class="cell-title">
+                <div class="scope-icon-wrap" [class]="'icon-' + item.scopeLevel">
+                  <i class="pi" [class.pi-folder]="item.scopeLevel === ScopeLevels.Scope"
+                    [class.pi-file-check]="item.scopeLevel === ScopeLevels.SubScope"></i>
+                </div>
+                <div class="cell-title__text-group">
+                  <span class="cell-title__name">{{ item.title }}</span>
+                  <span class="cell-title__objective">{{ truncate(item.objective, OBJECTIVE_TRUNCATE.List) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-level">
+              <p-tag
+                [value]="item.scopeLevel === ScopeLevels.Scope ? 'Scope' : 'Sub Scope'"
+                [severity]="item.scopeLevel === ScopeLevels.Scope ? 'info' : 'secondary'"
+                class="level-tag"></p-tag>
+            </div>
+
+            <div class="col-basis">
+              <span class="basis-chip" [class.basis-chip--division]="!item.subDivision">{{ item.subDivision ? 'Sub-Divisional' : 'Divisional' }}</span>
+            </div>
+
+            <div class="col-relation">
+              @if (item.scopeLevel === ScopeLevels.Scope && item.subScopes?.length) {
+                <span class="cell-relation cell-relation--sub">
+                  <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+                  {{ item.subScopes!.length }} sub scope{{ item.subScopes!.length !== 1 ? 's' : '' }}
+                </span>
+              }
+              @if (item.scopeLevel === ScopeLevels.SubScope && item.parentScopeTitle) {
+                <span class="cell-relation cell-relation--parent">
+                  <app-draw-icon icon="pi pi-arrow-up"></app-draw-icon>
+                  {{ item.parentScopeTitle }}
+                </span>
+              }
+              @if (!item.subScopes?.length && !item.parentScopeTitle) {
+                <span class="cell-empty">—</span>
+              }
+            </div>
+
+            <div class="col-category">
+              <p-tag [value]="item.riskCategory"
+                [severity]="getRiskSeverity(item.riskCategory)"
+                class="risk-tag"></p-tag>
+            </div>
+
+            <div class="col-frameworks">
+              <div class="framework-chips">
+                @for (fw of item.applicableFrameworks; track fw) {
+                  <span class="framework-chip">{{ fw }}</span>
+                }
+              </div>
+            </div>
+
+            <div class="col-actions">
+              <div class="row-actions">
+                <button type="button" class="btn-view" (click)="viewScope(item)">
+                  View
+                </button>
+                <button type="button" class="icon-btn" (click)="editScope(item)" pTooltip="Edit" tooltipPosition="top">
+                  <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+                </button>
+                <button type="button" class="icon-btn"
+                  [class.icon-btn--activate]="isBlocked(item.id)"
+                  [class.icon-btn--deactivate]="!isBlocked(item.id)"
+                  [pTooltip]="isBlocked(item.id) ? 'Activate' : 'Deactivate'" tooltipPosition="top"
+                  (click)="openConfirm(item.id, item.title)">
+                  <app-draw-icon [icon]="isBlocked(item.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+                </button>
+              </div>
+            </div>
+
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="empty-state">
+        <app-draw-icon icon="pi pi-book" class="empty-icon"></app-draw-icon>
+        <h3>No scope libraries found</h3>
+        <p>Try adjusting your search or add a new scope library.</p>
+      </div>
+    }
+  }
+
+  <!-- Paginator -->
+  @if (filteredItems.length > 0) {
+    <app-pagination-bar
+      [pageSize]="PAGE_SIZE"
+      [totalRecords]="filteredItems.length"
+      [currentPage]="currentPage"
+      [rowsPerPageOptions]="[6, 12, 18, 24, 40, 56]"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onRowsChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>
+
+<app-confirm-action-dialog
+  [visible]="showConfirmDialog"
+  [action]="isBlocked(confirmTarget?.id ?? '') ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()"
+  (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>
+

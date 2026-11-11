@@ -1,0 +1,144 @@
+<div class="reviews">
+
+  <!-- ── Summary KPI Cards ──────────────────────────────────── -->
+  <div class="stats-grid-4">
+    @for (card of summaryCards; track card.label) {
+      <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass"
+           role="button" tabindex="0"
+           (click)="onSummaryCardClick(card)"
+           (keydown.enter)="onSummaryCardClick(card)">
+        <div class="stat-card__header">
+          <span class="stat-card__label">{{ card.label }}</span>
+          <span class="stat-card__icon">
+            @switch (card.icon) {
+              @case ('pi pi-inbox') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+                  <path pathLength="100" d="M22 12h-6l-2 3h-4l-2-3H2"></path>
+                </svg>
+              }
+              @case ('pi pi-exclamation-circle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                  <line pathLength="100" x1="12" y1="8" x2="12" y2="12"></line>
+                  <line pathLength="100" x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+              }
+              @case ('pi pi-eye') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              }
+              @case ('pi pi-paperclip') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                </svg>
+              }
+              @default {
+                <i [class]="card.icon"></i>
+              }
+            }
+          </span>
+        </div>
+        <div class="stat-card__value">{{ card.value }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- ── Approval Workflow Charts ──────────────────────────── -->
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> <span i18n="@@admin.auditorReviews.reviewsByType">Reviews by Type</span></h3>
+      <div class="chart-box">
+        <p-chart type="bar" [data]="reviewsByTypeBarData" [options]="reviewsByTypeBarOptions()" [plugins]="reviewsByTypeHoverBandPlugins"></p-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorReviews.reviewsByType">Reviews by Type</span></h3>
+      <app-donut-status-chart [legend]="reviewsByTypeLegend"></app-donut-status-chart>
+    </div>
+
+  </div>
+
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> <span i18n="@@admin.auditorReviews.reviewStatus">Review Status</span></h3>
+      <div class="chart-box">
+        <p-chart type="bar" [data]="reviewStatusBarData" [options]="reviewStatusBarOptions()" [plugins]="reviewStatusHoverBandPlugins"></p-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorReviews.reviewStatus">Review Status</span></h3>
+      <app-donut-status-chart [legend]="reviewStatusLegend"></app-donut-status-chart>
+    </div>
+
+  </div>
+
+  <!-- ── Combined Approval Workflow ─────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-check-circle" class="header-icon header-icon--success"></app-draw-icon>
+      <span class="table-card__title" i18n="@@admin.auditorReviews.approvalWorkflow">Approval Workflow — Evidence, Observation &amp; Findings Reviews</span>
+    </div>
+    <p-table
+      [value]="approvalWorkflow"
+      [paginator]="true"
+      [rows]="PAGE_SIZE"
+      [rowsPerPageOptions]="[10, 15, 20]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} of {totalRecords}"
+      i18n-currentPageReportTemplate="@@common.currentPageReport"
+      sortMode="multiple"
+      styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th i18n="@@common.item">Item</th>
+          <th pSortableColumn="type" style="width: 135px"><span i18n="@@common.type">Type</span><p-sortIcon field="type" /></th>
+          <th pSortableColumn="status" style="width: 130px"><span i18n="@@common.status">Status</span><p-sortIcon field="status" /></th>
+          <th pSortableColumn="submittedOn" style="width: 140px"><span i18n="@@common.submittedOn">Submitted On</span><p-sortIcon field="submittedOn" /></th>
+          <th i18n="@@admin.auditorReviews.currentStage">Current Stage</th>
+          <th style="width: 80px" i18n="@@common.actions">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="approval-item">{{ row.item }}</td>
+          <td><p-tag [value]="reviewTypeLabel(row.type)" [severity]="getApprovalTypeSeverity(row.type)" [rounded]="true"></p-tag></td>
+          <td><p-tag [value]="reviewStatusLabel(row.status)" [severity]="getReviewStatusSeverity(row.status)" [rounded]="true"></p-tag></td>
+          <td>{{ row.submittedOn }}</td>
+          <td>
+            <span class="current-stage">
+              <app-draw-icon icon="pi pi-arrow-right-circle" class="stage-icon"></app-draw-icon>
+              {{ reviewStatusLabel(row.currentStage) }}
+            </span>
+          </td>
+          <td>
+            <p-button
+              class="view-btn"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              pTooltip="View"
+              i18n-pTooltip="@@common.view"
+              tooltipPosition="left"
+              (onClick)="openApprovalDrawer(row)">
+              <ng-template pTemplate="icon">
+                <svg class="draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </ng-template>
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+</div>

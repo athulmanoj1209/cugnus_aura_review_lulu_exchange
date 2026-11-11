@@ -1,0 +1,160 @@
+/* poppins-regular - latin */
+// @font-face {
+//     font-family: 'Poppins';
+//     font-style: normal;
+//     font-weight: 400;
+//     src: local(''),
+//          url("@/assets/layout/fonts/poppins-v20-latin-regular.woff2") format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+//          url("@/assets/layout/fonts/poppins-v20-latin-regular.woff") format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+//   }
+//   /* poppins-500 - latin */
+//   @font-face {
+//     font-family: 'Poppins';
+//     font-style: normal;
+//     font-weight: 500;
+//     src: local(''),
+//          url("@/assets/layout/fonts/poppins-v20-latin-500.woff2") format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+//          url("@/assets/layout/fonts/poppins-v20-latin-500.woff") format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+//   }
+//   /* poppins-600 - latin */
+//   @font-face {
+//     font-family: 'Poppins';
+//     font-style: normal;
+//     font-weight: 600;
+//     src: local(''),
+//          url("@/assets/layout/fonts/poppins-v20-latin-600.woff2") format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+//          url("@/assets/layout/fonts/poppins-v20-latin-600.woff") format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+//   }
+//   /* poppins-700 - latin */
+//   @font-face {
+//     font-family: 'Poppins';
+//     font-style: normal;
+//     font-weight: 700;
+//     src: local(''),
+//          url("@/assets/layout/fonts/poppins-v20-latin-700.woff2") format('woff2'), /* Chrome 26+, Opera 23+, Firefox 39+ */
+//          url("@/assets/layout/fonts/poppins-v20-latin-700.woff") format('woff'); /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
+//   }
+
+  /* ---- ROBOTO — Latin/default font ---- */
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/roboto-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/roboto-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/roboto-700.woff2') format('woff2');
+}
+
+/* ---- HELVETICA (Now Display) — Latin fallback, user-licensed ---- */
+@font-face {
+  font-family: 'Helvetica';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/helvetica-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/helvetica-400-italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/helvetica-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/helvetica-500-italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/helvetica-700.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Helvetica';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/helvetica-700-italic.woff2') format('woff2');
+}
+
+/* ---- TAJAWAL — Arabic primary ---- */
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/tajawal-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/tajawal-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Tajawal';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/tajawal-700.woff2') format('woff2');
+}
+
+/* ---- CAIRO — Arabic fallback ---- */
+@font-face {
+  font-family: 'Cairo';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/cairo-400.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cairo';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/cairo-500.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Cairo';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/cairo-700.woff2') format('woff2');
+}

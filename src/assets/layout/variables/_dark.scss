@@ -1,0 +1,6 @@
+:root[class*='app-dark'] {
+    --surface-ground: var(--p-surface-950);
+    --sidebar-shadow: 4px 0px 24px rgba(0, 0, 0, 0.4);
+    --sidebar-border: 1px solid var(--surface-border);
+    --card-shadow: none;
+}

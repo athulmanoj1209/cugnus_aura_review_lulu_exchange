@@ -1,0 +1,380 @@
+<p-toast position="top-right" />
+
+<div class="qs-wrap">
+
+    <!-- ── Section header ─────────────────────────────────────────────────────── -->
+    @if (!hideHeader) {
+    <div class="qs-header">
+        <div class="qs-header-left">
+            <span class="qs-header-icon">
+                <app-draw-icon icon="pi pi-list-check"></app-draw-icon>
+            </span>
+            <div>
+                <h3 class="qs-title" i18n="@@audit.questionnaire.title">Questionnaire</h3>
+                <p class="qs-subtitle" i18n="@@audit.questionnaire.subtitle">Auditor questions &amp; client responses</p>
+            </div>
+        </div>
+
+        <!-- Show "Add Question" only when rows exist; empty-state provides the CTA otherwise -->
+        @if (!readonlyQuestions && !readonlyAnswers && rows.length > 0) {
+        <p-button label="Add Question" i18n-label="@@audit.questionnaire.addQuestion" icon="pi pi-plus" size="small" styleClass="qs-add-btn" (onClick)="addRow()"
+            pTooltip="Add a new question row" i18n-pTooltip="@@audit.questionnaire.addQuestionTooltip" tooltipPosition="left" />
+        }
+    </div>
+    }
+
+    <!-- for excel upload and for importing questions and answers -->
+    @if (!hideHeader && !readonlyQuestions && !readonlyAnswers && rows.length > 0) {
+    <div class="excel-upload-strip">
+        <div class="excel-upload-info">
+            <app-draw-icon icon="pi pi-file-excel" class="excel-upload-icon"></app-draw-icon>
+            <div>
+                <h4 class="excel-upload-title" i18n="@@audit.questionnaire.uploadExcelFile">Upload Excel File</h4>
+                <p class="excel-upload-subtitle" i18n="@@audit.questionnaire.uploadExcelSubtitle">Import questionnaire rows from an Excel sheet</p>
+            </div>
+        </div>
+
+        <p-fileupload mode="basic" chooseLabel="Choose Excel" i18n-chooseLabel="@@audit.questionnaire.chooseExcel" chooseIcon="pi pi-upload" accept=".xls,.xlsx,.csv"
+            [auto]="false" [multiple]="false" styleClass="excel-upload-btn"
+            (onSelect)="onFileChange($event)"></p-fileupload>
+    </div>
+    }
+
+    <!-- ── Scope info strip ───────────────────────────────────────────────────── -->
+    <!-- @if (scopeLabel || subScopeLabel) {
+    <div class="qs-scope-strip">
+        @if (scopeLabel) {
+        <div class="qs-scope-item">
+            <app-draw-icon icon="pi pi-sitemap" class="qs-scope-icon"></app-draw-icon>
+            <span class="qs-scope-label">Scope:</span>
+            <p-tag [value]="scopeLabel" severity="secondary" class="qs-scope-tag" />
+        </div>
+        }
+        @if (scopeLabel && subScopeLabel) {
+        <span class="qs-scope-divider">•</span>
+        }
+        @if (subScopeLabel) {
+        <div class="qs-scope-item">
+            <app-draw-icon icon="pi pi-share-alt" class="qs-scope-icon"></app-draw-icon>
+            <span class="qs-scope-label">Sub Scope:</span>
+            <p-tag [value]="subScopeLabel" severity="secondary" class="qs-scope-tag" />
+        </div>
+        }
+    </div>
+    } -->
+
+    <!-- ── Client toolbar: export + import answers ──────────────────────────────── -->
+    @if (!isAuditor() && !responseView && rows.length > 0) {
+    <div class="client-tools-strip">
+        <div class="client-tools-info">
+            <span class="client-tools-icon-wrap">
+                <app-draw-icon icon="pi pi-table"></app-draw-icon>
+            </span>
+            <div>
+                <h4 class="client-tools-title" i18n="@@audit.questionnaire.tools">Questionnaire Tools</h4>
+                <p class="client-tools-sub" i18n="@@audit.questionnaire.toolsSubtitle">Export the questionnaire or import your answers from Excel</p>
+            </div>
+        </div>
+        <div class="client-tools-actions">
+            <p-button
+                label="Export to Excel"
+                i18n-label="@@audit.questionnaire.exportToExcel"
+                icon="pi pi-file-excel"
+                severity="secondary"
+                size="small"
+                [outlined]="true"
+                [disabled]="rows.length === 0"
+                pTooltip="Download questionnaire as Excel"
+                i18n-pTooltip="@@audit.questionnaire.downloadExcelTooltip"
+                tooltipPosition="top"
+                styleClass="client-tool-btn"
+                (onClick)="exportToExcel()"
+            />
+            @if (!readonlyAnswers) {
+                <p-button
+                    label="Import Answers"
+                    i18n-label="@@audit.questionnaire.importAnswers"
+                    icon="pi pi-upload"
+                    size="small"
+                    [outlined]="true"
+                    [disabled]="rows.length === 0"
+                    pTooltip="Import answers from Excel (questions and due dates will not be changed)"
+                    i18n-pTooltip="@@audit.questionnaire.importAnswersTooltip"
+                    tooltipPosition="top"
+                    styleClass="client-tool-btn client-tool-btn--import"
+                    (onClick)="clientAnswerImportRef.click()"
+                />
+                <input
+                    #clientAnswerImportRef
+                    type="file"
+                    accept=".xls,.xlsx,.csv"
+                    style="display:none"
+                    (change)="onClientAnswerImport($event)"
+                />
+            }
+        </div>
+    </div>
+    }
+
+    <!-- ── Empty state (shown when no rows exist) ────────────────────────────── -->
+    @if (rows.length === 0) {
+    <app-empty-state
+        [title]="emptyStateTitle"
+        [description]="emptyStateDescription"
+        [showAction]="isAuditor() && !readonlyQuestions"
+        actionLabel="addQuestionLabel"
+        actionIcon="pi pi-plus"
+        (actionClick)="addRow()"
+    />
+    }
+
+    <!-- ── Grid table ─────────────────────────────────────────────────────────── -->
+    @if (rows.length > 0) {
+    <div class="qs-table-container">
+        <p-table [value]="rows" styleClass="qs-table p-datatable-sm p-datatable-gridlines"
+            [tableStyle]="{ 'min-width': '640px', 'width': '100%' }">
+
+            <!-- Header -->
+            <ng-template pTemplate="header">
+                <tr>
+
+                    <th class="col-num">#</th>
+
+                    <!-- <th class="col-scope">
+                        <div class="th-content">
+                            <app-draw-icon icon="pi pi-sitemap" class="th-icon"></app-draw-icon>
+                            <span>Scope</span>
+                            <span class="th-lock"><app-draw-icon icon="pi pi-lock"></app-draw-icon></span>
+                        </div>
+                    </th>
+
+                    <th class="col-subscope">
+                        <div class="th-content">
+                            <app-draw-icon icon="pi pi-share-alt" class="th-icon"></app-draw-icon>
+                            <span>Sub Scope</span>
+                            <span class="th-lock"><app-draw-icon icon="pi pi-lock"></app-draw-icon></span>
+                        </div>
+                    </th> -->
+
+                    <th class="col-question">
+                        <div class="th-content">
+                            <app-draw-icon icon="pi pi-question-circle" class="th-icon th-icon--question"></app-draw-icon>
+                            <span i18n="@@audit.questionnaire.question">Question</span>
+                            <span class="th-role-badge th-role-badge--auditor" i18n="@@audit.questionnaire.auditor">Auditor</span>
+                        </div>
+                    </th>
+
+                    @if (!hideAnswers) {
+                    <th class="col-answer">
+                        <div class="th-content">
+                            <app-draw-icon icon="pi pi-check-circle" class="th-icon th-icon--answer"></app-draw-icon>
+                            <span i18n="@@audit.questionnaire.answer">Answer</span>
+                            <span class="th-role-badge th-role-badge--client" i18n="@@audit.questionnaire.client">Client</span>
+                        </div>
+                    </th>
+                    }
+
+                    @if (!responseView) {
+                    <th class="col-duedate">
+                        <div class="th-content">
+                            <app-draw-icon icon="pi pi-calendar" class="th-icon th-icon--duedate"></app-draw-icon>
+                            <span i18n="@@common.dueDate">Due Date</span>
+                            <span class="th-role-badge th-role-badge--auditor" i18n="@@audit.questionnaire.auditor">Auditor</span>
+                        </div>
+                    </th>
+                    }
+
+                    @if (!(readonlyQuestions && readonlyAnswers)) {
+                    <th class="col-action"></th>
+                    }
+
+                </tr>
+            </ng-template>
+
+            <!-- Body rows -->
+            <ng-template pTemplate="body" let-row let-rowIndex="rowIndex">
+                <tr class="qs-row">
+
+                    <!-- # -->
+                    <td class="col-num td-num">
+                        <span class="row-num-badge">{{ rowIndex + 1 }}</span>
+                    </td>
+
+                    <!-- Scope (read-only)
+                    <td class="col-scope td-readonly">
+                        @if (scopeLabel) {
+                        <div class="readonly-pill">
+                            <app-draw-icon icon="pi pi-lock" class="readonly-lock"></app-draw-icon>
+                            <span class="readonly-value">{{ scopeLabel }}</span>
+                        </div>
+                        } @else {
+                        <span class="readonly-unset">
+                            <app-draw-icon icon="pi pi-minus-circle"></app-draw-icon> Not set
+                        </span>
+                        }
+                    </td>
+
+                    Sub Scope (read-only) -->
+                    <!-- <td class="col-subscope td-readonly"> -->
+                    <!-- @if (subScopeLabel) { -->
+                    <!-- <div class="readonly-pill"> -->
+                    <!-- <app-draw-icon icon="pi pi-lock" class="readonly-lock"></app-draw-icon> -->
+                    <!-- <span class="readonly-value">{{ subScopeLabel }}</span> -->
+                    <!-- </div> -->
+                    <!-- } @else { -->
+                    <!-- <span class="readonly-unset"> -->
+                    <!-- <app-draw-icon icon="pi pi-minus-circle"></app-draw-icon> Not set -->
+                    <!-- </span> -->
+                    <!-- } -->
+                    <!-- </td> -->
+
+                    <!-- Question (auditor) -->
+                    <td class="col-question">
+                        <div class="composite-cell composite-cell--question">
+
+                            <div class="composite-input-row">
+                                @if (readonlyQuestions) {
+                                <div class="composite-readonly-text">{{ row.questionText || '—' }}</div>
+                                } @else {
+                                <!--  || scopeLabel == '' && subScopeLabel == '' for disabling input  -->
+                                <input pInputText type="text" [(ngModel)]="row.questionText"
+                                    placeholder="Type question here…" i18n-placeholder="@@audit.questionnaire.questionPlaceholder" class="composite-text-input"
+                                    [disabled]="!isAuditor()" [pTooltip]="row.questionText"
+                                    tooltipPosition="top" [tooltipOptions]="{ showDelay: 400 }" />
+                                }
+                                <button type="button" class="attach-trigger" (click)="qFileInput.click()"
+                                    pTooltip="Attach a file" i18n-pTooltip="@@audit.questionnaire.attachFile" aria-label="Attach a file" i18n-aria-label="@@audit.questionnaire.attachFile" tooltipPosition="top"
+                                    [disabled]="!isAuditor() || readonlyQuestions">
+                                    <app-draw-icon icon="pi pi-paperclip"></app-draw-icon>
+                                </button>
+                                <!--  || scopeLabel == '' && subScopeLabel == ''  -->
+                                <input #qFileInput type="file" multiple
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,image/*"
+                                    style="display:none" (change)="onQuestionFileChange($event, row)"
+                                    [disabled]="!isAuditor() || readonlyQuestions" />
+                            </div>
+
+                            @if (row.questionFiles.length > 0) {
+                            <div class="attached-strip">
+                                @for (f of row.questionFiles; track f.objectUrl; let fi = $index) {
+                                <span class="file-chip">
+                                    <span class="file-chip-sep">–</span>
+                                    <span class="file-chip-body" (click)="openFile(f)" [pTooltip]="openFileLabel(f.name)"
+                                        tooltipPosition="top">
+                                        <i [class]="f.iconClass + ' file-chip-icon'"></i>
+                                        <span class="file-chip-name">{{ f.name }}</span>
+                                    </span>
+                                    @if (isAuditor() && !readonlyQuestions) {
+                                    <button type="button" class="file-chip-remove" (click)="removeQuestionFile(row, fi)"
+                                        pTooltip="Remove" i18n-pTooltip="@@common.remove" aria-label="Remove" i18n-aria-label="@@common.remove" tooltipPosition="top">
+                                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                                    </button>
+                                    }
+                                </span>
+                                }
+                            </div>
+                            }
+
+                        </div>
+                    </td>
+
+                    <!-- Answer (client) -->
+                    @if (!hideAnswers) {
+                    <td class="col-answer" [class.col-answer--readonly]="readonlyAnswers">
+                        <div class="composite-cell composite-cell--answer">
+
+                            <div class="composite-input-row">
+                                @if (readonlyAnswers) {
+                                <div class="composite-readonly-text">{{ row.answerText || '—' }}</div>
+                                } @else {
+                                <input pInputText type="text" [(ngModel)]="row.answerText"
+                                    placeholder="Type answer here…" i18n-placeholder="@@audit.questionnaire.answerPlaceholder" class="composite-text-input"
+                                    [disabled]="isAuditor() || scopeLabel == '' && subScopeLabel == ''"
+                                    [pTooltip]="row.answerText" tooltipPosition="top"
+                                    [tooltipOptions]="{ showDelay: 400 }" />
+                                }
+                                <button type="button" class="attach-trigger" (click)="aFileInput.click()"
+                                    pTooltip="Attach a document" i18n-pTooltip="@@audit.questionnaire.attachDocument" aria-label="Attach a document" i18n-aria-label="@@audit.questionnaire.attachDocument" tooltipPosition="top" [disabled]="readonlyAnswers">
+                                    <app-draw-icon icon="pi pi-paperclip"></app-draw-icon>
+                                </button>
+                                <input #aFileInput type="file" multiple
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,image/*"
+                                    style="display:none" (change)="onAnswerFileChange($event, row)"
+                                    [disabled]="isAuditor() || scopeLabel == '' && subScopeLabel == '' || readonlyAnswers" />
+                            </div>
+
+                            @if (row.answerFiles.length > 0) {
+                            <div class="attached-strip">
+                                @for (f of row.answerFiles; track f.objectUrl; let fi = $index) {
+                                <span class="file-chip">
+                                    <span class="file-chip-sep">–</span>
+                                    <span class="file-chip-body" (click)="openFile(f)" [pTooltip]="openFileLabel(f.name)"
+                                        tooltipPosition="top">
+                                        <i [class]="f.iconClass + ' file-chip-icon'"></i>
+                                        <span class="file-chip-name">{{ f.name }}</span>
+                                    </span>
+                                    @if (!readonlyAnswers) {
+                                    <button type="button" class="file-chip-remove" (click)="removeAnswerFile(row, fi)"
+                                        pTooltip="Remove" i18n-pTooltip="@@common.remove" aria-label="Remove" i18n-aria-label="@@common.remove" tooltipPosition="top">
+                                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                                    </button>
+                                    }
+                                </span>
+                                }
+                            </div>
+                            }
+
+                        </div>
+                    </td>
+                    }
+
+                    <!-- Due Date (auditor) -->
+                    @if (!responseView) {
+                    <td class="col-duedate td-duedate">
+                        <div class="duedate-cell" [class.duedate-cell--invalid]="row.dueDateInvalid">
+                            <p-datepicker [(ngModel)]="row.dueDate" [minDate]="today" [showIcon]="true"
+                                [iconDisplay]="'input'" dateFormat="dd/mm/yy" placeholder="Pick date…" i18n-placeholder="@@audit.questionnaire.pickDate"
+                                [disabled]="!isAuditor() || readonlyQuestions" appendTo="body" class="qs-datepicker"
+                                (onSelect)="onDueDateSelect(row)" pTooltip="Due date cannot be in the past" i18n-pTooltip="@@audit.questionnaire.dueDatePastTooltip"
+                                tooltipPosition="top" />
+                            @if (row.dueDateInvalid) {
+                            <small class="duedate-error">
+                                <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon> <span i18n="@@audit.questionnaire.pastDateRemoved">Past date removed</span>
+                            </small>
+                            }
+                        </div>
+                    </td>
+                    }
+
+                    <!-- Delete row -->
+                    @if (!(readonlyQuestions && readonlyAnswers)) {
+                    <td class="col-action td-action">
+                        <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" size="small"
+                            class="delete-row-btn" pTooltip="Remove this row" i18n-pTooltip="@@audit.questionnaire.removeRow" aria-label="Remove this row" i18n-aria-label="@@audit.questionnaire.removeRow" tooltipPosition="left"
+                            (onClick)="removeRow(row)" />
+                    </td>
+                    }
+
+                </tr>
+            </ng-template>
+
+            <!-- Empty state -->
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="qs-empty-cell">
+                        <div class="qs-empty-state">
+                            <app-draw-icon icon="pi pi-inbox" class="qs-empty-icon"></app-draw-icon>
+                            <p class="qs-empty-text" i18n="@@audit.questionnaire.noQuestionsAddedYetPeriod">No questions added yet.</p>
+                            <p class="qs-empty-hint" i18n="@@audit.questionnaire.addFirstQuestionHint">
+                                Click <strong>Add Question</strong> to add the first question row.
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+        </p-table>
+    </div>
+    }
+
+</div>

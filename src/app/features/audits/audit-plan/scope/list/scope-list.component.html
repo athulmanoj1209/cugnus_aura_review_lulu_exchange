@@ -1,0 +1,441 @@
+<div class="audit-scope-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <!-- Row 1: title + view toggle + action button -->
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title">Audit Scope Management</h2>
+          <p class="page-subtitle">Define, manage, and monitor audit scopes and tasks</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+
+        <p-button label="+ New Audit Scope" styleClass="add-scope-btn" (onClick)="onAddNewScope()">
+        </p-button>
+
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === ScopeViewModes.List"
+            (click)="setViewMode(ScopeViewModes.List)" pTooltip="List View" tooltipPosition="top" aria-label="List view">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          </button>
+          <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === ScopeViewModes.Grid"
+            (click)="setViewMode(ScopeViewModes.Grid)" pTooltip="Grid View" tooltipPosition="top" aria-label="Grid view">
+            <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: filter bar (popover trigger + active chips + search) -->
+    <div class="filter-bar">
+      <button type="button" class="filter-bar__trigger" (click)="filterPanel.toggle($event)">
+        <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+        <span>Filters</span>
+        <span *ngIf="activeFilterCount > 0" class="filter-bar__badge">{{ activeFilterCount }}</span>
+      </button>
+
+      <div *ngIf="hasActiveFilters" class="filter-bar__chips">
+        <span *ngFor="let chip of activeFilterChips" class="filter-chip">
+          {{ chip.label }}
+          <button type="button" (click)="removeFilter(chip.key)"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+        </span>
+      </div>
+
+      <button *ngIf="hasActiveFilters" type="button" class="filter-bar__clear" (click)="clearFilters()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon> Clear all
+      </button>
+
+      <span class="filter-bar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input pInputText type="text" [(ngModel)]="searchQuery" (input)="onSearch()"
+          placeholder="Search by scope name or description…" />
+      </span>
+    </div>
+  </div>
+
+  <!-- ======================== FILTER OVERLAY PANEL ================ -->
+  <p-popover #filterPanel styleClass="scope-filter-panel">
+    <div class="fp-header">
+      <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Filters</span>
+      <button type="button" class="fp-clear-link" *ngIf="hasActiveFilters" (click)="clearFilters()">Clear all</button>
+    </div>
+    <div class="fp-grid">
+      <div class="fp-field">
+        <label class="fp-label">Company</label>
+        <p-multiselect [options]="companyOptions" [(ngModel)]="selectedCompanies" placeholder="All companies"
+          [showClear]="true" [filter]="true" filterPlaceholder="Search companies..." [maxSelectedLabels]="1"
+          selectedItemsLabel="{0} companies" styleClass="fp-select" (onChange)="onCompanyChange()">
+          <ng-template pTemplate="item" let-item>
+            <div class="category-option"><app-draw-icon icon="pi pi-building"></app-draw-icon><span>{{ item.label }}</span></div>
+          </ng-template>
+        </p-multiselect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Division</label>
+        <p-multiselect [options]="availableDivisionOptions" [(ngModel)]="selectedDivisions" placeholder="All divisions"
+          [showClear]="true" [filter]="true" filterPlaceholder="Search divisions..." [maxSelectedLabels]="1"
+          selectedItemsLabel="{0} divisions" styleClass="fp-select" (onChange)="onDivisionChange()">
+          <ng-template pTemplate="item" let-item>
+            <div class="category-option"><app-draw-icon icon="pi pi-map-marker"></app-draw-icon><span>{{ item.label }}</span></div>
+          </ng-template>
+        </p-multiselect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Sub-Division</label>
+        <p-multiselect [options]="availableSubDivisionOptions" [(ngModel)]="selectedSubDivisions"
+          placeholder="All sub-divisions" [showClear]="true" [filter]="true" filterPlaceholder="Search sub-divisions..."
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} depts" styleClass="fp-select"
+          [disabled]="!!subDivisionDisabledMessage" (onChange)="onSubDivisionChange()">
+          <ng-template pTemplate="item" let-item>
+            <div class="category-option"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon><span>{{ item.label }}</span></div>
+          </ng-template>
+        </p-multiselect>
+        @if (subDivisionDisabledMessage) {
+        <small class="fp-hint"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> {{ subDivisionDisabledMessage }}</small>
+        }
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Auditor</label>
+        <p-multiselect [options]="auditorOptions" [(ngModel)]="selectedAuditors" placeholder="All auditors"
+          [showClear]="true" [filter]="true" filterPlaceholder="Search auditors..." [maxSelectedLabels]="1"
+          selectedItemsLabel="{0} auditors" styleClass="fp-select" (onChange)="onAuditorChange()">
+          <ng-template pTemplate="item" let-item>
+            <div class="category-option"><app-draw-icon icon="pi pi-user"></app-draw-icon><span>{{ item.label }}</span></div>
+          </ng-template>
+        </p-multiselect>
+      </div>
+
+      <div class="fp-field fp-field--full">
+        <label class="fp-label">Status</label>
+        <p-multiselect [options]="statusOptions" [(ngModel)]="selectedStatuses" placeholder="All statuses"
+          [showClear]="true" [maxSelectedLabels]="2" selectedItemsLabel="{0} statuses"
+          styleClass="fp-select" (onChange)="onStatusChange()">
+          <ng-template pTemplate="item" let-item>
+            <div class="category-option"><app-draw-icon icon="pi pi-flag"></app-draw-icon><span>{{ item.label }}</span></div>
+          </ng-template>
+        </p-multiselect>
+      </div>
+    </div>
+    <div class="fp-footer">
+      <button type="button" class="fp-btn fp-btn--ghost" (click)="clearFilters(); filterPanel.hide()">Reset</button>
+      <button type="button" class="fp-btn fp-btn--primary" (click)="filterPanel.hide()">
+        Apply filters<span *ngIf="activeFilterCount > 0"> ({{ activeFilterCount }})</span>
+      </button>
+    </div>
+  </p-popover>
+
+  <!-- Active drill-down banner (from the dashboard "High-Risk Scopes Not Started" card) -->
+  @if (highRiskNotStartedOnly) {
+  <div class="drilldown-banner">
+    <span class="drilldown-banner__text">
+      <app-draw-icon icon="pi pi-filter-fill"></app-draw-icon>
+      Showing <strong>High-Risk</strong> scopes that are <strong>Not Started</strong>
+      ({{ filteredScopes.length }})
+    </span>
+    <button type="button" class="drilldown-banner__clear" (click)="clearHighRiskFilter()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon> Clear filter
+    </button>
+  </div>
+  }
+
+  <!-- ═══════════════════════ GRID VIEW ═══════════════════════ -->
+  @if (viewMode === ScopeViewModes.Grid) {
+  @if (pagedScopes.length > 0) {
+  <div class="scope-grid">
+    @for (scope of pagedScopes; track scope.id) {
+    <div class="scope-card-grid" [class.is-blocked]="isBlocked(scope.id.toString())">
+
+      @if (scope.status) {
+      <p-tag [value]="scope.status" [severity]="statusSeverity(scope.status)" class="status-tag status-tag--corner"></p-tag>
+      }
+
+      <!-- Card Header -->
+      <div class="card-header">
+        <div class="scope-avatar-wrap">
+          <p-avatar [image]="scope.avatarUrl" shape="circle" size="large" styleClass="scope-avatar"></p-avatar>
+          <svg class="scope-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+            <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+          </svg>
+        </div>
+        <span class="scope-name">{{ scope.name }}</span>
+        <span class="scope-level-label">
+          <p-tag [value]="scopeLevelLabels[scope.scopeLevel]"
+            [severity]="scope.scopeLevel === ScopeLevels.Scope ? 'info' : 'secondary'" class="level-badge">
+          </p-tag>
+        </span>
+      </div>
+
+      <!-- Card Body -->
+      <div class="card-body">
+        <p class="scope-description">{{ truncate(scope.description, 90) }}</p>
+
+        <div class="scope-meta-grid">
+          <div class="meta-item-sm">
+            <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+            <span>{{ scope.timePeriod }}</span>
+          </div>
+          <div class="meta-item-sm">
+            <app-draw-icon icon="pi pi-users"></app-draw-icon>
+            <span>{{ scope.auditors }}</span>
+          </div>
+          <div class="meta-item-sm">
+            <app-draw-icon icon="pi pi-wallet"></app-draw-icon>
+            <span>{{ scope.budget }}</span>
+          </div>
+          <div class="meta-item-sm">
+            <app-draw-icon icon="pi pi-tag"></app-draw-icon>
+            <span>{{ scope.model }}</span>
+          </div>
+        </div>
+
+        @if (scope.scopeLevel === ScopeLevels.SubScope && scope.parentScopeName) {
+        <div class="relation-chip relation-chip--parent">
+          <app-draw-icon icon="pi pi-arrow-up"></app-draw-icon>
+          {{ scope.parentScopeName }}
+        </div>
+        }
+        @if (scope.subScopeCount) {
+        <div class="relation-chip relation-chip--sub">
+          <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+          {{ scope.subScopeCount }} Sub Scope{{ scope.subScopeCount !== 1 ? 's' : '' }}
+        </div>
+        }
+
+        <!-- Assigned Area: Company / Division / Sub-Division ('Not applicable' when the division has no
+             sub-divisions) + Scope Basis (division- or sub-division-level scope) -->
+        <div class="assigned-area">
+          <div class="assigned-area__path">
+            <div class="assigned-area__col">
+              <span class="assigned-area__label">Company</span>
+              <span class="assigned-area__value" [pTooltip]="scope.org.companyName" tooltipPosition="top">{{ scope.org.companyName }}</span>
+            </div>
+            <span class="assigned-area__sep" aria-hidden="true">/</span>
+            <div class="assigned-area__col">
+              <span class="assigned-area__label">Division</span>
+              <span class="assigned-area__value" [pTooltip]="scope.org.divisionName" tooltipPosition="top">{{ scope.org.divisionName }}</span>
+            </div>
+            <span class="assigned-area__sep" aria-hidden="true">/</span>
+            <div class="assigned-area__col">
+              <span class="assigned-area__label">Sub-Division</span>
+              @if (scope.org.hasSubDivision) {
+              <span class="assigned-area__value" [pTooltip]="scope.org.subDivisionName" tooltipPosition="top">{{ scope.org.subDivisionName }}</span>
+              } @else {
+              <span class="assigned-area__value assigned-area__value--na">Not applicable</span>
+              }
+            </div>
+          </div>
+          <div class="assigned-area__basis">
+            <span class="assigned-area__basis-label">Scope basis</span>
+            <span class="assigned-area__basis-pill">{{ scope.org.hasSubDivision ? 'Sub-Division level' : 'Division level' }}</span>
+          </div>
+          <div class="assigned-area__basis">
+            <span class="assigned-area__basis-label">Audit plan</span>
+            <span class="assigned-area__plan" [pTooltip]="scope.auditPlanName" tooltipPosition="top">{{ scope.auditPlanName ?? '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="card-footer">
+        <span class="sub-division-label">
+          <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+          {{ scope.subDivisionName ?? scope.divisionName }}
+        </span>
+        <div class="card-actions">
+          <button type="button" class="icon-btn" (click)="viewScope(scope)" pTooltip="View" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+          </button>
+          <button type="button" class="icon-btn" (click)="editScope(scope)" pTooltip="Edit" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+          </button>
+          <button type="button" class="icon-btn"
+            [class.icon-btn--activate]="isBlocked(scope.id.toString())"
+            [class.icon-btn--deactivate]="!isBlocked(scope.id.toString())"
+            [pTooltip]="isBlocked(scope.id.toString()) ? 'Activate' : 'Deactivate'" tooltipPosition="top"
+            (click)="openConfirm(scope.id.toString(), scope.name)">
+            <app-draw-icon [icon]="isBlocked(scope.id.toString()) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <app-draw-icon icon="pi pi-inbox" class="empty-icon"></app-draw-icon>
+    <h3>No audit scopes found</h3>
+    <p>Try adjusting your search or filter criteria.</p>
+  </div>
+  }
+  }
+
+  <!-- ═══════════════════════ LIST VIEW ═══════════════════════ -->
+  @if (viewMode === ScopeViewModes.List) {
+  @if (pagedScopes.length > 0) {
+  <div class="scope-list">
+    @for (scope of pagedScopes; track scope.id) {
+    <div class="scope-card" [class.is-blocked]="isBlocked(scope.id.toString())">
+
+      <!-- Top Row -->
+      <div class="scope-card-header">
+        <div class="scope-avatar-wrap">
+          <p-avatar [image]="scope.avatarUrl" shape="circle" size="large" styleClass="scope-avatar"></p-avatar>
+        </div>
+
+        <div class="scope-info">
+          <div class="scope-name-row">
+            <span class="scope-name">{{ scope.name }}</span>
+            <p-tag [value]="scopeLevelLabels[scope.scopeLevel]"
+              [severity]="scope.scopeLevel === ScopeLevels.Scope ? 'info' : 'secondary'" class="level-badge">
+            </p-tag>
+            @if (scope.status) {
+            <p-tag [value]="scope.status" [severity]="statusSeverity(scope.status)" class="status-badge"></p-tag>
+            }
+          </div>
+          <span class="scope-description">{{ scope.description }}</span>
+        </div>
+
+        @if (scope.scopeLevel === ScopeLevels.SubScope && scope.parentScopeName) {
+        <div class="scope-link">
+          <span class="scope-arrow"><app-draw-icon icon="pi pi-arrow-up"></app-draw-icon></span>
+          <span>{{ scope.parentScopeName }}</span>
+        </div>
+        }
+        @if (scope.subScopeCount) {
+        <div class="scope-link">
+          <span class="scope-arrow"><app-draw-icon icon="pi pi-arrow-right"></app-draw-icon></span>
+          <span>{{ scope.subScopeCount }} Sub Scope</span>
+        </div>
+        }
+        @if (scope.rfiCount) {
+        <div class="scope-link">
+          <span class="scope-arrow"><app-draw-icon icon="pi pi-arrow-right"></app-draw-icon></span>
+          <span>{{ scope.rfiCount }} RFI</span>
+        </div>
+        }
+
+        <div class="scope-card-actions">
+          <button type="button" class="icon-btn" (click)="viewScope(scope)" pTooltip="View" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+          </button>
+          <button type="button" class="icon-btn" (click)="editScope(scope)" pTooltip="Edit" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+          </button>
+          <button type="button" class="icon-btn"
+            [class.icon-btn--activate]="isBlocked(scope.id.toString())"
+            [class.icon-btn--deactivate]="!isBlocked(scope.id.toString())"
+            [pTooltip]="isBlocked(scope.id.toString()) ? 'Activate' : 'Deactivate'" tooltipPosition="top"
+            (click)="openConfirm(scope.id.toString(), scope.name)">
+            <app-draw-icon [icon]="isBlocked(scope.id.toString()) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Bottom Meta Row -->
+      <div class="scope-card-meta">
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Time Period :</span>
+            <span class="meta-value">{{ scope.timePeriod }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-users"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Auditors :</span>
+            <span class="meta-value">{{ scope.auditors }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-wallet"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Budget :</span>
+            <span class="meta-value">{{ scope.budget }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-tag"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Model :</span>
+            <span class="meta-value">{{ scope.model }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-building"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Company :</span>
+            <span class="meta-value">{{ scope.org.companyName }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-map-marker"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Division :</span>
+            <span class="meta-value">{{ scope.org.divisionName }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Sub-Division :</span>
+            <span class="meta-value">{{ scope.org.subDivisionName }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Scope Basis :</span>
+            <span class="meta-value">{{ scope.subDivisionName ? 'Sub-Division level' : 'Division level' }}</span>
+          </div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-icon-wrap"><app-draw-icon icon="pi pi-briefcase"></app-draw-icon></div>
+          <div class="meta-text">
+            <span class="meta-label">Audit Plan :</span>
+            <span class="meta-value" [pTooltip]="scope.auditPlanName" tooltipPosition="top">{{ scope.auditPlanName ?? '—' }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <app-draw-icon icon="pi pi-inbox" class="empty-icon"></app-draw-icon>
+    <h3>No audit scopes found</h3>
+    <p>Try adjusting your search or filter criteria.</p>
+  </div>
+  }
+  }
+
+  <!-- Footer / Paginator -->
+  @if (filteredScopes.length > 0) {
+  <app-pagination-bar
+    [pageSize]="pageSize"
+    [totalRecords]="filteredScopes.length"
+    [currentPage]="currentPage"
+    [rowsPerPageOptions]="[6, 12, 18, 24, 40, 56]"
+    (pageChange)="onPageChange($event)"
+    (rowsChange)="onRowsChange($event)">
+  </app-pagination-bar>
+  }
+
+</div>
+
+<app-confirm-action-dialog
+  [visible]="showConfirmDialog"
+  [action]="isBlocked(confirmTarget?.id ?? '') ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()"
+  (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>

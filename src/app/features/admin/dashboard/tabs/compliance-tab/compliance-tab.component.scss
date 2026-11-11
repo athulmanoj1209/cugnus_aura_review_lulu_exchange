@@ -1,0 +1,300 @@
+.compliance-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@keyframes stat-icon-draw {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+// ── Stat Cards ──────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.65rem;
+  }
+
+  &__label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+  }
+
+  &__icon {
+    font-size: 14px;
+    color: var(--text-color-secondary);
+    display: inline-flex;
+
+    .draw-icon {
+      overflow: visible;
+
+      path,
+      circle,
+      rect,
+      line,
+      polyline {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 0;
+      }
+    }
+  }
+
+  &:hover &__icon .draw-icon {
+    path,
+    circle,
+    rect,
+    line,
+    polyline {
+      animation: stat-icon-draw 0.6s ease;
+    }
+
+    line:last-of-type {
+      animation-delay: 0.45s;
+    }
+  }
+
+  &__value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: var(--text-color-secondary);
+  }
+
+  &.stat--warning  { background: color-mix(in srgb, var(--p-yellow-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-orange-500) 40%, transparent); .stat-card__icon { color: var(--p-orange-600); } }
+  &.stat--danger   { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-red-500) 30%, transparent); .stat-card__icon { color: var(--p-red-500); } }
+
+  :host-context(.app-dark) & {
+    &.stat--warning { background: rgba(217, 119, 6, 0.12); border-color: var(--surface-border); }
+    &.stat--danger  { background: rgba(220, 38, 38, 0.12); border-color: var(--surface-border); }
+  }
+}
+
+.sub-green { color: var(--p-green-500) !important; }
+.sub-gray  { color: var(--text-color-secondary) !important; }
+
+// ── Layout helpers ───────────────────────────────────────────
+.two-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+// ── Chart Cards ──────────────────────────────────────────────
+.chart-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chart-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 1rem 0;
+}
+
+.chart-box {
+  position: relative;
+  height: 280px;
+}
+p-chart{height: stretch;}
+
+// ── Custom bar chart legend ─────────────────────────────────
+// Rendered outside the canvas — styled to match the donut chart's legend
+// (see shared donut-status-chart.scss) instead of Chart.js's built-in
+// in-canvas legend. Same treatment as the Audits by Department / Risk
+// Rating Distribution charts on the Audit Overview page.
+.donut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  width: 100%;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    user-select: none;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.75; }
+    &:focus-visible {
+      outline: 2px solid var(--p-blue-500);
+      outline-offset: 2px;
+    }
+
+    &--disabled {
+      opacity: 0.4;
+
+      .donut-legend__dot { background: var(--text-color-secondary) !important; }
+      .donut-legend__label,
+      .donut-legend__value { text-decoration: line-through; }
+    }
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__value {
+    margin-inline-start: 0.4rem;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+// ── Table Card ───────────────────────────────────────────────
+.table-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+.header-icon {
+  font-size: 16px;
+  color: var(--text-color-secondary);
+}
+
+// ── Coverage Bar ─────────────────────────────────────────────
+.coverage-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coverage-track {
+  flex: 1;
+  height: 6px;
+  background: var(--surface-border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.coverage-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+
+  &.bar-full    { background: var(--p-gray-900); }
+  &.bar-partial { background: var(--p-orange-500); }
+  &.bar-zero    { background: var(--p-red-500); }
+}
+
+:host-context(.app-dark) .coverage-fill.bar-full {
+  background: var(--p-gray-200);
+}
+
+.coverage-pct {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-color);
+  min-width: 36px;
+  text-align: end;
+}
+
+// ── Table rows ───────────────────────────────────────────────
+.row-alert td {
+  background: color-mix(in srgb, var(--p-red-500) 8%, transparent) !important;
+}
+
+:host-context(.app-dark) .row-alert td {
+  background: rgba(220, 38, 38, 0.14) !important;
+}
+
+// ── View button icon draw-on-hover ───────────────────────────
+::ng-deep .view-btn {
+  .eye-draw-icon {
+    color: var(--text-color-secondary);
+    transition: color 0.25s ease;
+
+    path,
+    circle {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &:hover .eye-draw-icon {
+    color: var(--p-blue-600);
+
+    path,
+    circle {
+      animation: stat-icon-draw 0.5s ease;
+    }
+
+    circle {
+      animation-delay: 0.35s;
+    }
+  }
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-color-secondary);
+  font-size: 13px;
+}

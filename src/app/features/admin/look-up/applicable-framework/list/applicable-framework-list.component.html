@@ -1,0 +1,174 @@
+<div class="applicable-framework-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title" i18n="@@admin.applicableFramework.title">Applicable Frameworks</h2>
+          <p class="page-subtitle" i18n="@@admin.applicableFramework.subtitle">Define and manage regulatory and professional frameworks applicable to audit engagements</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+        <p-button label="+ New Framework" styleClass="applicable-framework-btn" i18n-label="@@admin.applicableFramework.newFramework" (onClick)="openAddDialog()"></p-button>
+      </div>
+    </div>
+    <div class="page-header__filters">
+      <span class="p-input-icon-left search-wrapper page-header__search relative">
+        <app-draw-icon icon="pi pi-search" class="start-3 top-[15.1px] absolute"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search by name, code or issuing authority" [(ngModel)]="searchQuery"
+          (input)="onSearch()" class="search-input" i18n-placeholder="@@admin.applicableFramework.searchPlaceholder" />
+      </span>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  @if (filteredFrameworks.length === 0) {
+    <div class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-book"></app-draw-icon>
+      <span i18n="@@admin.applicableFramework.noFrameworks">No frameworks found.</span>
+      <button class="ev-empty__btn" (click)="openAddDialog()" i18n="@@admin.applicableFramework.addApplicableFramework">+ Add Applicable Framework</button>
+    </div>
+  }
+
+  <!-- List -->
+  @if (filteredFrameworks.length > 0) {
+    <div class="it-list">
+      <div class="list-header">
+        <span class="list-header__cell col-id" i18n="@@common.number">#</span>
+        <span class="list-header__cell col-name sortable" (click)="toggleSort('name')" i18n="@@admin.applicableFramework.frameworkNameUppercase">FRAMEWORK NAME <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'name'" [class.pi-sort-amount-up-alt]="sortField === 'name' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'name' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-code" i18n="@@common.codeUppercase">CODE</span>
+        <span class="list-header__cell col-version" i18n="@@common.versionUppercase">VERSION</span>
+        <span class="list-header__cell col-authority" i18n="@@common.issuingAuthorityUppercase">ISSUING AUTHORITY</span>
+        <span class="list-header__cell col-status" i18n="@@common.statusUppercase">STATUS</span>
+        <span class="list-header__cell col-date sortable" (click)="toggleSort('createdOn')" ><span i18n="@@common.createdOn">CREATED ON</span> <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'createdOn'" [class.pi-sort-amount-up-alt]="sortField === 'createdOn' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'createdOn' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-actions" i18n="@@common.actionsUppercase">ACTIONS</span>
+      </div>
+
+      @for (fw of pagedFrameworks; track fw.id; let i = $index) {
+        <article class="it-row" [class.it-row--inactive]="fw.status === 'inactive'">
+
+          <div class="col-id">
+            <span class="ev-id">{{ ((currentPage * pageSize) + i + 1).toString().padStart(2, '0') }}</span>
+          </div>
+
+          <div class="col-name">
+            <span class="ev-title">{{ fw.name }}</span>
+            <span class="ev-uploader">{{ truncate(fw.description, 90) }}</span>
+          </div>
+
+          <div class="col-code">
+            <span class="code-badge">{{ fw.code }}</span>
+          </div>
+
+          <div class="col-version">
+            <span class="version-text">{{ fw.version }}</span>
+          </div>
+
+          <div class="col-authority">
+            <span class="authority-text">{{ fw.issuingAuthority }}</span>
+          </div>
+
+          <div class="col-status">
+            <span class="status-badge"
+              [class.status-badge--active]="fw.status === 'active'"
+              [class.status-badge--inactive]="fw.status === 'inactive'">
+              {{ statusLabel(fw.status) }}
+            </span>
+          </div>
+
+          <div class="col-date">{{ fw.createdOn }}</div>
+
+          <div class="col-actions">
+            <div class="row-actions">
+              <button class="icon-btn" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top" (click)="viewFramework(fw)">
+                <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+              </button>
+              <button class="icon-btn" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top" (click)="editFramework(fw)">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button
+                class="icon-btn"
+                [class.icon-btn--activate]="fw.status === 'inactive'"
+                [class.icon-btn--deactivate]="fw.status === 'active'"
+                [pTooltip]="fw.status === 'inactive' ? activateLabel : deactivateLabel"
+                tooltipPosition="top"
+                (click)="openConfirm(fw)">
+                <app-draw-icon [icon]="fw.status === 'inactive' ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+
+  @if (filteredFrameworks.length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize"
+      [totalRecords]="filteredFrameworks.length"
+      [currentPage]="currentPage"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onRowsChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>
+
+<!-- Add / Edit Dialog -->
+<p-dialog
+  [(visible)]="showAddDialog"
+  [modal]="true" [draggable]="false" [resizable]="false" [closable]="false" [showHeader]="false"
+  [style]="{ width: '600px', padding: '0' }" styleClass="no-pad-dialog">
+  <app-applicable-framework
+    [mode]="dialogMode"
+    [editItem]="editingItem"
+    (submitted)="onFrameworksSubmitted($event)"
+    (cancelled)="onDialogCancelled()">
+  </app-applicable-framework>
+</p-dialog>
+
+<!-- View Dialog -->
+@if (viewingItem) {
+  <app-lookup-view-dialog
+    [(visible)]="showViewDialog"
+    width="520px"
+    icon="pi pi-book"
+    [title]="viewingItem.name"
+    [subtitle]="applicableFrameworkDetailsLabel"
+    [active]="viewingItem.status === 'active'"
+    [description]="viewingItem.description"
+    [createdOn]="viewingItem.createdOn">
+
+    <!-- Code + Version row -->
+    <div class="vd-meta-row">
+      <div class="vd-meta-item">
+        <span class="vd-meta-label"><app-draw-icon icon="pi pi-code"></app-draw-icon> <span i18n="@@common.codeUppercase">CODE</span></span>
+        <span class="vd-code-badge">{{ viewingItem.code }}</span>
+      </div>
+      <div class="vd-meta-item">
+        <span class="vd-meta-label"><app-draw-icon icon="pi pi-tag"></app-draw-icon> <span i18n="@@common.versionUppercase">VERSION</span></span>
+        <span class="vd-meta-value">{{ viewingItem.version }}</span>
+      </div>
+    </div>
+
+    <!-- Issuing Authority -->
+    <div class="vd-field-row">
+      <span class="vd-field-label"><app-draw-icon icon="pi pi-building"></app-draw-icon> <span i18n="@@common.issuingAuthorityUppercase">ISSUING AUTHORITY</span></span>
+      <span class="vd-field-value">{{ viewingItem.issuingAuthority }}</span>
+    </div>
+  </app-lookup-view-dialog>
+}
+
+<!-- Confirm Dialog -->
+<app-confirm-action-dialog
+  [visible]="showConfirmDialog"
+  [action]="confirmTarget && isBlocked(confirmTarget.id) ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()"
+  (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>
+

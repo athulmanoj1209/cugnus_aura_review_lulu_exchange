@@ -1,0 +1,274 @@
+.working-papers {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@keyframes working-papers-icon-draw {
+  from {
+    stroke-dashoffset: 100;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+// ── Stat Card ────────────────────────────────────────────────
+.stat-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.65rem;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    line-height: 1.35;
+  }
+
+  &__icon {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    display: inline-flex;
+
+    .draw-icon {
+      overflow: visible;
+
+      path, circle, rect, line, polyline {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 0;
+      }
+    }
+  }
+
+  &:hover &__icon .draw-icon {
+    path, circle, rect, line, polyline {
+      animation: auditor-overview-icon-draw 0.6s ease;
+    }
+
+    > :not(:first-child) {
+      animation-delay: 0.35s;
+    }
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1;
+  }
+
+  &.stat--warning  { background: color-mix(in srgb, var(--p-yellow-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-orange-500) 40%, transparent); .stat-card__icon { color: var(--p-orange-600); } }
+  &.stat--orange   { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent); border-color: color-mix(in srgb, var(--p-orange-500) 30%, transparent); .stat-card__icon { color: var(--p-orange-600); } }
+  &.stat--success  { background: var(--surface-hover); border-color: color-mix(in srgb, var(--p-green-500) 30%, transparent); .stat-card__icon { color: var(--p-green-500); } }
+  &.stat--danger   { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-red-500) 30%, transparent); .stat-card__icon { color: var(--p-red-500); } }
+  &.stat--info     { background: var(--surface-hover); border-color: color-mix(in srgb, var(--p-blue-500) 30%, transparent); .stat-card__icon { color: var(--p-blue-600); } }
+
+  :host-context(.app-dark) & {
+    &.stat--warning { background: rgba(217, 119, 6, 0.12); border-color: var(--surface-border); }
+    &.stat--orange  { background: rgba(234, 88, 12, 0.12); border-color: var(--surface-border); }
+    &.stat--success { border-color: var(--surface-border); }
+    &.stat--danger  { background: rgba(220, 38, 38, 0.12); border-color: var(--surface-border); }
+    &.stat--info    { border-color: var(--surface-border); }
+  }
+
+  // Clickable KPI cards (e.g. "My Active Audits")
+  &--clickable {
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--p-blue-500) 40%, transparent);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+      transform: translateY(-2px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  }
+}
+
+// ── Grids ─────────────────────────────────────────────────────
+.stats-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+.stats-grid-6 {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 1rem;
+}
+
+.two-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+// ── RFI Row (table wider, chart narrower) ─────────────────────
+.rfi-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.rfi-list-card {}
+
+.rfi-chart-card {}
+
+// ── Section Header ────────────────────────────────────────────
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--surface-border);
+}
+
+.section-icon {
+  font-size: 16px;
+  color: var(--primary-color);
+}
+
+.section-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+// ── Chart Cards ──────────────────────────────────────────────
+.chart-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chart-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.chart-box {
+  position: relative;
+  height: 240px;
+}
+
+// ── Table Card ───────────────────────────────────────────────
+.table-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+.header-icon {
+  font-size: 16px;
+}
+
+.header-icon--blue {
+  color: var(--p-blue-600);
+}
+
+.header-icon--warn {
+  color: var(--p-orange-600);
+}
+
+.header-icon--danger {
+  color: var(--p-red-500);
+}
+
+.header-icon--success {
+  color: var(--p-green-500);
+}
+
+// ── Table cell overrides ──────────────────────────────────────
+.wp-name {
+  font-weight: 500;
+  color: var(--p-blue-700);
+  font-size: 13px;
+}
+
+.rfi-id {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 13px;
+}
+
+.row-alert td {
+  background: color-mix(in srgb, var(--p-red-500) 8%, transparent) !important;
+}
+
+// ── View button icon draw-on-hover ───────────────────────────
+::ng-deep .view-btn {
+  .draw-icon {
+    color: var(--text-color-secondary);
+    transition: color 0.25s ease;
+    overflow: visible;
+
+    path,
+    circle,
+    rect,
+    line,
+    polyline {
+      stroke-dasharray: 100;
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &:hover .draw-icon {
+    color: var(--primary-color);
+
+    path,
+    circle,
+    rect,
+    line,
+    polyline {
+      animation: working-papers-icon-draw 0.5s ease;
+    }
+
+    > :not(:first-child) {
+      animation-delay: 0.35s;
+    }
+  }
+}

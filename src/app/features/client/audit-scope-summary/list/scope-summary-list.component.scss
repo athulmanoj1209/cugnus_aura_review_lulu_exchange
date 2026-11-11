@@ -1,0 +1,910 @@
+// ─── Tokens ───────────────────────────────────────────────────────────────────
+$primary:      var(--primary-color);
+$primary-mid:  color-mix(in srgb, var(--primary-color) 45%, transparent);
+$primary-light:color-mix(in srgb, var(--primary-color) 16%, transparent);
+$surface:      var(--surface-card);
+$surface-alt:  var(--surface-ground);
+$border:       var(--surface-border);
+$text-main:    var(--text-color);
+$text-muted:   var(--text-color-secondary);
+$text-subtle:  var(--text-color-secondary);
+$radius-card:  14px;
+$radius-sm:    8px;
+$shadow-card:  0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px $border;
+
+// ─── Wrapper ──────────────────────────────────────────────────────────────────
+.csl-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: var(--surface-hover);
+  min-height: 100%;
+}
+
+// ─── Header ───────────────────────────────────────────────────────────────────
+.csl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.csl-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.csl-header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+
+  i { color: #fff; font-size: 1.2rem; }
+}
+
+.csl-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $text-main;
+  margin: 0 0 2px;
+}
+
+.csl-subtitle {
+  font-size: 0.8rem;
+  color: $text-muted;
+  margin: 0;
+}
+
+// ─── View toggle ──────────────────────────────────────────────────────────────
+.csl-view-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.view-toggle-btn {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $surface;
+  border: none;
+  color: $text-muted;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:first-child { border-inline-end: 1px solid $border; }
+
+  &.active {
+    background: $primary;
+    color: #fff;
+  }
+
+  &:not(.active):hover {
+    background: $surface-alt;
+    color: $primary;
+  }
+
+  i { font-size: 0.9rem; }
+}
+
+// ─── Role switcher (Admin / Sub-Division Head) ─────────────────────────────────
+.csl-role-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  padding: 0.625rem 1rem;
+}
+
+.csl-role-bar-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.csl-role-toggle {
+  display: flex;
+  border: 1px solid $border;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.role-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 0.9rem;
+  background: $surface;
+  border: none;
+  color: $text-muted;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s;
+
+  &:first-child { border-inline-end: 1px solid $border; }
+
+  &.active {
+    background: $primary;
+    color: #fff;
+  }
+
+  &:not(.active):hover {
+    background: $surface-alt;
+    color: $primary;
+  }
+
+  i { font-size: 0.8rem; }
+}
+
+.csl-role-subdivision-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+}
+
+:host ::ng-deep .csl-role-subdivision-select {
+  min-width: 200px;
+  height: 34px;
+
+  .p-select {
+    height: 34px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: $surface-alt;
+  }
+}
+
+// ─── Summary cards (screenshot 2 style) ──────────────────────────────────────
+.csl-summary-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+@keyframes summary-card-icon-draw-in {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.summary-card:hover .icon-draw {
+  path, circle, rect, line, polyline, polygon, ellipse {
+    stroke-dasharray: 100;
+    animation: summary-card-icon-draw-in 0.6s ease;
+  }
+}
+
+.summary-card {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-card;
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  // Was 12.3rem (~197px) — with `justify-content: space-between` already pushing the two
+  // children (text block + icon) apart, that huge gap forced every card in the 5-column
+  // summary row well past its container's width, overflowing the whole row (and dragging the
+  // rest of the page into horizontal scroll along with it, which is why sections below the
+  // cards appeared shifted too). `gap` here just needs to be a floor/minimum spacing.
+  gap: 0.75rem;
+
+  &.rfi-alert-card {
+    border-color: var(--p-amber-100);
+    background: var(--p-orange-50);
+
+    :host-context(.app-dark) & { border-color: $border; }
+  }
+
+  // Overdue card — red/danger, matching the risk-high pill palette and the RFI side's own
+  // "Overdue = red" convention (kept distinct from rfi-alert-card above, which was authored
+  // for a different, unused "Open RFIs" card and uses an amber palette instead).
+  &.overdue-card {
+    border-color: var(--p-red-100);
+    background: var(--p-red-50);
+
+    :host-context(.app-dark) & { border-color: $border; }
+  }
+}
+
+.summary-card-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.summary-card-val {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+
+  &.total-val      { color: $primary; }
+  &.inprogress-val { color: var(--p-teal-500); }
+  &.notstarted-val { color: var(--text-color-secondary); }
+  &.completed-val  { color: var(--p-green-600); }
+  &.overdue-val    { color: var(--p-red-600); }
+  &.rfi-val        { color: var(--p-orange-600); }
+}
+
+.summary-card-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: $text-muted;
+  white-space: nowrap;
+}
+
+.summary-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 1.1rem; }
+
+  &.total-icon      { background: var(--surface-hover);  i { color: $primary; } }
+  &.inprogress-icon { background: var(--surface-card);  i { color: var(--p-teal-500); } }
+  &.notstarted-icon { background: var(--surface-hover);  i { color: var(--text-color-secondary); } }
+  &.completed-icon  { background: var(--p-green-50);  i { color: var(--p-green-600); } }
+  &.overdue-icon    { background: var(--p-red-50);  i { color: var(--p-red-600); } }
+  &.rfi-icon        { background: var(--p-orange-50);  i { color: var(--p-orange-600); } }
+}
+
+// ─── Filter bar ───────────────────────────────────────────────────────────────
+.csl-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-sm;
+  padding: 0.75rem 1rem;
+}
+
+.csl-search-wrap {
+  position: relative;
+  width: 400px;
+  flex: 0 0 400px;
+  margin-inline-start: auto;
+}
+
+.csl-search-icon {
+  position: absolute;
+  inset-inline-start: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $text-subtle;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.csl-search-input {
+  // width: 100%;
+  height: 38px;
+  width: 100%;
+  padding-block: 0;
+  padding-inline-start: 2.25rem;
+  padding-inline-end: 0.75rem;
+  border: 1px solid $border;
+  border-radius: 6px;
+  font-size: 0.83rem;
+  color: $text-main;
+  background: var(--surface-card);
+  outline: none;
+  transition: border-color 0.15s;
+  box-sizing: border-box;
+
+  &::placeholder { color: $text-subtle; }
+  &:focus { border-color: $primary-mid; background: $surface; }
+}
+
+.csl-subdivision-filter-wrap {
+  position: relative;
+
+  &[ptooltip] { cursor: not-allowed; }
+
+  // Dim when disabled so the user sees it's locked
+  p-select[disabled="true"],
+  p-select.p-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+}
+
+:host ::ng-deep .csl-filter-select {
+  height: 38px;
+  min-width: 150px;
+
+  .p-select {
+    height: 38px;
+    border-radius: 6px;
+    font-size: 0.83rem;
+    background: $surface-alt;
+  }
+}
+
+.csl-clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.4rem 0.875rem;
+  background: var(--p-red-50);
+  border: 1px solid var(--p-red-300);
+  color: var(--p-red-600);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+
+  &:hover { background: var(--p-red-100); }
+}
+
+// ─── Empty state ──────────────────────────────────────────────────────────────
+.csl-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.csl-empty-icon {
+  font-size: 2.5rem;
+  color: $text-subtle;
+  margin-bottom: 1rem;
+}
+
+.csl-empty-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-main;
+  margin: 0 0 4px;
+}
+
+.csl-empty-sub {
+  font-size: 0.83rem;
+  color: $text-muted;
+  margin: 0 0 1rem;
+}
+
+// ─── Grid ─────────────────────────────────────────────────────────────────────
+.csl-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  align-items: stretch;
+
+  @media (max-width: 1400px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 680px)  { grid-template-columns: 1fr; }
+}
+
+@keyframes scope-card-icon-draw-in {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.scope-card:hover .icon-draw {
+  path, circle, rect, line, polyline, polygon, ellipse {
+    stroke-dasharray: 100;
+    animation: scope-card-icon-draw-in 0.6s ease;
+  }
+}
+
+// ─── Scope card ───────────────────────────────────────────────────────────────
+.scope-card {
+  position: relative;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+}
+
+.status-tag--corner {
+  position: absolute;
+  top: 20px;
+  inset-inline-end: 20px;
+
+  &.card-in-progress { border-top: 3px solid $primary-mid; }
+  &.card-completed   { border-top: 3px solid var(--p-green-600); }
+  &.card-overdue     { border-top: 3px solid var(--p-red-600); }
+}
+
+// ── Top bar ───────────────────────────────────────────────────────────────────
+.card-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+:host ::ng-deep .card-status-tag {
+  font-size: 0.68rem !important;
+  padding: 3px 9px !important;
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.card-risk-pill {
+  display: inline-flex;
+  align-self: start;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  .risk-dot-sm {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.risk-high   { background: var(--p-red-50); color: var(--p-red-600); .risk-dot-sm { background: var(--p-red-500); } }
+  &.risk-medium { background: var(--p-orange-50); color: var(--p-orange-700); .risk-dot-sm { background: var(--p-orange-500); } }
+  &.risk-low    { background: var(--p-green-50); color: var(--p-green-600); .risk-dot-sm { background: var(--p-green-500); } }
+}
+
+.card-rfi-badge {
+  margin-inline-start: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  background: var(--p-orange-50);
+  border: 1px solid var(--p-amber-100);
+  color: var(--p-orange-700);
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: default;
+
+  i { font-size: 0.65rem; }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-inline-end: 90px;
+  margin-bottom: 32px;
+}
+
+.card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $text-main;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.card-objective {
+  font-size: 0.8rem;
+  color: $text-muted;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Progress ──────────────────────────────────────────────────────────────────
+.card-progress-wrap {
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.card-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-progress-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $text-subtle;
+}
+
+.card-progress-pct {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: $primary-mid;
+
+  &.pct-done { color: var(--p-green-600); }
+}
+
+.card-progress-track {
+  width: 100%;
+  height: 6px;
+  background: var(--surface-hover);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.card-progress-fill {
+  height: 100%;
+  background: $primary-mid;
+  border-radius: 999px;
+  transition: width 0.5s ease;
+
+  &.fill-done { background: var(--p-green-600); }
+}
+
+// ── Info grid ─────────────────────────────────────────────────────────────────
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.info-icon {
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .icon-draw { width: 12px; height: 12px; }
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.info-value {
+  font-size: 0.8rem;
+  line-height: 1.25;
+  color: $text-main;
+  font-weight: 400;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+.card-footer {
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid $border;
+  flex-wrap: wrap;
+}
+
+.card-subdivisions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.card-subdivision-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  background: $primary-light;
+  color: $primary;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.btn-view {
+  border: 1.5px solid var(--primary-color);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--primary-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: var(--primary-color); color: #fff; }
+}
+
+// ─── List View (row cards, mirrors Companies/Divisions pages) ──────────────────
+$csl-list-cols: 2.2fr 1.4fr 1.3fr 1.2fr 0.8fr 0.8fr 0.9fr 1fr 0.6fr;
+
+.csl-list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: $csl-list-cols;
+  gap: 0.75rem;
+  padding: 0 1rem;
+
+  &__cell {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  .col-action { text-align: center; }
+}
+
+.csl-row {
+  display: grid;
+  grid-template-columns: $csl-list-cols;
+  align-items: center;
+  gap: 0.75rem;
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-card;
+  padding: 0.85rem 1rem;
+  font-size: 0.82rem;
+  color: $text-main;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &.row-inprogress { border-inline-start: 3px solid $primary-mid; }
+  &.row-completed  { border-inline-start: 3px solid var(--p-green-600); }
+  &.row-overdue    { border-inline-start: 3px solid var(--p-red-600); }
+
+  .col-action { display: flex; justify-content: center; }
+}
+
+.td-scope-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.td-scope-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: $primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { color: $primary; font-size: 0.85rem; }
+}
+
+.td-scope-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $text-main;
+  margin: 0 0 2px;
+}
+
+.td-scope-obj {
+  font-size: 0.73rem;
+  color: $text-muted;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.td-subdivision-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.td-subdivision-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  background: $primary-light;
+  color: $primary;
+  border-radius: 4px;
+  font-size: 0.67rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.col-period {
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
+.td-period-start, .td-period-end { color: $text-main; }
+.td-period-sep { color: $text-subtle; margin: 0 4px; }
+
+.td-cell {
+  white-space: nowrap;
+  color: $text-muted;
+  font-size: 0.8rem;
+}
+
+.td-risk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  .td-risk-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &.risk-high   { background: var(--p-red-50); color: var(--p-red-600); .td-risk-dot { background: var(--p-red-500); } }
+  &.risk-medium { background: var(--p-orange-50); color: var(--p-orange-700); .td-risk-dot { background: var(--p-orange-500); } }
+  &.risk-low    { background: var(--p-green-50); color: var(--p-green-600); .td-risk-dot { background: var(--p-green-500); } }
+}
+
+.td-na { color: $text-subtle; }
+
+.td-status-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.td-pct {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $primary-mid;
+}
+
+.td-view-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 7px;
+  color: $primary-mid;
+  cursor: pointer;
+  transition: background 0.15s;
+  margin: 0 auto;
+
+  &:hover { background: $primary-light; }
+  i { font-size: 0.85rem; }
+}
+:host ::ng-deep .p-select-label {
+  font-size:.85rem;
+  padding:12px;
+}
+// ─── Auditor chips in list view ───────────────────────────────────────────────
+.td-auditor-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.td-auditor-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: $primary-light;
+  color: $primary;
+  font-size: 0.62rem;
+  font-weight: 700;
+  cursor: default;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px $border;
+  flex-shrink: 0;
+}
+
+.td-auditor-more {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  background: $surface-alt;
+  border: 1px solid $border;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: $text-muted;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  &:hover {
+    background: $primary-light;
+    color: $primary;
+    border-color: $primary-mid;
+  }
+
+  &.td-auditor-less {
+    background: $primary-light;
+    color: $primary;
+    border-color: $primary-mid;
+  }
+}
+
+// ─── List view responsive ───────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .list-header { display: none; }
+
+  .csl-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+
+    .col-action { justify-content: start; }
+  }
+}

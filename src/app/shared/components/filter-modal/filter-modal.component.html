@@ -1,0 +1,154 @@
+<div class="filter-wrap">
+  <button type="button" class="filters-btn" [class.is-active]="showFilters() || activeFilterCount > 0"
+          (click)="toggleFilters(); $event.stopPropagation()">
+    <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Filters
+    @if (activeFilterCount > 0) {
+      <span class="filters-badge">{{ activeFilterCount }}</span>
+    }
+  </button>
+
+  @if (showFilters()) {
+    <div class="filter-panel" (click)="$event.stopPropagation()">
+
+      <div class="filter-panel__head">
+        <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+        <span>Filters</span>
+        <button type="button" class="filter-panel__close" (click)="showFilters.set(false)">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon>
+        </button>
+      </div>
+
+      <!--
+        Fields render in source order and flow into the 2-column grid, so the
+        on-screen order is exactly this list (each gated by its own flag):
+          type · year · risk · status · submitted-by · company · division · sub-division
+        Risk/Year/SubmittedBy/Sub-Division are toggled via their show* inputs.
+      -->
+      <div class="filter-panel__grid">
+
+        @if (showType) {
+          <div class="filter-panel__field">
+            <label>{{ typeLabel }}</label>
+            <p-multiSelect [options]="typeOptions" [ngModel]="selectedTypes" (ngModelChange)="typesChange.emit($event)"
+                           optionLabel="label" optionValue="value" [placeholder]="'All ' + typeLabel.toLowerCase() + 's'" display="chip"
+                           [showHeader]="true" [filter]="false" [maxSelectedLabels]="1" [selectedItemsLabel]="'{0} ' + typeLabel.toLowerCase() + 's'"
+                           class="fp-multiselect"></p-multiSelect>
+          </div>
+        }
+
+        @if (showYear) {
+          <div class="filter-panel__field">
+            <label>{{ yearLabel }}</label>
+            <p-multiSelect [options]="yearOptions" [ngModel]="selectedYears" (ngModelChange)="yearsChange.emit($event)"
+                           optionLabel="label" optionValue="value" placeholder="All years" display="chip"
+                           [showHeader]="true" [filter]="false" [maxSelectedLabels]="1" selectedItemsLabel="{0} years"
+                           class="fp-multiselect"></p-multiSelect>
+          </div>
+        }
+
+        @if (showRisk) {
+          <div class="filter-panel__field">
+            <label>RISK</label>
+            <p-multiSelect [options]="riskOptions" [ngModel]="selectedRisks" (ngModelChange)="risksChange.emit($event)"
+                           optionLabel="label" optionValue="value" placeholder="All risks" display="chip"
+                           [showHeader]="true" [filter]="false" [maxSelectedLabels]="1" selectedItemsLabel="{0} risks"
+                           class="fp-multiselect"></p-multiSelect>
+          </div>
+        }
+
+        @if (statusVisible) {
+          <div class="filter-panel__field">
+            <label>STATUS</label>
+            <p-multiSelect [options]="statusOptions" [ngModel]="selectedStatuses" (ngModelChange)="statusesChange.emit($event)"
+                           optionLabel="label" optionValue="value" placeholder="All statuses" display="chip"
+                           [showHeader]="true" [filter]="false" [maxSelectedLabels]="1" selectedItemsLabel="{0} statuses"
+                           class="fp-multiselect"></p-multiSelect>
+          </div>
+        }
+
+        @if (showSubmittedBy) {
+          <div class="filter-panel__field">
+            <label>{{ submittedByLabel }}</label>
+            <p-multiSelect [options]="submittedByOptions" [ngModel]="selectedSubmittedBys" (ngModelChange)="submittedBysChange.emit($event)"
+                           optionLabel="label" optionValue="value" placeholder="All submitters" display="chip"
+                           [showHeader]="true" [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} submitters"
+                           class="fp-multiselect"></p-multiSelect>
+          </div>
+        }
+
+        <div class="filter-panel__field">
+          <label>COMPANY</label>
+          <p-multiSelect [options]="companyOptions" [ngModel]="selectedCompanies" (ngModelChange)="companiesChange.emit($event)"
+                         optionLabel="label" optionValue="value" placeholder="All companies" display="chip"
+                         [showHeader]="true" [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} companies"
+                         class="fp-multiselect"></p-multiSelect>
+        </div>
+
+        <div class="filter-panel__field">
+          <label>DIVISION</label>
+          <p-multiSelect [options]="divisionOptions" [ngModel]="selectedDivisions" (ngModelChange)="divisionsChange.emit($event)"
+                         optionLabel="label" optionValue="value" placeholder="All divisions" display="chip"
+                         [showHeader]="true" [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions"
+                         class="fp-multiselect"></p-multiSelect>
+        </div>
+
+        @if (showSubDivision) {
+          <div class="filter-panel__field">
+            <label>SUB-DIVISION</label>
+            <p-multiSelect [disabled]="disableSubDivision" [options]="subDivisionOptions" [ngModel]="selectedSubDivisions" (ngModelChange)="subDivisionsChange.emit($event)"
+                           optionLabel="label" optionValue="value" [placeholder]="disableSubDivision ? 'No sub-divisions for this division' : 'All sub-divisions'" display="chip"
+                           [showHeader]="true" [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-divisions"
+                           [disabled]="!!subDivisionDisabledMessage" class="fp-multiselect"></p-multiSelect>
+            @if (subDivisionDisabledMessage) {
+              <small class="filter-panel__hint"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> {{ subDivisionDisabledMessage }}</small>
+            }
+          </div>
+        }
+
+      </div>
+
+      <!-- Created By -->
+      @if (showCreatedBy) {
+      <div class="filter-panel__grid">
+        <div class="filter-panel__field">
+          <label>CREATED BY</label>
+          <p-multiSelect [options]="createdByOptions" [ngModel]="selectedCreatedBys" (ngModelChange)="createdBysChange.emit($event)"
+                         optionLabel="label" optionValue="value" placeholder="All creators" display="chip"
+                         [showHeader]="true" [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} creators"
+                         class="fp-multiselect"></p-multiSelect>
+        </div>
+      </div>
+      }
+
+      <!-- Scope / Sub-Scope -->
+      @if (showScope || showSubScope) {
+      <div class="filter-panel__grid">
+        @if (showScope) {
+          <div class="filter-panel__field">
+            <label>SCOPE</label>
+            <p-multiSelect [options]="scopeOptions" [ngModel]="selectedScopes" (ngModelChange)="scopesChange.emit($event)"
+                           optionLabel="label" optionValue="value" placeholder="All scopes" display="chip"
+                           [showHeader]="true" [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} scopes"
+                           class="fp-multiselect"></p-multiSelect>
+          </div>
+        }
+        @if (showSubScope) {
+          <div class="filter-panel__field">
+            <label>SUB SCOPE</label>
+            <p-multiSelect [options]="subScopeOptions" [ngModel]="selectedSubScopes" (ngModelChange)="subScopesChange.emit($event)"
+                           optionLabel="label" optionValue="value" placeholder="All sub scopes" display="chip"
+                           [showHeader]="true" [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} sub scopes"
+                           class="fp-multiselect"></p-multiSelect>
+          </div>
+        }
+      </div>
+      }
+
+      <div class="filter-panel__foot">
+        <button type="button" class="fp-btn fp-btn--reset" (click)="filtersCleared.emit()">Reset</button>
+        <button type="button" class="fp-btn fp-btn--apply" (click)="showFilters.set(false)">Apply Filters</button>
+      </div>
+
+    </div>
+  }
+</div>

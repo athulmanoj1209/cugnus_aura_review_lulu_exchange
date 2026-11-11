@@ -1,0 +1,150 @@
+<div class="detail-drawer">
+
+  <div class="detail-drawer__header">
+    <div>
+      <h2 class="detail-drawer__title" i18n="@@dashboard.rfiBySubDivision.title">RFIs by Division / Sub-Division</h2>
+      <p class="detail-drawer__subtitle" i18n="@@dashboard.rfiBySubDivision.subtitle">
+        {{ data.records.length }} RFIs · {{ divisionCount }} divisions · {{ subDivisionCount }} sub-divisions ·
+        {{ data.companies.length }} organizations —
+        one per page, every RFI shown
+      </p>
+    </div>
+    <button type="button"
+            class="detail-drawer__close"
+            (click)="close()"
+            aria-label="Close detailed view"
+            i18n-aria-label="@@common.closeDetailedView">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- ============== Sub-Division pager — the page itself IS one sub-division ============== -->
+  <div class="dept-pager">
+    <span class="dept-pager__label">{{ unitLabel }}</span>
+    <button type="button"
+            class="dept-pager__arrow"
+            [disabled]="isFirstPage"
+            (click)="prevDept()"
+            aria-label="Previous page"
+            i18n-aria-label="@@dashboard.rfiBySubDivision.prevPageAria">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+    <div class="dept-pager__tabs">
+      <button type="button"
+              #tabBtn
+              *ngFor="let page of data.pages; let i = index"
+              class="dept-pager__tab"
+              [class.dept-pager__tab--division]="page.kind === 'division'"
+              [class.dept-pager__tab--sub]="page.kind === 'subDivision'"
+              [class.active]="i === deptIndex"
+              [attr.title]="pageTabTitle(page)"
+              (click)="goToDept(i)">
+        <i *ngIf="page.kind === 'division'" class="pi pi-building"></i>
+        <span *ngIf="page.kind === 'subDivision'" class="dept-pager__branch" aria-hidden="true">↳</span>
+        {{ page.name }}
+      </button>
+    </div>
+    <button type="button"
+            class="dept-pager__arrow"
+            [disabled]="isLastPage"
+            (click)="nextDept()"
+            aria-label="Next page"
+            i18n-aria-label="@@dashboard.rfiBySubDivision.nextPageAria">
+      <i class="pi pi-chevron-right"></i>
+    </button>
+    <span class="dept-pager__count" i18n="@@dashboard.rfiBySubDivision.pageOf">Page {{ deptIndex + 1 }} of {{ totalPages }}</span>
+  </div>
+
+  <!-- ============== Sort + search within the current sub-division ============== -->
+  <div class="sub-controls">
+    <span class="control-label" i18n="@@dashboard.rfiBySubDivision.sortRfis">Sort RFIs</span>
+    <div class="segmented">
+      <button type="button" [class.active]="sort === 'due'" (click)="setSort('due')" i18n="@@dashboard.rfiBySubDivision.sortDue">Due soonest</button>
+      <button type="button" [class.active]="sort === 'priority'" (click)="setSort('priority')" i18n="@@common.priority">Priority</button>
+      <button type="button" [class.active]="sort === 'company'" (click)="setSort('company')" i18n="@@common.organization">Organization</button>
+      <button type="button" [class.active]="sort === 'alpha'" (click)="setSort('alpha')" i18n="@@common.sortAZ">A–Z</button>
+    </div>
+    <div class="search-input">
+      <i class="pi pi-search"></i>
+      <input type="text"
+             placeholder="Filter by description, organization, or ID…"
+             i18n-placeholder="@@dashboard.rfiBySubDivision.searchPlaceholder"
+             [value]="search"
+             (input)="onSearchChange($any($event.target).value)">
+    </div>
+  </div>
+
+  <!-- ============== Chart: organization × status breakdown for the current sub-division ============== -->
+  <div class="chart-card">
+    <div class="chart-card__title-row">
+      <div>
+        <h3 class="chart-card__title" i18n="@@dashboard.rfiBySubDivision.chartTitle">{{ currentPage.name }} — RFIs by organization and status</h3>
+        <p class="chart-card__context">
+          <ng-container *ngIf="currentPage.kind === 'subDivision'" i18n="@@dashboard.rfiBySubDivision.contextSubDivisionOf">Sub-division of {{ currentPage.division }}</ng-container>
+          <ng-container *ngIf="currentPage.kind === 'division'" i18n="@@dashboard.rfiBySubDivision.contextDivision">Division · RFIs raised at division level</ng-container>
+        </p>
+      </div>
+      <span class="chart-card__meta" i18n="@@dashboard.rfiBySubDivision.chartMeta">
+        {{ companiesInCurrentDept.length }} organizations · {totalInDept, plural, =1 {1 RFI} other {{{ totalInDept }} RFIs}} total
+      </span>
+    </div>
+    <div class="chart-scroll">
+      <div class="chart-wrap" [style.min-width.px]="chartMinWidthPx">
+        <p-chart type="bar"
+                 [data]="chartData"
+                 [options]="barOptions()">
+        </p-chart>
+      </div>
+    </div>
+    <p *ngIf="showScrollHint" class="chart-hint" i18n="@@dashboard.rfiBySubDivision.scrollHint">Scroll horizontally to see every organization →</p>
+  </div>
+
+  <!-- ============== Table: every RFI in the current sub-division ============== -->
+  <div class="table-card">
+    <div class="table-card__title-row">
+      <h3 class="table-card__title" i18n="@@dashboard.rfiBySubDivision.tableTitle">RFIs in {{ currentPage.name }}</h3>
+      <span class="chart-card__meta" i18n="@@dashboard.rfiBySubDivision.rowsShown">{{ rows.length }} of {{ totalInDept }} shown</span>
+    </div>
+    <div class="table-scroll">
+      <table class="rfi-detail-table">
+        <thead>
+          <tr>
+            <th i18n="@@common.id">ID</th>
+            <th i18n="@@common.description">Description</th>
+            <th i18n="@@common.organization">Organization</th>
+            <th i18n="@@common.status">Status</th>
+            <th i18n="@@common.dueDate">Due Date</th>
+            <th i18n="@@common.responseDate">Response Date</th>
+            <th i18n="@@dashboard.rfiBySubDivision.colSla">SLA</th>
+            <th i18n="@@common.priority">Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td class="cell--id">{{ row.id }}</td>
+            <td>{{ row.description }}</td>
+            <td>{{ row.company }}</td>
+            <td>
+              <p-tag [value]="statusText(row.status)" [severity]="getStatusSeverity(row.status)" [rounded]="true"></p-tag>
+            </td>
+            <td>{{ row.dueDate }}</td>
+            <td>{{ row.responseDate }}</td>
+            <td>
+              <span *ngIf="row.sla === 'Breach'" class="sla-breach"><app-draw-icon icon="pi pi-times-circle"></app-draw-icon> <ng-container i18n="@@dashboard.rfiBySubDivision.slaBreach">Breach</ng-container></span>
+              <span *ngIf="row.sla !== 'Breach'" class="sla-met"><app-draw-icon icon="pi pi-check-circle"></app-draw-icon> <ng-container i18n="@@dashboard.rfiBySubDivision.slaMet">Met</ng-container></span>
+            </td>
+            <td>{{ priorityText(row.priority) }}</td>
+          </tr>
+          <tr *ngIf="!rows.length">
+            <td colspan="8" class="empty-row" i18n="@@dashboard.rfiBySubDivision.noMatch">No RFIs match "{{ search }}" in {{ currentPage.name }}.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="footnote" i18n="@@dashboard.rfiBySubDivision.footnote">
+      Same status tag colors and SLA badges as the main RFI table, so this drill-down reads
+      consistently with the rest of the page.
+    </p>
+  </div>
+
+</div>

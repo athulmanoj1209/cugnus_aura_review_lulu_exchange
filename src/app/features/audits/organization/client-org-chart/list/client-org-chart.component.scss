@@ -1,0 +1,1511 @@
+/* ============================================================
+ *  Client Organizational Chart
+ * ============================================================ */
+
+:host {
+  display: block;
+  background: var(--surface-hover);
+  min-height: 100vh;
+  color: var(--text-color);
+}
+
+/* ── Company profile drawer — strip default padding so the component fills fully ── */
+:host ::ng-deep .company-profile-outer-drawer {
+  .p-drawer-header { display: none !important; }
+  .p-drawer-content { padding: 0 !important; overflow: hidden; }
+}
+
+:host ::ng-deep .p-organizationchart-connector-top  { border-top: 1px solid var(--surface-border) !important; }
+:host ::ng-deep .p-organizationchart-connector-left  { border-right: 1px solid var(--surface-border) !important; }
+:host ::ng-deep .p-organizationchart-connector-right { border-left: 1px solid var(--surface-border) !important; }
+:host ::ng-deep .p-organizationchart-connector-down  { background: var(--surface-border) !important; width: 1px !important; }
+
+.chart-page {
+  padding: 1.5rem 2rem 2rem;
+  background: var(--surface-hover);
+}
+
+/* ---------- Header --------------------------------------------------- */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+
+  &__title-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  &__text { flex-shrink: 0; }
+
+  &__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  &__filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    background: var(--surface-card);
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+  }
+
+  &__selects {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  &__search {
+    flex: 0 0 340px;
+    min-width: 260px;
+    position: relative;
+  }
+}
+
+/* Search input inside header search slot */
+.search-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+
+  &__icon {
+    position: absolute;
+    left: 0.75rem;
+    color: var(--text-color-secondary);
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    padding: 0 1rem 0 2.25rem;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    background: var(--surface-card);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+
+    &::placeholder { color: var(--text-color-secondary); }
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 91, 219, 0.12);
+    }
+  }
+}
+
+/* Company select — slightly wider, accented */
+:host ::ng-deep .company-select.p-select {
+  width: 220px;
+  height: 44px;
+  border-radius: 10px;
+  border: 2px solid var(--primary-color)33;
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+
+  .p-select-label {
+    padding: 0 0.9rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+  }
+}
+
+:host ::ng-deep .sort-select.p-select {
+  width: 160px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+  display: flex;
+  align-items: center;
+
+  .p-select-label {
+    padding: 0 0.9rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+  }
+}
+
+:host ::ng-deep .state-multiselect.p-multiselect {
+  width: 180px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+  display: flex;
+  align-items: center;
+
+  .p-multiselect-label-container {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .p-multiselect-label {
+    padding: 0 0.5rem 0 0.9rem;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 44px;
+  }
+
+  .p-multiselect-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    flex-shrink: 0;
+  }
+}
+
+.search-input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 1 1 180px;
+  max-width: 380px;
+
+  &__icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-color-secondary);
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.7rem 0.9rem 0.7rem 2.4rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    background: var(--surface-card);
+    height: 44px;
+
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus { outline: 2px solid var(--primary-color)33; border-color: var(--primary-color); }
+  }
+}
+
+.header-action-btn {
+  width: 38px;
+  height: 44px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: var(--surface-hover); color: var(--primary-color); }
+}
+
+/* Grab-to-pan toggle button */
+.header-action-btn--pan.is-active {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.18);
+
+  &:hover { background: var(--primary-color); color: #fff; }
+}
+
+.pan-hand-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  flex-shrink: 0;
+
+  &__btn {
+    background: var(--surface-card);
+    border: none;
+    padding: 0.55rem 0.85rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    height: 44px;
+
+    &:first-child { border-radius: 9px 0 0 9px; }
+    &:last-child  { border-radius: 0 9px 9px 0; }
+    &:hover { background: var(--surface-hover); }
+    &.is-active { background: var(--primary-color); color: #fff !important; }
+    & + .view-toggle__btn { border-left: 1px solid var(--surface-border); }
+    &.is-active + .view-toggle__btn,
+    & + .view-toggle__btn.is-active { border-left-color: var(--primary-color); }
+  }
+}
+
+/* ---------- Empty: no company selected ------------------------------- */
+.empty-company-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+
+  &__inner {
+    text-align: center;
+    max-width: 500px;
+    padding: 3rem 2rem;
+    background: var(--surface-card);
+    border: 1px dashed var(--surface-border);
+    border-radius: 20px;
+    box-shadow: 0 4px 24px rgba(15, 23, 42, 0.05);
+  }
+
+  &__icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: var(--surface-hover);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.25rem;
+
+    i { font-size: 2rem; color: var(--primary-color); }
+  }
+
+  &__title {
+    margin: 0 0 0.6rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary-color);
+  }
+
+  &__desc {
+    margin: 0 0 1.5rem;
+    font-size: 0.9rem;
+    color: var(--text-color-secondary);
+    line-height: 1.6;
+  }
+
+  &__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+}
+
+.company-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--primary-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    background: var(--surface-hover);
+    border-color: var(--primary-color);
+    box-shadow: 0 2px 8px rgba(59, 91, 219, 0.12);
+  }
+
+  i { font-size: 0.8rem; }
+}
+
+/* ---------- Empty filter state -------------------------------------- */
+.empty-state {
+  background: var(--surface-card);
+  border: 1px dashed var(--surface-border);
+  border-radius: 14px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+
+  &__icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+  &__text { margin: 0; font-size: 0.95rem; }
+}
+
+/* ---------- Org chart container ------------------------------------- */
+.chart-wrap {
+  padding: 1.5rem 0;
+  overflow-x: auto;
+  min-height: 60vh;
+
+  /* Grab-to-pan: open hand while armed, closed fist while actively dragging.
+     Selection/drag-out is disabled so it can't hijack the gesture mid-pan. */
+  &.pan-mode-active {
+    cursor: grab;
+    user-select: none;
+
+    * {
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  }
+
+  &.is-panning {
+    cursor: grabbing;
+  }
+}
+
+/*
+ * Inner centering wrapper.
+ *
+ * When the chart is NARROW (fits in viewport):
+ *   min-width: 100% kicks in → full-width block → flex centers the chart.
+ *
+ * When the chart is WIDE (overflows viewport):
+ *   width: max-content wins over min-width → the wrapper is exactly as wide
+ *   as the content, both sides are reachable via scroll.
+ */
+.chart-inner {
+  width: max-content;
+  min-width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 2rem;
+}
+
+:host ::ng-deep .client-org-chart.p-organizationchart {
+  .p-organizationchart-node-content {
+    border: none;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .p-organizationchart-line-down { background: var(--surface-border); width: 2px; }
+  .p-organizationchart-line-left,
+  .p-organizationchart-line-right { border-color: var(--surface-border); }
+
+  .p-organizationchart-node-content .p-node-toggler {
+    bottom: -0.85rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: -0.75rem;
+
+    &:hover { background: var(--surface-hover); color: var(--primary-color); }
+  }
+
+  /* Spacer node: keeps the same node frame as a sub-division node so the
+     "Division Scopes" card looks identical in size. Its toggle collapses/expands
+     the division-level scopes as a group. */
+  .org-spacer-node {
+    cursor: default;
+  }
+}
+
+.org-spacer {
+  position: relative;
+  pointer-events: none;
+
+  /* Same footprint as the mirrored sub-division card, but never visible/interactive */
+  &__ghost { visibility: hidden; }
+
+  /* "Division Scopes" label card: covers the invisible ghost exactly, so it has the
+     same width and height as the sibling sub-division cards. The line below the
+     spacer carries the division scopes down to the same row as the sub-division
+     scopes. No actions — the toggle under the spacer opens it. Visuals live on the
+     inner .node-card--division-scopes. */
+  &__label {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  /* Division name — highlighted pill under the "Division Scopes" title */
+  &__division {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    max-width: 100%;
+    margin-top: 0.2rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #ede9fe;
+    color: #6d28d9;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.3;
+
+    i { font-size: 0.68rem; color: #7c3aed; flex-shrink: 0; }
+
+    :host-context(.app-dark) & {
+      background: rgba(124, 58, 237, 0.22);
+      color: #ddd6fe;
+      i { color: #c4b5fd; }
+    }
+  }
+
+  &__division-name {
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Scope / sub-scope count tiles — compact; the footer takes the spare height */
+  &__stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    border-top: 1px dashed var(--surface-border);
+  }
+
+  /* Icon + count on one row, label underneath */
+  &__stat {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: 'icon val' 'lbl lbl';
+    justify-content: center;
+    align-items: center;
+    column-gap: 0.3rem;
+    row-gap: 0.1rem;
+    min-width: 0;
+    padding: 0.3rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+
+    &--scope {
+      background: #f5f3ff;
+      border-color: #ddd6fe;
+      .org-spacer__stat-icon, .org-spacer__stat-val { color: #7c3aed; }
+    }
+
+    &--subscope {
+      background: #fff7ed;
+      border-color: #fed7aa;
+      .org-spacer__stat-icon, .org-spacer__stat-val { color: #c2410c; }
+    }
+
+    :host-context(.app-dark) &--scope {
+      background: rgba(124, 58, 237, 0.14);
+      border-color: rgba(167, 139, 250, 0.3);
+      .org-spacer__stat-icon, .org-spacer__stat-val { color: #c4b5fd; }
+    }
+
+    :host-context(.app-dark) &--subscope {
+      background: rgba(194, 65, 12, 0.14);
+      border-color: rgba(251, 146, 60, 0.3);
+      .org-spacer__stat-icon, .org-spacer__stat-val { color: #fdba74; }
+    }
+  }
+
+  &__stat-icon { grid-area: icon; font-size: 0.75rem; }
+
+  &__stat-val {
+    grid-area: val;
+    font-size: 1.1rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  &__stat-lbl {
+    grid-area: lbl;
+    text-align: center;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+  }
+
+  /* Footer grows into the height the compact tiles leave free */
+  &__label-footer {
+    flex: 1;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    padding: 0.65rem 0.9rem;
+
+    .node-card__level-badge {
+      align-self: center;
+      font-size: 0.65rem;
+      padding: 0.18rem 0.6rem;
+    }
+  }
+
+  &__label-hint {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* ---------- Node cards ---------------------------------------------- */
+.node-card {
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.07);
+  background: var(--surface-card);
+  text-align: left;
+  position: relative;
+  transition: box-shadow 0.15s ease, transform 0.15s ease, outline-color 0.15s ease;
+
+  /* Level badge — inline flex child inside __head (no absolute positioning) */
+  &__level-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.12rem 0.5rem;
+    border-radius: 999px;
+    line-height: 1.5;
+    white-space: nowrap;
+    flex-shrink: 0;
+    align-self: flex-start;
+    pointer-events: none;
+
+    &--company  { background: rgba(30, 58, 138, 0.1); color: var(--primary-color); border: 1px solid rgba(30, 58, 138, 0.2); }
+    &--division   { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); color: var(--p-blue-700); }
+    &--dept     { background: color-mix(in srgb, var(--p-green-500) 16%, transparent); color: var(--p-green-700); }
+    &--scope    { background: color-mix(in srgb, var(--p-purple-500) 12%, transparent); color: var(--p-purple-600); }
+    &--subscope { background: color-mix(in srgb, var(--p-orange-500) 30%, transparent); color: var(--p-orange-700); }
+  }
+
+  /* Company card: badge still sits absolute (centered layout has no overlap risk) */
+  &--company .node-card__level-badge {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+  }
+
+  /* ---- Company root node ---- */
+  &--company {
+    width: 260px;
+    padding: 1.25rem 1.25rem 1rem;
+    border: 2px solid var(--company-color, var(--primary-color));
+    text-align: center;
+    background: linear-gradient(135deg, var(--surface-card) 60%, color-mix(in srgb, var(--company-color, var(--primary-color)) 6%, var(--surface-card)));
+  }
+
+  &__company-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--company-color, var(--primary-color)) 12%, var(--surface-card));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.75rem;
+
+    i {
+      font-size: 1.5rem;
+      color: var(--company-color, var(--primary-color));
+    }
+  }
+
+  &__company-name {
+    margin: 0 0 2px;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-color);
+  }
+
+  &__company-sub {
+    margin: 0 0 0.9rem;
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  &__company-stats {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-top: 1px solid var(--surface-border);
+    padding-top: 0.75rem;
+  }
+
+  /* ---- Division node ---- */
+  &--division {
+    width: 260px;
+    border: 1px solid var(--surface-border);
+    padding: 0;
+    overflow: hidden;
+  }
+
+  /* ---- Sub-Division node ---- */
+  &--dept {
+    width: 220px;
+    border: 1px solid var(--surface-border);
+    padding: 0;
+    overflow: hidden;
+    background: var(--surface-card);
+  }
+
+  /* ---- "Division Scopes" label card (chart spacer, no actions) ---- */
+  &--division-scopes {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #ddd6fe;
+    border-top: 4px solid #7c3aed;
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.14);
+
+    .node-card__head {
+      padding: 0.75rem 0.9rem 0.6rem;
+      gap: 0.6rem;
+      background: linear-gradient(180deg, #f5f3ff 0%, var(--surface-card) 100%);
+    }
+
+    .node-card__avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      font-size: 1.1rem;
+    }
+
+    .node-card__name { font-size: 0.95rem; font-weight: 800; }
+
+    :host-context(.app-dark) & {
+      border-color: rgba(167, 139, 250, 0.35);
+      border-top-color: #8b5cf6;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+
+      .node-card__head {
+        background: linear-gradient(180deg, rgba(124, 58, 237, 0.16) 0%, var(--surface-card) 100%);
+      }
+    }
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.85rem 0.9rem 0.6rem;
+  }
+
+  &__avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+
+    &--division {
+      background: color-mix(in srgb, var(--p-blue-500) 16%, transparent);
+      i { color: var(--p-blue-700); }
+    }
+    &--dept {
+      background: color-mix(in srgb, var(--p-green-500) 16%, transparent);
+      i { color: var(--p-green-700); }
+    }
+  }
+
+  &__title-block {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__name {
+    margin: 0 0 2px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--sm { font-size: 0.82rem; }
+  }
+
+  &__role {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__body {
+    border-top: 1px dashed var(--surface-border);
+    padding: 0.5rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    flex-wrap: wrap;
+  }
+
+  &__row-icon { color: var(--primary-color); font-size: 0.78rem; flex-shrink: 0; }
+
+  &__row-label {
+    font-weight: 600;
+    min-width: 55px;
+    flex-shrink: 0;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    border-top: 1px dashed var(--surface-border);
+    padding: 0.45rem 0.9rem;
+    background: var(--surface-hover);
+  }
+}
+
+/* Company stats chip */
+.cstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1rem;
+
+  &--divider { border-left: 1px solid var(--surface-border); }
+
+  &__val {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+  }
+
+  &__lbl {
+    font-size: 0.68rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+}
+
+.dept-count {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--text-color-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  i { color: var(--text-color-secondary); }
+}
+
+/* ---------- Chips --------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  line-height: 1;
+
+  &--city { background: color-mix(in srgb, var(--p-blue-500) 12%, transparent); color: var(--p-blue-700); }
+  &--emp  { background: color-mix(in srgb, var(--p-orange-500) 16%, transparent); color: var(--p-orange-700); }
+}
+
+/* PrimeNG tag overrides */
+:host ::ng-deep .tag-sm.p-tag {
+  font-size: 0.65rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+}
+
+/* ---------- Icon action buttons ------------------------------------- */
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  font-size: 0.85rem;
+
+  &:hover { background: var(--surface-hover); color: var(--text-color); }
+
+  &--view:hover  { color: var(--p-blue-600); }
+  &--edit:hover  { color: var(--primary-color); }
+  &--focus:hover { color: var(--primary-color); }
+
+  &--activate   { color: var(--p-green-500) !important; }
+  &--deactivate { color: var(--p-orange-600) !important; }
+  &--activate:hover    { background: color-mix(in srgb, var(--p-green-500) 8%, transparent) !important; color: var(--p-green-500) !important; }
+  &--deactivate:hover  { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent) !important; color: var(--p-orange-600) !important; }
+}
+
+:host-context(.app-dark) .icon-btn--deactivate:hover {
+  background: rgba(234, 88, 12, 0.15) !important;
+}
+
+/* ---------- Node card actions & blocked state ----------------------- */
+.node-card {
+  &__actions {
+    display: flex;
+    gap: 0.4rem;
+    border-top: 1px dashed var(--surface-border);
+    padding: 0.45rem 0.9rem;
+    justify-content: center;
+    background: var(--surface-hover);
+  }
+
+  &.is-blocked { opacity: 0.55; border-style: dashed !important; }
+
+  /* Grab-to-pan travel highlight — lit up while the hand icon is over this card. */
+  &.node-card--pan-highlight {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 3px;
+    box-shadow: 0 8px 24px rgba(59, 91, 219, 0.35);
+    transform: scale(1.02);
+    z-index: 5;
+  }
+}
+
+/* Reset-focus button variant */
+.header-action-btn--focus-reset {
+  color: var(--primary-color);
+  border-color: var(--primary-color)33;
+  background: var(--surface-hover);
+
+  &:hover { background: var(--surface-hover); }
+}
+
+/* Confirm dialog body */
+.confirm-body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+
+  &__icon { font-size: 1.5rem; color: var(--p-orange-500); }
+  &__text { font-size: 0.92rem; color: var(--text-color); }
+}
+
+/* ---------- List view ---------------------------------------------- */
+.list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.division-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.85rem 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--p-blue-500) 16%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i { font-size: 1.1rem; color: var(--p-blue-700); }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  &__name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  &__name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--text-color);
+  }
+
+  &__code {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    font-family: monospace;
+  }
+
+  &__meta {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+
+  &__city {
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    i { font-size: 0.72rem; color: var(--text-color-secondary); }
+  }
+
+  &__stats {
+    display: flex;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+
+  &__depts {
+    border-top: 1px dashed var(--surface-border);
+    padding: 0.5rem 0;
+    background: var(--surface-hover);
+  }
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 44px;
+
+  &__value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1;
+  }
+  &__label {
+    font-size: 0.68rem;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 2px;
+  }
+}
+
+.dept-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.45rem 1rem;
+  flex-wrap: wrap;
+  transition: background 0.12s;
+
+  &:hover { background: var(--surface-hover); }
+
+  &__icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--p-green-500) 16%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    i { font-size: 0.75rem; color: var(--p-green-700); }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  &__name {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--text-color);
+  }
+
+  &__emp {
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__tags {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+  }
+}
+
+/* ---------- Responsive --------------------------------------------- */
+@media (max-width: 1100px) {
+  .page-header {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .page-header__controls {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .search-input { flex: 1 1 200px; max-width: none; }
+}
+
+@media (max-width: 640px) {
+  .chart-page { padding: 1rem; }
+  .node-card--division,
+  .node-card--company { width: 220px; }
+  .node-card--dept    { width: 190px; }
+  .node-card--scope   { width: 210px; }
+  .node-card--subscope { width: 195px; }
+}
+
+/* ---------- Scope & sub-scope node cards ----------------------------- */
+.node-card {
+  &--scope {
+    width: 260px;
+    border: 1px solid var(--surface-border);
+    padding: 0;
+    overflow: hidden;
+    background: var(--surface-card);
+
+    /* Allow scope name to wrap so full text is visible */
+    .node-card__name {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+    }
+  }
+
+  &--subscope {
+    width: 240px;
+    border: 1px solid var(--surface-border);
+    padding: 0;
+    overflow: hidden;
+    background: var(--surface-card);
+
+    /* Allow subscope name to wrap */
+    .node-card__name {
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+    }
+
+    /* Tighter padding to reduce height */
+    .node-card__head    { padding: 0.55rem 0.9rem 0.4rem; }
+    .node-card__body    { padding: 0.3rem 0.9rem; gap: 0.22rem; }
+    .node-card__footer  { padding: 0.3rem 0.9rem; }
+    .node-card__actions { padding: 0.3rem 0.9rem; }
+  }
+
+  &__avatar {
+    &--scope {
+      background: color-mix(in srgb, var(--p-purple-500) 12%, transparent);
+      i { color: var(--p-purple-600); }
+    }
+    &--subscope {
+      background: color-mix(in srgb, var(--p-orange-500) 30%, transparent);
+      i { color: var(--p-orange-700); }
+    }
+  }
+}
+
+/* Extra chip colours for scope cards */
+.chip {
+  &--freq { background: color-mix(in srgb, var(--p-blue-500) 12%, transparent); color: var(--p-blue-700); }
+  &--mode { background: color-mix(in srgb, var(--p-purple-500) 10%, transparent); color: var(--p-purple-600); }
+}
+
+/* ---------- List view — company header ------------------------------- */
+.list-company-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+}
+
+.list-company-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  i { font-size: 1.3rem; color: #fff; }
+}
+
+.list-company-info { flex: 1; min-width: 0; }
+
+.list-company-name {
+  margin: 0 0 2px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.list-company-meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+}
+
+.list-company-badges { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+/* ---------- List view — hierarchy rows ------------------------------ */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 1rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  margin-top: 0.25rem;
+  transition: background 0.12s;
+
+  &--division {
+    border-left: 3px solid var(--p-blue-500);
+    cursor: pointer;
+    &:hover { background: var(--surface-hover); }
+  }
+  &--dept {
+    border-left: 3px solid var(--p-green-500);
+    background: var(--surface-hover);
+    cursor: pointer;
+    &:hover { background: var(--surface-hover); }
+  }
+  &--scope {
+    border-left: 3px solid var(--p-violet-500);
+    background: var(--surface-hover);
+    cursor: pointer;
+    &:hover { background: var(--surface-hover); }
+  }
+  &--subscope {
+    border-left: 3px solid var(--p-orange-500);
+    background: var(--surface-hover);
+    cursor: default;
+  }
+  /* "Division Scopes" group row — same shape as a sub-division row, scope violet */
+  &--division-scopes {
+    border-left: 3px solid #7c3aed;
+    border-color: #ddd6fe;
+    border-left-color: #7c3aed;
+    background: linear-gradient(90deg, #f5f3ff 0%, var(--surface-card) 70%);
+    cursor: pointer;
+
+    /* Badge, count and text on one centred line. The level badge is built for card
+       heads (`align-self: flex-start`), which lifted it above the count here. */
+    .list-row__chips {
+      flex-wrap: nowrap;
+      gap: 0.5rem;
+    }
+    .node-card__level-badge { align-self: center; }
+
+    :host-context(.app-dark) & {
+      border-color: rgba(167, 139, 250, 0.35);
+      border-left-color: #8b5cf6;
+      background: linear-gradient(90deg, rgba(124, 58, 237, 0.16) 0%, var(--surface-card) 70%);
+    }
+  }
+
+  &__count {
+    min-width: 1.6rem;
+    height: 1.6rem;
+    padding: 0 0.45rem;
+    border-radius: 999px;
+    background: #7c3aed;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Sub-scope count — orange, same as the sub-scope tile on the chart card */
+    &--subscope { background: #ea580c; }
+  }
+
+  &__count-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+  }
+
+  &__count-hint {
+    font-size: 0.72rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--text-color-secondary);
+    opacity: 0.8;
+    white-space: nowrap;
+  }
+
+  /* Deactivated row — dimmed, same as divisions.html/sub-divisions.html's
+   * inactive-row treatment. Actions stay clickable so it can be reactivated. */
+  &.is-blocked {
+    opacity: 0.55;
+    pointer-events: none;
+
+    .list-row__actions {
+      pointer-events: all;
+    }
+  }
+
+  &__avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    i { font-size: 0.85rem; }
+
+    &--division  { background: color-mix(in srgb, var(--p-blue-500) 16%, transparent); i { color: var(--p-blue-700); } }
+    &--dept    { background: color-mix(in srgb, var(--p-green-500) 16%, transparent); i { color: var(--p-green-700); } }
+    &--scope   { background: color-mix(in srgb, var(--p-purple-500) 12%, transparent); i { color: var(--p-purple-600); } }
+    &--subscope { background: color-mix(in srgb, var(--p-orange-500) 30%, transparent); i { color: var(--p-orange-700); } }
+
+    :host-context(.app-dark) & {
+      &--division   { background: rgba(29, 78, 216, 0.18);  i { color: var(--p-blue-300); } }
+      &--dept     { background: rgba(21, 128, 61, 0.18);  i { color: var(--p-green-300); } }
+      &--scope    { background: rgba(124, 58, 237, 0.18); i { color: var(--p-violet-300); } }
+      &--subscope { background: rgba(194, 65, 12, 0.18);  i { color: var(--p-orange-300); } }
+    }
+  }
+
+  &__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  &__name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__sub {
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__chips {
+    display: flex;
+    gap: 0.3rem;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.3rem;
+    flex-shrink: 0;
+    opacity: 1;
+  }
+}
+
+/* Indentation spacers */
+.list-indent {
+  width: 20px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+// /* Expand/collapse toggle button */
+// .list-expand-btn {
+//   width: 22px;
+//   height: 22px;
+//   background: transparent;
+//   border: none;
+//   border-radius: 5px;
+//   color: var(--text-color-secondary);
+//   cursor: pointer;
+//   display: inline-flex;
+//   align-items: center;
+//   justify-content: center;
+//   flex-shrink: 0;
+//   padding: 0;
+//   font-size: 0.75rem;
+//   pointer-events: none; /* row click handles expand */
+
+//   .list-row:hover & { color: var(--primary-color); }
+// }
+
+/* Placeholder to keep alignment when no expand button */
+.list-expand-placeholder {
+  width: 22px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ---------- PrimeNG Tree — style for list-view-tree --------------------- */
+:host ::ng-deep .list-view-tree {
+  background: transparent;
+  border: none;
+  padding: 0;
+  width: 100%;
+
+  .p-tree-container {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-tree-node { padding: 0; }
+
+  /* Node content: transparent row — toggler sits to the left of our list-row */
+  .p-tree-node-content {
+    padding: 0;
+    border-radius: 0;
+    background: transparent !important;
+    border: none;
+    box-shadow: none !important;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: 100%;
+
+    &:hover,
+    &:focus,
+    &.p-focus { background: transparent !important; box-shadow: none !important; }
+  }
+
+  /* Style the native p-tree toggler to match list-expand-btn */
+  .p-tree-node-toggler,
+  .p-tree-node-toggle-button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    font-size: 0.75rem;
+    padding: 0;
+    margin: 0 4px 0 0;
+    transition: color 0.15s, background 0.15s;
+
+    &:hover { background: var(--surface-hover); color: var(--primary-color); }
+    &:focus { outline: none; }
+
+    .p-icon { width: 0.8rem; height: 0.8rem; }
+  }
+
+  /* Label fills remaining width */
+  .p-tree-node-label {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  /* Each nesting level adds 24px indentation */
+  .p-tree-node-children { padding-left: 24px; }
+}

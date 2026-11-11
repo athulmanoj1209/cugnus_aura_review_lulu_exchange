@@ -1,0 +1,457 @@
+<div class="aa-card">
+
+  <!-- Header -->
+  <div class="aa-header">
+    <app-back-button></app-back-button>
+    <div class="aa-header__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="aa-header__title" i18n="@@audit.auditorAssignment.title">Assign Auditors</h2>
+      <p class="aa-header__subtitle" i18n="@@audit.auditorAssignment.subtitle">Select scope then assign preparers &amp; reviewers independently</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" autocomplete="off">
+
+    <!-- ── Section 1: Scope ───────────────────────────────────────────────── -->
+    <div class="aa-section">
+      <div class="aa-section__label">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span i18n="@@common.scope">Scope</span>
+      </div>
+
+      <!-- ── Selection filters ───────────────────────────────────────────── -->
+      <div class="aa-grid aa-grid--5">
+
+        <div class="aa-field">
+          <label class="aa-label"><span i18n="@@common.company">Company</span> <span class="aa-required">*</span></label>
+          <p-select formControlName="company" [options]="companyOptions()"
+            optionLabel="label" optionValue="value" placeholder="Select company" i18n-placeholder="@@audit.auditorAssignment.selectCompany"
+            [invalid]="isInvalid('company')" styleClass="w-full" appendTo="body">
+          </p-select>
+          <small *ngIf="getError('company', fieldLabels.company) as err" class="error-text">{{ err }}</small>
+        </div>
+
+        <div class="aa-field">
+          <label class="aa-label"><span i18n="@@common.division">Division</span> <span class="aa-required">*</span></label>
+          <p-select formControlName="division" [options]="divisionOptions"
+            optionLabel="label" optionValue="value" placeholder="Select division" i18n-placeholder="@@audit.auditorAssignment.selectDivision"
+            [invalid]="isInvalid('division')" styleClass="w-full" appendTo="body">
+          </p-select>
+          <small *ngIf="getError('division', fieldLabels.division) as err" class="error-text">{{ err }}</small>
+        </div>
+
+        <div class="aa-field">
+          <label class="aa-label"><span i18n="@@common.subDivision">Sub-Division</span>
+            <span class="aa-required" *ngIf="isSubDivisionRequired">*</span>
+          </label>
+          <p-select formControlName="subdivision" [options]="subdivisionOptions"
+            optionLabel="label" optionValue="value" placeholder="Select subdivision" i18n-placeholder="@@audit.auditorAssignment.selectSubdivision"
+            [invalid]="isInvalid('subdivision')" styleClass="w-full" appendTo="body">
+          </p-select>
+          <small *ngIf="getError('subdivision', fieldLabels.subdivision) as err" class="error-text">{{ err }}</small>
+        </div>
+
+        <div class="aa-field">
+          <label class="aa-label"><span i18n="@@audit.auditorAssignment.auditScope">Audit Scope</span> <span class="aa-required">*</span></label>
+          <p-multiselect formControlName="scope" [options]="scopeOptions"
+            optionLabel="label" optionValue="value"
+            placeholder="Select scope(s)" i18n-placeholder="@@audit.auditorAssignment.selectScopes"
+            [showToggleAll]="true" [filter]="true" filterPlaceholder="Search scope..." i18n-filterPlaceholder="@@audit.auditorAssignment.searchScope"
+            [invalid]="isInvalid('scope')" styleClass="w-full" appendTo="body"
+            selectedItemsLabel="{0} scope(s) selected" i18n-selectedItemsLabel="@@audit.auditorAssignment.scopesSelected">
+          </p-multiselect>
+          <small *ngIf="getError('scope', fieldLabels.scope) as err" class="error-text">{{ err }}</small>
+        </div>
+
+        <div class="aa-field">
+          <label class="aa-label"><span i18n="@@audit.auditorAssignment.job">Job</span> <span class="aa-required">*</span></label>
+          <p-select formControlName="job" [options]="jobOptions"
+            optionLabel="label" optionValue="value" placeholder="Select job" i18n-placeholder="@@audit.auditorAssignment.selectJob"
+            [filter]="true" filterPlaceholder="Search job..." i18n-filterPlaceholder="@@audit.auditorAssignment.searchJob"
+            [invalid]="isInvalid('job')" styleClass="w-full" appendTo="body">
+          </p-select>
+          <small *ngIf="getError('job', fieldLabels.job) as err" class="error-text">{{ err }}</small>
+        </div>
+
+      </div>
+
+      <!-- ── Time Estimation sub-card ────────────────────────────────────── -->
+      <div class="aa-estimation">
+        <div class="aa-estimation__head">
+          <div class="aa-section__label" style="margin-bottom:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            <span i18n="@@audit.auditorAssignment.timeEstimation">Time Estimation</span>
+          </div>
+          <span class="aa-duration" *ngIf="estimatedDurationLabel as dur">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 22h14M5 2h14M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>
+            </svg>
+            {{ dur }}
+          </span>
+        </div>
+
+        <div class="aa-estimation__body">
+          <div class="aa-field">
+            <label class="aa-label"><span i18n="@@audit.auditorAssignment.estimatedStart">Estimated Start</span> <span class="aa-required">*</span></label>
+            <p-datepicker formControlName="estimatedStart"
+              [showTime]="true" [showIcon]="true" [hourFormat]="estimationPicker.HourFormat"
+              [dateFormat]="estimationPicker.DateFormat" [placeholder]="estimationPickerPlaceholder"
+              [readonlyInput]="false" [keepInvalid]="true" [stepMinute]="estimationPicker.StepMinute"
+              [invalid]="isInvalid('estimatedStart')"
+              styleClass="w-full" appendTo="body">
+            </p-datepicker>
+            <small *ngIf="getError('estimatedStart', fieldLabels.estimatedStart) as err" class="error-text">{{ err }}</small>
+          </div>
+
+          <div class="aa-field">
+            <label class="aa-label"><span i18n="@@audit.auditorAssignment.estimatedEnd">Estimated End</span> <span class="aa-required">*</span></label>
+            <p-datepicker formControlName="estimatedEnd"
+              [showTime]="true" [showIcon]="true" [hourFormat]="estimationPicker.HourFormat"
+              [dateFormat]="estimationPicker.DateFormat" [placeholder]="estimationPickerPlaceholder"
+              [readonlyInput]="false" [keepInvalid]="true" [stepMinute]="estimationPicker.StepMinute"
+              [minDate]="minEndDate!"
+              [invalid]="isInvalid('estimatedEnd') || dateRangeInvalid"
+              styleClass="w-full" appendTo="body">
+            </p-datepicker>
+            <small *ngIf="getError('estimatedEnd', fieldLabels.estimatedEnd) as err" class="error-text">{{ err }}</small>
+            <small *ngIf="!getError('estimatedEnd', fieldLabels.estimatedEnd) && dateRangeInvalid" class="error-text">
+              {{ formErrors.DateRange }}
+            </small>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Section 2: Preparer & Reviewer columns ─────────────────────────── -->
+    <ng-container *ngIf="hasScopeSelected">
+
+      <div class="aa-divider"></div>
+
+      <div class="aa-section">
+
+        <!-- Scope label -->
+        <div class="aa-assign-header">
+          <div class="aa-assign-header__left">
+            <div class="aa-section__label" style="margin-bottom:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+              <span i18n="@@audit.auditorAssignment.auditorAssignment">Auditor Assignment</span>
+            </div>
+            <span class="aa-scope-tag" *ngFor="let label of selectedScopeLabels">{{ label }}</span>
+          </div>
+        </div>
+
+        <!-- Loading skeleton -->
+        <ng-container *ngIf="loadingAssignments; else dualContent">
+          <div class="aa-dual-grid">
+            <div class="aa-skeleton" *ngFor="let _ of [1,2]">
+              <div class="aa-skeleton__row" *ngFor="let __ of [1,2,3]">
+                <div class="aa-skeleton__cell aa-skeleton__cell--sm"></div>
+                <div class="aa-skeleton__cell"></div>
+                <div class="aa-skeleton__cell aa-skeleton__cell--xs"></div>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-template #dualContent>
+          <div class="aa-dual-grid">
+
+            <!-- ══ PREPARERS PANEL ══════════════════════════════════════════ -->
+            <div class="aa-panel">
+
+              <div class="aa-panel__header">
+                <span class="aa-badge aa-badge--previewer">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <span i18n="@@common.preparer">Preparer</span>
+                </span>
+                <span class="aa-panel__count">{{ preparers.length }}</span>
+                <button type="button" class="aa-add-btn aa-add-btn--preparer"
+                        (click)="addRow(AssignmentTypes.Preparer)" [disabled]="loadingAssignments">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span i18n="@@audit.auditorAssignment.addPreparer">Add Preparer</span>
+                </button>
+              </div>
+
+              <!-- Column head -->
+              <div class="aa-table-head aa-table-head--single">
+                <div class="aa-th aa-th--num">#</div>
+                <div class="aa-th" i18n="@@audit.auditorAssignment.auditor">Auditor</div>
+                <div class="aa-th"></div>
+              </div>
+
+              <!-- Rows -->
+              <div class="aa-table-body" formArrayName="preparers">
+
+                <div *ngFor="let ctrl of preparers.controls; let i = index"
+                     [formGroupName]="i"
+                     class="aa-row aa-row--single"
+                     [class.aa-row--saved]="!isNew(preparerMeta, i)"
+                     [class.aa-row--new]="isNew(preparerMeta, i)">
+
+                  <div class="aa-td aa-td--num">
+                    <span class="aa-row-num">{{ i + 1 }}</span>
+                  </div>
+
+                  <!-- Saved: chip -->
+                  <ng-container *ngIf="!isNew(preparerMeta, i)">
+                    <div class="aa-td">
+                      <ng-container *ngIf="getAuditorOption(asFormGroup(ctrl).get('auditorId')?.value) as a">
+                        <div class="auditor-chip">
+                          <span class="auditor-avatar auditor-avatar--previewer">{{ a.initials }}</span>
+                          <div class="auditor-chip__info">
+                            <span class="auditor-chip__name">{{ a.label }}</span>
+                            <span class="auditor-chip__role">{{ a.role }}</span>
+                          </div>
+                        </div>
+                      </ng-container>
+                    </div>
+                    <div class="aa-td aa-td--action">
+                      <button type="button" class="aa-remove-btn"
+                              [disabled]="preparerMeta[i]?.deleting" aria-label="Remove" i18n-aria-label="@@common.remove"
+                              (click)="removeRow(AssignmentTypes.Preparer, i)" title="Remove" i18n-title="@@common.remove">
+                        <span class="aa-spinner" *ngIf="preparerMeta[i]?.deleting"></span>
+                        <svg *ngIf="!preparerMeta[i]?.deleting" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                          <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </ng-container>
+
+                  <!-- New: dropdown + save/discard -->
+                  <ng-container *ngIf="isNew(preparerMeta, i)">
+                    <div class="aa-td">
+                      <p-select formControlName="auditorId"
+                        [options]="auditorOptions"
+                        optionLabel="label" optionValue="value"
+                        [placeholder]="pickerPlaceholders[AssignmentTypes.Preparer]"
+                        i18n-placeholder="@@audit.auditorAssignment.choosePreparer"
+                        [filter]="true" filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search"
+                        [invalid]="isInvalid('auditorId', asFormGroup(ctrl))"
+                        styleClass="w-full" appendTo="body">
+                        <ng-template pTemplate="selectedItem" let-opt>
+                          <div class="auditor-chip" *ngIf="opt">
+                            <span class="auditor-avatar auditor-avatar--sm auditor-avatar--previewer">{{ opt.initials }}</span>
+                            <div class="auditor-chip__info">
+                              <span class="auditor-chip__name">{{ opt.label }}</span>
+                              <span class="auditor-chip__role">{{ opt.role }}</span>
+                            </div>
+                          </div>
+                        </ng-template>
+                        <ng-template pTemplate="item" let-opt>
+                          <div class="auditor-option">
+                            <span class="auditor-avatar auditor-avatar--sm auditor-avatar--previewer">{{ opt.initials }}</span>
+                            <div class="auditor-option__info">
+                              <span class="auditor-option__name">{{ opt.label }}</span>
+                              <span class="auditor-option__meta">{{ opt.role }} &bull; {{ opt.email }}</span>
+                            </div>
+                          </div>
+                        </ng-template>
+                      </p-select>
+                      <small *ngIf="getError('auditorId', typeLabels[AssignmentTypes.Preparer], asFormGroup(ctrl)) as err" class="error-text">{{ err }}</small>
+                    </div>
+                    <div class="aa-td aa-td--action">
+                      <button type="button" class="aa-remove-btn" (click)="removeRow(AssignmentTypes.Preparer, i)" title="Discard" i18n-title="@@common.discard" aria-label="Discard" i18n-aria-label="@@common.discard">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </ng-container>
+
+                </div><!-- /aa-row -->
+
+                <div class="aa-empty" *ngIf="preparers.length === 0" i18n="@@audit.auditorAssignment.noPreparersAssigned">
+                  No preparers assigned. Click <strong>Add Preparer</strong>.
+                </div>
+
+              </div><!-- /aa-table-body preparers -->
+            </div><!-- /aa-panel preparers -->
+
+
+            <!-- ══ REVIEWERS PANEL ══════════════════════════════════════════ -->
+            <div class="aa-panel">
+
+              <div class="aa-panel__header">
+                <span class="aa-badge aa-badge--reviewer">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                  <span i18n="@@common.reviewer">Reviewer</span>
+                </span>
+                <span class="aa-panel__count">{{ reviewers.length }}</span>
+                <button type="button" class="aa-add-btn aa-add-btn--reviewer"
+                        (click)="addRow(AssignmentTypes.Reviewer)" [disabled]="loadingAssignments">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  <span i18n="@@audit.auditorAssignment.addReviewer">Add Reviewer</span>
+                </button>
+              </div>
+
+              <!-- Column head -->
+              <div class="aa-table-head aa-table-head--single">
+                <div class="aa-th aa-th--num">#</div>
+                <div class="aa-th" i18n="@@audit.auditorAssignment.auditor">Auditor</div>
+                <div class="aa-th"></div>
+              </div>
+
+              <!-- Rows -->
+              <div class="aa-table-body" formArrayName="reviewers">
+
+                <div *ngFor="let ctrl of reviewers.controls; let i = index"
+                     [formGroupName]="i"
+                     class="aa-row aa-row--single"
+                     [class.aa-row--saved]="!isNew(reviewerMeta, i)"
+                     [class.aa-row--new]="isNew(reviewerMeta, i)">
+
+                  <div class="aa-td aa-td--num">
+                    <span class="aa-row-num">{{ i + 1 }}</span>
+                  </div>
+
+                  <!-- Saved: chip -->
+                  <ng-container *ngIf="!isNew(reviewerMeta, i)">
+                    <div class="aa-td">
+                      <ng-container *ngIf="getAuditorOption(asFormGroup(ctrl).get('auditorId')?.value) as a">
+                        <div class="auditor-chip">
+                          <span class="auditor-avatar auditor-avatar--reviewer">{{ a.initials }}</span>
+                          <div class="auditor-chip__info">
+                            <span class="auditor-chip__name">{{ a.label }}</span>
+                            <span class="auditor-chip__role">{{ a.role }}</span>
+                          </div>
+                        </div>
+                      </ng-container>
+                    </div>
+                    <div class="aa-td aa-td--action">
+                      <button type="button" class="aa-remove-btn"
+                              [disabled]="reviewerMeta[i]?.deleting" aria-label="Remove" i18n-aria-label="@@common.remove"
+                              (click)="removeRow(AssignmentTypes.Reviewer, i)" title="Remove" i18n-title="@@common.remove">
+                        <span class="aa-spinner" *ngIf="reviewerMeta[i]?.deleting"></span>
+                        <svg *ngIf="!reviewerMeta[i]?.deleting" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                          <path d="M10 11v6M14 11v6M9 6V4h6v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </ng-container>
+
+                  <!-- New: dropdown + save/discard -->
+                  <ng-container *ngIf="isNew(reviewerMeta, i)">
+                    <div class="aa-td">
+                      <p-select formControlName="auditorId"
+                        [options]="auditorOptions"
+                        optionLabel="label" optionValue="value"
+                        [placeholder]="pickerPlaceholders[AssignmentTypes.Reviewer]"
+                        i18n-placeholder="@@audit.auditorAssignment.chooseReviewer"
+                        [filter]="true" filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search"
+                        [invalid]="isInvalid('auditorId', asFormGroup(ctrl))"
+                        styleClass="w-full" appendTo="body">
+                        <ng-template pTemplate="selectedItem" let-opt>
+                          <div class="auditor-chip" *ngIf="opt">
+                            <span class="auditor-avatar auditor-avatar--sm auditor-avatar--reviewer">{{ opt.initials }}</span>
+                            <div class="auditor-chip__info">
+                              <span class="auditor-chip__name">{{ opt.label }}</span>
+                              <span class="auditor-chip__role">{{ opt.role }}</span>
+                            </div>
+                          </div>
+                        </ng-template>
+                        <ng-template pTemplate="item" let-opt>
+                          <div class="auditor-option">
+                            <span class="auditor-avatar auditor-avatar--sm auditor-avatar--reviewer">{{ opt.initials }}</span>
+                            <div class="auditor-option__info">
+                              <span class="auditor-option__name">{{ opt.label }}</span>
+                              <span class="auditor-option__meta">{{ opt.role }} &bull; {{ opt.email }}</span>
+                            </div>
+                          </div>
+                        </ng-template>
+                      </p-select>
+                      <small *ngIf="getError('auditorId', typeLabels[AssignmentTypes.Reviewer], asFormGroup(ctrl)) as err" class="error-text">{{ err }}</small>
+                    </div>
+                    <div class="aa-td aa-td--action">
+                      <button type="button" class="aa-remove-btn" (click)="removeRow(AssignmentTypes.Reviewer, i)" title="Discard" i18n-title="@@common.discard" aria-label="Discard" i18n-aria-label="@@common.discard">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </ng-container>
+
+                </div><!-- /aa-row -->
+
+                <div class="aa-empty" *ngIf="reviewers.length === 0" i18n="@@audit.auditorAssignment.noReviewersAssigned">
+                  No reviewers assigned. Click <strong>Add Reviewer</strong>.
+                </div>
+
+              </div><!-- /aa-table-body reviewers -->
+            </div><!-- /aa-panel reviewers -->
+
+          </div><!-- /aa-dual-grid -->
+        </ng-template>
+
+      </div>
+    </ng-container>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+    <div class="aa-footer">
+
+      <!-- Left: Reset -->
+      <button type="button" class="aa-btn aa-btn--ghost" (click)="onReset()"><span i18n="@@common.reset">Reset</span></button>
+
+      <!-- Center: Success toast -->
+      <!-- <div class="aa-success-msg" *ngIf="submitSuccess">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        Assignments saved successfully
+      </div> -->
+
+      <!-- Right: Cancel + Submit -->
+      <div class="aa-footer__right">
+        <button type="button" class="aa-btn aa-btn--secondary"><span i18n="@@common.cancel">Cancel</span></button>
+
+        <button type="button" class="aa-btn aa-btn--primary"
+                (click)="onSubmit()"
+                [disabled]="submitting || !hasScopeSelected">
+          <ng-container *ngIf="submitting">
+            <span class="aa-spinner aa-spinner--light"></span>
+            <span i18n="@@common.saving">Saving...</span>
+          </ng-container>
+          <ng-container *ngIf="!submitting">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            <span i18n="@@audit.auditorAssignment.assignAuditors">Assign Auditors</span>
+          </ng-container>
+        </button>
+      </div>
+
+    </div>
+
+  </form>
+</div>

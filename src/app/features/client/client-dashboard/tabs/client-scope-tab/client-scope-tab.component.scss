@@ -1,0 +1,229 @@
+// ── Variables ──────────────────────────────────────────────────────────────
+$radius-lg: 12px;
+$gap: 16px;
+
+:host {
+  display: block;
+}
+
+.tab-canvas {
+  display: flex;
+  flex-direction: column;
+  gap: $gap;
+}
+
+// ── Card styles ────────────────────────────────────────────────────────────
+:host ::ng-deep .dash-card {
+  border-radius: $radius-lg !important;
+  margin-top: 10px;
+  border: 1px solid var(--surface-border) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04) !important;
+  background: var(--surface-card) !important;
+  .p-card-body    { padding: 0 !important; }
+  .p-card-content { padding: 0.75rem 1rem 1rem !important; }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem 0;
+}
+
+/* Right side of a card header: "View by" toggle + "View all" button. */
+.card-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.card-title-group { display: flex; flex-direction: column; gap: 2px; }
+
+.card-title {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  i { font-size: 0.9rem; }
+}
+
+.card-subtitle {
+  font-size: 0.72rem;
+  color: var(--text-color-secondary);
+  opacity: 0.8;
+  padding-inline-start: 1.3rem;
+}
+
+:host ::ng-deep .status-tag .p-tag { font-size: 0.72rem; padding: 2px 8px; }
+
+// ── View toggle (division / sub-division) ──────────────────────────────────
+.view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--surface-hover);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  padding: 2px;
+  flex-shrink: 0;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: var(--text-color-secondary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover { color: var(--text-color); }
+
+    &--active {
+      background: var(--surface-card);
+      color: var(--text-color);
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  }
+}
+
+// ── Scope summary stats ────────────────────────────────────────────────────
+.scope-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: $gap;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 700px)  { grid-template-columns: repeat(2, 1fr); }
+}
+
+.scope-stat {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--success { background: var(--green-50, var(--surface-card)); border-color: var(--green-200, var(--p-green-100)); .scope-stat-value { color: var(--green-600); } }
+  &--info    { background: var(--surface-hover); border-color: var(--p-blue-200); .scope-stat-value { color: var(--p-blue-600); } }
+  &--danger  { background: var(--red-50, var(--p-red-50)); border-color: var(--red-200, var(--p-red-100)); .scope-stat-value { color: var(--red-500); } }
+  &--primary { .scope-stat-value { color: var(--primary-color); } }
+
+  .scope-stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1.1;
+  }
+
+  .scope-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    font-weight: 500;
+  }
+}
+
+.scope-stat.scope-stat--clickable {
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+
+  &:hover {
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+    transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+// ── Scope list ─────────────────────────────────────────────────────────────
+.scope-list { display: flex; flex-direction: column; }
+
+.scope-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  margin: 0 -8px;
+  border-radius: 6px;
+  border-bottom: 1px solid var(--surface-border);
+  transition: background 0.15s;
+
+  /* Soft highlight on hover — same tint used by the hover-band plugin on
+   * the Audit Overview page's bar charts. */
+  &:hover { background: rgba(148, 163, 184, 0.12); }
+
+  &:last-child { border-bottom: none; }
+
+  // Name stacked above the sub-division chip, each truncated with ellipsis (full text via
+  // pTooltip on hover) so long real names never spill over the progress bar next to it.
+  .scope-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    gap: 4px;
+    min-width: 220px;
+    width: 220px;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    .scope-name {
+      display: block;
+      max-width: 100%;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sub-division-tag {
+      display: inline-block;
+      max-width: 100%;
+      font-size: 0.68rem;
+      font-weight: 500;
+      color: var(--text-color-secondary);
+      background: var(--surface-200, var(--surface-hover));
+      padding: 1px 6px;
+      border-radius: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 0;
+      box-sizing: border-box;
+    }
+  }
+
+  .scope-progress {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    .pct { font-size: 0.8rem; color: var(--text-color-secondary); min-width: 32px; text-align: end; }
+  }
+}
+
+:host ::ng-deep .slim-bar {
+  flex: 1;
+  height: 6px !important;
+  border-radius: 3px;
+  .p-progressbar-value { background: var(--bar-color, var(--primary-color)) !important; border-radius: 3px; }
+}

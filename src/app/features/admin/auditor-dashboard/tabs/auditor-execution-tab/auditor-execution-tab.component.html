@@ -1,0 +1,458 @@
+<div class="findings-reviews">
+
+  <!-- ── Findings Summary Cards ────────────────────────────── -->
+  <div class="stats-grid-7">
+    @for (card of findingsSummaryCards; track card.label) {
+    <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass"
+         role="button" tabindex="0"
+         (click)="onFindingCardClick(card)"
+         (keydown.enter)="onFindingCardClick(card)">
+      <div class="stat-card__header">
+        <span class="stat-card__label">{{ card.label }}</span>
+        <span class="stat-card__icon">
+          @switch (card.icon) {
+            @case ('pi pi-pencil') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+            }
+            @case ('pi pi-send') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon pathLength="100" points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            }
+            @case ('pi pi-search') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="11" cy="11" r="8"></circle>
+                <line pathLength="100" x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            }
+            @case ('pi pi-check-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            }
+            @case ('pi pi-times-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="15" y1="9" x2="9" y2="15"></line>
+                <line pathLength="100" x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            }
+            @case ('pi pi-exclamation-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="12" y1="8" x2="12" y2="12"></line>
+                <line pathLength="100" x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            }
+            @case ('pi pi-eye') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+              </svg>
+            }
+            @case ('pi pi-folder-open') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H5a2 2 0 0 0-2 2z"></path>
+                <path pathLength="100" d="M3 10l1.5 8a2 2 0 0 0 2 1.7h11a2 2 0 0 0 2-1.7L21 10"></path>
+              </svg>
+            }
+            @case ('pi pi-info-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="12" y1="16" x2="12" y2="12"></line>
+                <line pathLength="100" x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            }
+            @case ('pi pi-paperclip') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            }
+            @case ('pi pi-upload') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline pathLength="100" points="17 8 12 3 7 8"></polyline>
+                <line pathLength="100" x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            }
+            @default {
+              <i [class]="card.icon"></i>
+            }
+          }
+        </span>
+      </div>
+      <div class="stat-card__value">{{ card.value }}</div>
+    </div>
+    }
+  </div>
+
+  <!-- ── Findings Charts ────────────────────────────────────── -->
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> <span i18n="@@admin.auditorExecution.findingsByRisk">Findings by Risk</span></h3>
+      <div class="chart-box">
+        <p-chart type="bar" [data]="findingsByRiskChartData" [options]="findingsByRiskChartOptions()"
+          [plugins]="findingsByRiskHoverBandPlugins"></p-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorExecution.findingsStatus">Findings Status</span></h3>
+      <app-donut-status-chart [legend]="findingsStatusLegend"></app-donut-status-chart>
+    </div>
+
+  </div>
+
+  <!-- ── My Findings Table ──────────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-exclamation-circle" class="header-icon header-icon--danger"></app-draw-icon>
+      <span class="table-card__title" i18n="@@admin.auditorExecution.myFindings">My Findings</span>
+    </div>
+    <p-table [value]="myFindings" [paginator]="true" [rows]="PAGE_SIZE" [rowsPerPageOptions]="PAGE_SIZE_OPTIONS" sortMode="multiple"
+      styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="finding"><span i18n="@@common.finding">Finding</span> <p-sortIcon field="finding" /></th>
+          <th i18n="@@common.audit">Audit</th>
+          <th i18n="@@common.scope">Scope</th>
+          <th pSortableColumn="risk" style="width: 85px"><span i18n="@@common.risk">Risk</span> <p-sortIcon field="risk" /></th>
+          <th pSortableColumn="status" style="width: 130px"><span i18n="@@common.status">Status</span> <p-sortIcon field="status" /></th>
+          <th i18n="@@common.owner">Owner</th>
+          <th style="width: 80px" i18n="@@common.actions">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr [ngClass]="{ 'row-alert': isHighRiskRow(row.risk) }">
+          <td class="finding-text">{{ row.finding }}</td>
+          <td>{{ row.audit }}</td>
+          <td>{{ row.scope }}</td>
+          <td><p-tag [value]="row.risk" [severity]="getRiskSeverity(row.risk)" [rounded]="true"></p-tag></td>
+          <td><p-tag [value]="row.status" [severity]="getFindingStatusSeverity(row.status)" [rounded]="true"></p-tag>
+          </td>
+          <td>{{ row.owner }}</td>
+          <td>
+            <p-button class="view-btn" [rounded]="true" [text]="true" severity="secondary" size="small"
+              pTooltip="View Finding" i18n-pTooltip="@@admin.auditorExecution.viewFinding" tooltipPosition="left" (onClick)="openFindingsDrawer(row)">
+              <ng-template pTemplate="icon">
+                <svg class="draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </ng-template>
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ── Observation Summary Cards ─────────────────────────── -->
+  <div class="stats-grid-6">
+    @for (card of observationSummaryCards; track card.label) {
+    <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass"
+         role="button" tabindex="0"
+         (click)="onObservationCardClick(card)"
+         (keydown.enter)="onObservationCardClick(card)">
+      <div class="stat-card__header">
+        <span class="stat-card__label">{{ card.label }}</span>
+        <span class="stat-card__icon">
+          @switch (card.icon) {
+            @case ('pi pi-pencil') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+            }
+            @case ('pi pi-send') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon pathLength="100" points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            }
+            @case ('pi pi-search') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="11" cy="11" r="8"></circle>
+                <line pathLength="100" x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            }
+            @case ('pi pi-check-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            }
+            @case ('pi pi-times-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="15" y1="9" x2="9" y2="15"></line>
+                <line pathLength="100" x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            }
+            @case ('pi pi-exclamation-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="12" y1="8" x2="12" y2="12"></line>
+                <line pathLength="100" x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            }
+            @case ('pi pi-eye') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+              </svg>
+            }
+            @case ('pi pi-folder-open') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H5a2 2 0 0 0-2 2z"></path>
+                <path pathLength="100" d="M3 10l1.5 8a2 2 0 0 0 2 1.7h11a2 2 0 0 0 2-1.7L21 10"></path>
+              </svg>
+            }
+            @case ('pi pi-info-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="12" y1="16" x2="12" y2="12"></line>
+                <line pathLength="100" x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            }
+            @case ('pi pi-paperclip') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            }
+            @case ('pi pi-upload') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline pathLength="100" points="17 8 12 3 7 8"></polyline>
+                <line pathLength="100" x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            }
+            @default {
+              <i [class]="card.icon"></i>
+            }
+          }
+        </span>
+      </div>
+      <div class="stat-card__value">{{ card.value }}</div>
+    </div>
+    }
+  </div>
+
+  <!-- ── Observation Charts ────────────────────────────────── -->
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> <span i18n="@@admin.auditorExecution.observationByRisk">Observation by Risk</span></h3>
+      <div class="chart-box">
+        <p-chart type="bar" [data]="observationsByRiskChartData" [options]="observationsByRiskChartOptions()"
+          ></p-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorExecution.observationStatus">Observation Status</span></h3>
+      <app-donut-status-chart [legend]="observationsStatusLegend"></app-donut-status-chart>
+    </div>
+
+  </div>
+
+  <!-- ── My Observations Table ─────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-eye" class="header-icon header-icon--warn"></app-draw-icon>
+      <span class="table-card__title" i18n="@@admin.auditorExecution.myObservations">My Observations</span>
+    </div>
+    <p-table [value]="myObservations" [paginator]="true" [rows]="PAGE_SIZE" [rowsPerPageOptions]="PAGE_SIZE_OPTIONS" sortMode="multiple"
+      styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="observation"><span i18n="@@common.observation">Observation</span><p-sortIcon field="observation" /></th>
+          <th i18n="@@common.audit">Audit</th>
+          <th i18n="@@common.scope">Scope</th>
+          <th pSortableColumn="riskRating" style="width: 110px"><span i18n="@@common.riskRating">Risk Rating</span><p-sortIcon field="riskRating" /></th>
+          <th pSortableColumn="status" style="width: 130px"><span i18n="@@common.status">Status</span><p-sortIcon field="status" /></th>
+          <th pSortableColumn="createdDate" style="width: 130px"><span i18n="@@common.created">Created</span><p-sortIcon field="createdDate" /></th>
+          <th style="width: 80px" i18n="@@common.actions">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr [ngClass]="{ 'row-alert': row.riskRating === RiskLevels.High }">
+          <td class="observation-text">{{ row.observation }}</td>
+          <td>{{ row.audit }}</td>
+          <td>{{ row.scope }}</td>
+          <td><p-tag [value]="row.riskRating" [severity]="getObservationRiskSeverity(row.riskRating)"
+              [rounded]="true"></p-tag></td>
+          <td><p-tag [value]="row.status" [severity]="getObservationStatusSeverity(row.status)"
+              [rounded]="true"></p-tag></td>
+          <td>{{ row.createdDate }}</td>
+          <td>
+            <p-button class="view-btn" [rounded]="true" [text]="true" severity="secondary" size="small"
+              pTooltip="View Observation" i18n-pTooltip="@@admin.auditorExecution.viewObservation" tooltipPosition="left" (onClick)="openObservationsDrawer(row)">
+              <ng-template pTemplate="icon">
+                <svg class="draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </ng-template>
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ── Evidence Summary Cards ────────────────────────────── -->
+  <div class="stats-grid-6">
+    @for (card of evidenceSummaryCards; track card.label) {
+    <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass"
+         role="button" tabindex="0"
+         (click)="onEvidenceCardClick(card)"
+         (keydown.enter)="onEvidenceCardClick(card)">
+      <div class="stat-card__header">
+        <span class="stat-card__label">{{ card.label }}</span>
+        <span class="stat-card__icon">
+          @switch (card.icon) {
+            @case ('pi pi-pencil') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+              </svg>
+            }
+            @case ('pi pi-send') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon pathLength="100" points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            }
+            @case ('pi pi-search') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="11" cy="11" r="8"></circle>
+                <line pathLength="100" x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            }
+            @case ('pi pi-check-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            }
+            @case ('pi pi-times-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="15" y1="9" x2="9" y2="15"></line>
+                <line pathLength="100" x1="9" y1="9" x2="15" y2="15"></line>
+              </svg>
+            }
+            @case ('pi pi-exclamation-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="12" y1="8" x2="12" y2="12"></line>
+                <line pathLength="100" x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+            }
+            @case ('pi pi-eye') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+              </svg>
+            }
+            @case ('pi pi-folder-open') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v1H5a2 2 0 0 0-2 2z"></path>
+                <path pathLength="100" d="M3 10l1.5 8a2 2 0 0 0 2 1.7h11a2 2 0 0 0 2-1.7L21 10"></path>
+              </svg>
+            }
+            @case ('pi pi-info-circle') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                <line pathLength="100" x1="12" y1="16" x2="12" y2="12"></line>
+                <line pathLength="100" x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            }
+            @case ('pi pi-paperclip') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            }
+            @case ('pi pi-upload') {
+              <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path pathLength="100" d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline pathLength="100" points="17 8 12 3 7 8"></polyline>
+                <line pathLength="100" x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            }
+            @default {
+              <i [class]="card.icon"></i>
+            }
+          }
+        </span>
+      </div>
+      <div class="stat-card__value">{{ card.value }}</div>
+    </div>
+    }
+  </div>
+
+  <!-- ── Evidence Charts ───────────────────────────────────── -->
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> <span i18n="@@admin.auditorExecution.evidenceByRisk">Evidence by Risk</span>Evidence by Risk</h3>
+      <div class="chart-box">
+        <p-chart type="bar" [data]="evidencesByRiskChartData" [options]="evidencesByRiskChartOptions()"
+          ></p-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorExecution.evidenceStatus">Evidence Status</span></h3>
+      <app-donut-status-chart [legend]="evidencesStatusLegend"></app-donut-status-chart>
+    </div>
+
+  </div>
+
+  <!-- ── My Evidences Table ─────────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-paperclip" class="header-icon header-icon--blue"></app-draw-icon>
+      <span class="table-card__title" i18n="@@admin.auditorExecution.myEvidences">My Evidences</span>
+    </div>
+    <p-table [value]="myEvidences" [paginator]="true" [rows]="PAGE_SIZE" [rowsPerPageOptions]="PAGE_SIZE_OPTIONS" sortMode="multiple"
+      styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="evidence"><span i18n="@@common.evidence">Evidence</span><p-sortIcon field="evidence" /></th>
+          <th i18n="@@common.scope">Scope</th>
+          <th pSortableColumn="type" style="width: 120px"><span i18n="@@common.type">Type</span><p-sortIcon field="type" /></th>
+          <th pSortableColumn="risk" style="width: 90px"><span i18n="@@common.risk">Risk</span><p-sortIcon field="risk" /></th>
+          <th pSortableColumn="status" style="width: 130px"><span i18n="@@common.status">Status</span><p-sortIcon field="status" /></th>
+          <th pSortableColumn="dueDate" style="width: 110px"><span i18n="@@common.dueDate">Due Date</span><p-sortIcon field="dueDate" /></th>
+          <th style="width: 80px" i18n="@@common.actions">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="evidence-text">{{ row.evidence }}</td>
+          <td>{{ row.scope }}</td>
+          <td><span class="type-label">{{ row.type }}</span></td>
+          <td><p-tag [value]="row.risk" [severity]="getRiskSeverity(row.risk)" [rounded]="true"></p-tag></td>
+          <td><p-tag [value]="row.status" [severity]="getEvidenceStatusSeverity(row.status)" [rounded]="true"></p-tag>
+          </td>
+          <td>{{ row.dueDate }}</td>
+          <td>
+            <p-button class="view-btn" [rounded]="true" [text]="true" severity="secondary" size="small"
+              pTooltip="View Evidence" i18n-pTooltip="@@admin.auditorExecution.viewEvidence" tooltipPosition="left" (onClick)="openEvidencesDrawer(row)">
+              <ng-template pTemplate="icon">
+                <svg class="draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </ng-template>
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+
+</div>

@@ -1,0 +1,70 @@
+<section class="scope-task-page">
+    <div class="page-header">
+        <div class="page-header__title-group">
+            <app-back-button></app-back-button>
+            <div class="page-title-block">
+                <div class="page-eyebrow"><app-draw-icon icon="pi pi-list-check"></app-draw-icon> Scope Task Management</div>
+                <h1 class="page-title">Scope Tasks</h1>
+                <p class="page-subtitle">Review and manage tasks generated under active scope jobs</p>
+            </div>
+        </div>
+        <!-- <span class="task-count">{{ tasks.length }} tasks</span> -->
+    </div>
+    <div class="st-toolbar">
+        <div class="toolbar-left">
+            <button type="button" class="filter-trigger" (click)="filterPanel.toggle($event)"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon><span>Filters</span><span *ngIf="activeFilterCount() > 0" class="filter-badge">{{ activeFilterCount() }}</span></button>
+            <div *ngIf="hasActiveFilters()" class="chip-row"><span *ngFor="let chip of activeFilterChips()" class="filter-chip">{{ chip.label }}<button type="button" (click)="removeFilter(chip.key)"><app-draw-icon icon="pi pi-times"></app-draw-icon></button></span><button type="button" class="chip-clear" (click)="clearFilters()"><app-draw-icon icon="pi pi-times-circle"></app-draw-icon> Clear all</button></div>
+        </div>
+        <div class="toolbar-right"><div class="search-box"><app-draw-icon icon="pi pi-search"></app-draw-icon><input pInputText type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearchChange($event)" placeholder="Search tasks, scopes, or scope jobs..." /><button *ngIf="searchQuery()" type="button" (click)="onSearchChange('')"><app-draw-icon icon="pi pi-times"></app-draw-icon></button></div></div>
+    </div>
+    <p-popover #filterPanel styleClass="st-filter-panel"><div class="fp-header"><span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Filter Tasks</span><button type="button" class="fp-reset" (click)="clearFilters()">Reset all</button></div><div class="fp-grid">
+        <div class="fp-field"><label class="fp-label">Company</label><p-multiSelect [options]="companyFilterOptions()" [ngModel]="selectedCompanies()" (ngModelChange)="onCompaniesChange($event)" optionLabel="label" optionValue="value" placeholder="All companies" display="chip" [maxSelectedLabels]="1"></p-multiSelect></div>
+        <div class="fp-field"><label class="fp-label">Division</label><p-multiSelect [options]="divisionFilterOptions()" [ngModel]="selectedDivisions()" (ngModelChange)="onDivisionsChange($event)" optionLabel="label" optionValue="value" placeholder="All divisions" display="chip" [maxSelectedLabels]="1"></p-multiSelect></div>
+        <div class="fp-field"><label class="fp-label">Sub-Division</label><p-multiSelect [options]="subDivisionFilterOptions()" [ngModel]="selectedSubDivisions()" (ngModelChange)="onSubDivisionsChange($event)" optionLabel="label" optionValue="value" placeholder="All sub-divisions" display="chip" [maxSelectedLabels]="1"></p-multiSelect></div>
+        <div class="fp-field"><label class="fp-label">Scope</label><p-multiSelect [options]="scopeFilterOptions()" [ngModel]="selectedScopes()" (ngModelChange)="onScopesChange($event)" optionLabel="label" optionValue="value" placeholder="All scopes" display="chip" [maxSelectedLabels]="1"></p-multiSelect></div>
+        <div class="fp-field fp-field--full"><label class="fp-label">Scope Job</label><p-multiSelect [options]="scopeJobFilterOptions()" [ngModel]="selectedScopeJobs()" (ngModelChange)="onScopeJobsChange($event)" optionLabel="label" optionValue="value" placeholder="All scope jobs" display="chip" [filter]="true" [maxSelectedLabels]="1"></p-multiSelect></div>
+        <div class="fp-field fp-field--full"><label class="fp-label">Task Status</label><p-multiSelect [options]="taskStatusFilterOptions" [ngModel]="selectedTaskStatuses()" (ngModelChange)="onTaskStatusesChange($event)" optionLabel="label" optionValue="value" placeholder="All task statuses" display="chip" [maxSelectedLabels]="1"></p-multiSelect></div>
+    </div><div class="fp-footer"><button type="button" class="fp-btn fp-btn--ghost" (click)="clearFilters(); filterPanel.hide()">Reset</button><button type="button" class="fp-btn fp-btn--primary" (click)="filterPanel.hide()">Apply</button></div></p-popover>
+    <div class="st-list-wrap">
+        <div class="st-list-header">
+            <div class="st-header-cell sortable" (click)="sortBy('id')">Task ID <app-draw-icon [icon]="sortIconFor('id')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('title')">Task Name <app-draw-icon [icon]="sortIconFor('title')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('status')">Status <app-draw-icon [icon]="sortIconFor('status')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('checklist')">Checklist Items <app-draw-icon [icon]="sortIconFor('checklist')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('auditor')">Assigned Auditor <app-draw-icon [icon]="sortIconFor('auditor')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('timeframe')">Timeframe <app-draw-icon [icon]="sortIconFor('timeframe')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('controlRating')">Control Rating <app-draw-icon [icon]="sortIconFor('controlRating')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('priority')">Risk Priority <app-draw-icon [icon]="sortIconFor('priority')"></app-draw-icon></div>
+            <div class="st-header-cell sortable" (click)="sortBy('tags')">Tags <app-draw-icon [icon]="sortIconFor('tags')"></app-draw-icon></div>
+            <div class="st-header-cell">Actions</div>
+        </div>
+        <div *ngFor="let task of paginatedTasks()" class="st-row">
+            <div class="st-cell"><span class="task-id">{{ task.id }}</span></div>
+            <div class="st-cell task-name">{{ task.title }}</div>
+            <div class="st-cell"><span class="status-pill status-pill--{{ task.status }}"><app-draw-icon [icon]="statusIcons[task.status]"></app-draw-icon>{{ statusLabels[task.status] }}</span></div>
+            <div class="st-cell"><button class="count-button" type="button" (click)="showChecklist(task)" pTooltip="View checklist items"><app-draw-icon icon="pi pi-list-check"></app-draw-icon><span>{{ task.checklistItems.length }}</span></button></div>
+            <div class="st-cell">{{ auditorName(task.assignedTo) }}</div>
+            <div class="st-cell timeframe"><app-draw-icon icon="pi pi-calendar"></app-draw-icon><span>{{ task.startDate | date:'dd MMM yyyy' }}</span><span>–</span><span>{{ task.endDate | date:'dd MMM yyyy' }}</span></div>
+            <div class="st-cell"><span class="rating rating--{{ task.controlRating }}">{{ controlRatingLabels[task.controlRating] }}</span></div>
+            <div class="st-cell"><span class="priority priority--{{ task.priority }}">{{ priorityLabels[task.priority] }} Risk</span></div>
+            <div class="st-cell"><button class="tags-preview" type="button" (click)="showTags(task)" pTooltip="View all tags"><app-draw-icon icon="pi pi-tags"></app-draw-icon><span class="tags-preview__text">{{ task.tags.slice(0, 3).join(', ') }}</span><span *ngIf="task.tags.length > 3" class="tags-more">...</span></button></div>
+            <div class="st-cell st-actions"><button type="button" class="action-button action-button--view" pTooltip="View task details" tooltipPosition="top" (click)="showDetails(task)"><app-draw-icon icon="pi pi-eye"></app-draw-icon></button></div>
+        </div>
+    </div>
+    <app-pagination-bar
+        *ngIf="filteredSortedTasks().length > 0"
+        [pageSize]="pageSize()"
+        [totalRecords]="filteredSortedTasks().length"
+        [currentPage]="currentPage() - 1"
+        [rowsPerPageOptions]="pageSizeOptions"
+        entityLabel="tasks"
+        (pageChange)="onPageChange($event)"
+        (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+    <p-dialog [(visible)]="checklistVisible" [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: 'min(520px, 92vw)' }" header="Checklist Items" (onHide)="hideChecklist()">
+        <ng-container *ngIf="selectedTask as task"><p class="modal-task-name">{{ task.title }}</p><ul class="checklist-list"><li *ngFor="let item of task.checklistItems; let index = index" class="checklist-item"><span class="checklist-item__icon checklist-item__icon--{{ checklistStatus(task, index) }}"><app-draw-icon [icon]="checklistStatusIcons[checklistStatus(task, index)]"></app-draw-icon></span><span class="checklist-item__name">{{ item }}</span><span class="checklist-item__status checklist-item__status--{{ checklistStatus(task, index) }}">{{ checklistStatusLabels[checklistStatus(task, index)] }}</span></li></ul></ng-container>
+    </p-dialog>
+    <p-dialog [(visible)]="tagsVisible" [modal]="true" [draggable]="false" [resizable]="false" [style]="{ width: 'min(320px, 90vw)' }" header="Tags">
+        <div class="tag-modal-list"><p-tag *ngFor="let tag of selectedTags" [value]="tag"></p-tag></div>
+    </p-dialog>
+</section>

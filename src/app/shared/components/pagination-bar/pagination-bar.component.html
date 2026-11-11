@@ -1,0 +1,16 @@
+<div class="pagination-bar" [class.pagination-bar--no-label]="!showLabel">
+  @if (showLabel) {
+    <span class="pagination-info">
+      Showing {{ startRecord }} to {{ endRecord }} of {{ totalRecords }} {{ entityLabel }}
+    </span>
+  }
+  <p-paginator
+    [rows]="pageSize"
+    [totalRecords]="totalRecords"
+    [first]="currentPage * pageSize"
+    (onPageChange)="onPageChange($event)"
+    [showFirstLastIcon]="false"
+    [rowsPerPageOptions]="effectiveRowsPerPageOptions"
+    class="app-paginator">
+  </p-paginator>
+</div>

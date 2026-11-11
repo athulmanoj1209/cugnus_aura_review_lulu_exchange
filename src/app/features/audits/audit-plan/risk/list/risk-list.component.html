@@ -1,0 +1,407 @@
+<section class="risk-page">
+
+  <!-- ======================== PAGE HEADER ======================== -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title">Risk Register</h1>
+        <p class="page-header__subtitle">Centralised repository of organisational risks mapped to sub-divisions, scopes and audit activities</p>
+      </div>
+    </div>
+    <div class="page-header__actions">
+      
+      <button type="button" class="btn-import-trigger" (click)="openImport()"
+              pTooltip="Import from Excel / CSV" tooltipPosition="bottom">
+        <app-draw-icon icon="pi pi-file-import"></app-draw-icon> Import
+      </button>
+      <button type="button" class="view-toggle__btn" [class.is-active]="viewMode() === RiskViewModes.Heatmap"
+                (click)="setView(RiskViewModes.Heatmap)" pTooltip="Heat Map" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-chart-scatter"></app-draw-icon>
+        </button>
+      <p-button label="+ New Risk" styleClass="btn-add" (onClick)="openAdd()" type="button"></p-button>
+    
+    <div class="view-toggle" role="group">
+        <button type="button" class="view-toggle__btn" [class.is-active]="viewMode() === RiskViewModes.List"
+                (click)="setView(RiskViewModes.List)" pTooltip="List view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+        <button type="button" class="view-toggle__btn" [class.is-active]="viewMode() === RiskViewModes.Grid"
+                (click)="setView(RiskViewModes.Grid)" pTooltip="Grid view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+        </div>
+      </div>
+  </header>
+
+  <!-- ======================== KPI STRIP (severity-wise) =========== -->
+  <div class="kpi-strip">
+    <div class="kpi-card kpi-card--total">
+      <span class="kpi-card__num">{{ kpis().total }}</span>
+      <span class="kpi-card__label">Total Risks</span>
+    </div>
+    <div class="kpi-card kpi-card--high">
+      <span class="kpi-card__num">{{ kpis().high }}</span>
+      <span class="kpi-card__label">High</span>
+      <app-draw-icon icon="pi pi-exclamation-triangle" class="kpi-card__icon"></app-draw-icon>
+    </div>
+    <div class="kpi-card kpi-card--medium">
+      <span class="kpi-card__num">{{ kpis().medium }}</span>
+      <span class="kpi-card__label">Medium</span>
+      <app-draw-icon icon="pi pi-exclamation-circle" class="kpi-card__icon"></app-draw-icon>
+    </div>
+    <div class="kpi-card kpi-card--low">
+      <span class="kpi-card__num">{{ kpis().low }}</span>
+      <span class="kpi-card__label">Low</span>
+      <app-draw-icon icon="pi pi-check-circle" class="kpi-card__icon"></app-draw-icon>
+    </div>
+  </div>
+
+  <!-- ======================== FILTER BAR ========================= -->
+  <div class="filter-bar">
+
+
+   
+
+    
+    <!-- Filters trigger -->
+    <button type="button" class="filter-bar__trigger"
+            (click)="filterPanel.toggle($event)">
+      <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+      <span>Filters</span>
+      <span *ngIf="activeFilterCount() > 0" class="filter-bar__badge">
+        {{ activeFilterCount() }}
+      </span>
+    </button>
+
+
+ <!-- Search pinned right -->
+    <span class="filter-bar__search">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input pInputText type="text" [ngModel]="searchQuery()"
+             (ngModelChange)="onSearch($event)" [placeholder]="searchPlaceholder" />
+    </span>
+
+
+    <!-- Active chips -->
+    <div *ngIf="hasFilters()" class="filter-bar__chips">
+      <span *ngFor="let chip of activeFilterChips()" class="filter-chip">
+        {{ chip.label }}
+        <button type="button" (click)="removeFilter(chip.key)">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon>
+        </button>
+      </span>
+    </div>
+
+    <button *ngIf="hasFilters()" type="button" class="filter-bar__clear" (click)="clearFilters()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon><span>Clear all</span>
+    </button>
+  </div>
+
+  <!-- ======================== FILTER POPOVER ===================== -->
+  <p-popover #filterPanel styleClass="fp-panel">
+    <div class="fp-header">
+      <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Filters</span>
+      <button type="button" class="fp-clear-link" *ngIf="hasFilters()" (click)="clearFilters()">
+        Clear all
+      </button>
+    </div>
+
+    <div class="fp-grid">
+
+      <div class="fp-field">
+        <label class="fp-label">Company</label>
+        <p-multiSelect [options]="companyOptions()" [ngModel]="selectedCompanies()"
+                       (ngModelChange)="onCompanies($event)" optionLabel="label" optionValue="value"
+                       placeholder="All companies" display="chip" [showHeader]="false"
+                       [maxSelectedLabels]="1" selectedItemsLabel="{0} companies"
+                       styleClass="fp-select"></p-multiSelect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Division</label>
+        <p-multiSelect [options]="branchOptions()" [ngModel]="selectedBranches()"
+                       (ngModelChange)="onBranches($event)" optionLabel="label" optionValue="value"
+                       placeholder="All divisions" display="chip" [showHeader]="false"
+                       [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions"
+                       styleClass="fp-select"></p-multiSelect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Sub-Division</label>
+        <p-multiSelect [disabled]="!subDivisionFilterVisible()" [options]="deptOptions()" [ngModel]="selectedDepts()"
+                       (ngModelChange)="onDepts($event)" optionLabel="label" optionValue="value"
+                       [placeholder]="subDivisionFilterVisible() ? subDivisionPlaceholders.All : subDivisionPlaceholders.None" display="chip" [showHeader]="false"
+                       [maxSelectedLabels]="1" selectedItemsLabel="{0} depts"
+                       styleClass="fp-select"></p-multiSelect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Risk Type</label>
+        <p-multiSelect [options]="riskTypeOptions" [ngModel]="selectedTypes()"
+                       (ngModelChange)="onTypes($event)" optionLabel="label" optionValue="value"
+                       placeholder="All types" display="chip" [showHeader]="false"
+                       [maxSelectedLabels]="1" selectedItemsLabel="{0} types"
+                       styleClass="fp-select"></p-multiSelect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Risk Level</label>
+        <p-multiSelect [options]="residualLevelOptions" [ngModel]="selectedLevels()"
+                       (ngModelChange)="onLevels($event)" optionLabel="label" optionValue="value"
+                       placeholder="All levels" display="chip" [showHeader]="false"
+                       [maxSelectedLabels]="1" selectedItemsLabel="{0} levels"
+                       styleClass="fp-select"></p-multiSelect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Status</label>
+        <p-multiSelect [options]="statusOptions" [ngModel]="selectedStatuses()"
+                       (ngModelChange)="onStatuses($event)" optionLabel="label" optionValue="value"
+                       placeholder="All statuses" display="chip" [showHeader]="false"
+                       [maxSelectedLabels]="1" selectedItemsLabel="{0} statuses"
+                       styleClass="fp-select"></p-multiSelect>
+      </div>
+
+      <div class="fp-field">
+        <label class="fp-label">Owner</label>
+        <p-multiSelect [options]="ownerOptions()" [ngModel]="selectedOwners()"
+                       (ngModelChange)="onOwners($event)" optionLabel="label" optionValue="value"
+                       placeholder="All owners" display="chip" [showHeader]="false"
+                       [maxSelectedLabels]="1" selectedItemsLabel="{0} owners"
+                       styleClass="fp-select"></p-multiSelect>
+      </div>
+
+    </div>
+
+    <div class="fp-footer">
+      <button type="button" class="fp-btn fp-btn--ghost"
+              (click)="clearFilters(); filterPanel.hide()">Reset</button>
+      <button type="button" class="fp-btn fp-btn--primary"
+              (click)="filterPanel.hide()">
+        Apply<span *ngIf="activeFilterCount() > 0"> ({{ activeFilterCount() }})</span>
+      </button>
+    </div>
+  </p-popover>
+
+  <!-- ======================== LIST VIEW ========================== -->
+  <div *ngIf="viewMode() === RiskViewModes.List" class="risk-list">
+
+    <div *ngIf="paginated().length === 0" class="risk-empty risk-empty--block">
+      <app-draw-icon icon="pi pi-shield"></app-draw-icon><span>No risks match your filters.</span>
+      <button *ngIf="hasFilters()" type="button" class="risk-empty__btn" (click)="clearFilters()">Clear filters</button>
+    </div>
+
+    <ng-container *ngIf="paginated().length > 0">
+      <div class="list-header">
+        <span class="list-header__cell col-id sortable" (click)="onSort(RiskSortColumns.Id)" [class.is-sorted]="sortCol() === RiskSortColumns.Id">
+          ID <i class="pi sortable__arrow" [ngClass]="sortIcon(RiskSortColumns.Id)"></i>
+        </span>
+        <span class="list-header__cell col-title sortable" (click)="onSort(RiskSortColumns.Title)" [class.is-sorted]="sortCol() === RiskSortColumns.Title">
+          Risk Title <i class="pi sortable__arrow" [ngClass]="sortIcon(RiskSortColumns.Title)"></i>
+        </span>
+        <span class="list-header__cell col-type sortable" (click)="onSort(RiskSortColumns.RiskType)" [class.is-sorted]="sortCol() === RiskSortColumns.RiskType">
+          Type <i class="pi sortable__arrow" [ngClass]="sortIcon(RiskSortColumns.RiskType)"></i>
+        </span>
+        <span class="list-header__cell col-dept">Sub-Division</span>
+        <span class="list-header__cell col-score sortable" (click)="onSort(RiskSortColumns.InherentScore)" [class.is-sorted]="sortCol() === RiskSortColumns.InherentScore">
+          Inherent <i class="pi sortable__arrow" [ngClass]="sortIcon(RiskSortColumns.InherentScore)"></i>
+        </span>
+        <span class="list-header__cell col-residual sortable" (click)="onSort(RiskSortColumns.ResidualLevel)" [class.is-sorted]="sortCol() === RiskSortColumns.ResidualLevel">
+          Residual <i class="pi sortable__arrow" [ngClass]="sortIcon(RiskSortColumns.ResidualLevel)"></i>
+        </span>
+        <span class="list-header__cell col-owner">Owner</span>
+        <span class="list-header__cell col-status sortable" (click)="onSort(RiskSortColumns.Status)" [class.is-sorted]="sortCol() === RiskSortColumns.Status">
+          Status <i class="pi sortable__arrow" [ngClass]="sortIcon(RiskSortColumns.Status)"></i>
+        </span>
+        <span class="list-header__cell col-actions">Actions</span>
+      </div>
+
+      <article *ngFor="let r of paginated(); trackBy: trackById"
+               class="risk-row" [class.is-deactivated]="r.status === RiskStatuses.Deactivated">
+
+        <div class="col-id"><span class="risk-id">{{ r.id }}</span></div>
+
+        <div class="col-title">
+          <span class="risk-title">{{ r.title }}</span>
+          <small class="risk-dept-inline"><app-draw-icon icon="pi pi-building"></app-draw-icon> {{ r.subDivision }}</small>
+        </div>
+
+        <div class="col-type">
+          <span class="type-badge type-badge--{{ r.riskType }}">{{ riskTypeLabel(r.riskType) }}</span>
+        </div>
+
+        <div class="col-dept"><span class="dept-text">{{ r.subDivision }}</span></div>
+
+        <div class="col-score">
+          <div class="score-cell">
+            <span class="score-num">{{ r.inherentScore }}</span>
+            <span class="score-sub">{{ r.impact }}×{{ r.likelihood }}</span>
+          </div>
+        </div>
+
+        <div class="col-residual">
+          <span class="residual-badge residual--{{ r.residualLevel }}">
+            <i class="pi" [ngClass]="residualLevelIcons[r.residualLevel]"></i>
+            {{ r.residualLevel | titlecase }}
+            <span class="residual-score">({{ r.residualScore }})</span>
+          </span>
+        </div>
+
+        <div class="col-owner">
+          <span class="owner-cell"><app-draw-icon icon="pi pi-user"></app-draw-icon> {{ r.owner }}</span>
+        </div>
+
+        <div class="col-status">
+          <span class="status-chip risk-status--{{ r.status }}">{{ statusLabel(r.status) }}</span>
+        </div>
+
+        <div class="col-actions">
+          <div class="row-actions">
+            <button type="button" class="icon-btn" (click)="openView(r)"
+                    pTooltip="View" tooltipPosition="top"><app-draw-icon icon="pi pi-eye"></app-draw-icon></button>
+            <button type="button" class="icon-btn" (click)="openEdit(r)"
+                    [disabled]="r.status === RiskStatuses.Deactivated"
+                    pTooltip="Edit" tooltipPosition="top"><app-draw-icon icon="pi pi-pencil"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--block"
+                    [class.is-blocked]="r.status"
+                    (click)="openConfirmation(r)"
+                    [attr.aria-label]="r.status ? RiskBlockActions.Activate : RiskBlockActions.Deactivate">
+              <app-draw-icon icon="pi pi-ban"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+      </article>
+    </ng-container>
+  </div>
+
+  <!-- ======================== GRID VIEW ========================== -->
+  <div *ngIf="viewMode() === RiskViewModes.Grid">
+    <div *ngIf="paginated().length === 0" class="risk-empty risk-empty--block">
+      <app-draw-icon icon="pi pi-shield"></app-draw-icon><span>No risks match your filters.</span>
+    </div>
+    <div class="risk-grid">
+      <article *ngFor="let r of paginated(); trackBy: trackById"
+               class="risk-card-item" [class.is-deactivated]="r.status === RiskStatuses.Deactivated">
+
+        <span class="status-chip status-tag--corner risk-status--{{ r.status }}">{{ statusLabel(r.status) }}</span>
+
+        <div class="card-header">
+          <div class="risk-avatar-wrap">
+            <div class="risk-badge residual--{{ r.residualLevel }}"><app-draw-icon icon="pi pi-shield"></app-draw-icon></div>
+            <svg class="risk-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+              <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <h3 class="risk-card-item__title">{{ r.title }}</h3>
+          <span class="risk-id-sub"><app-draw-icon icon="pi pi-hashtag"></app-draw-icon>{{ r.id }}</span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item" pTooltip="Sub-division" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-building"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ r.subDivision }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Inherent Score" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-gauge"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value score-inline">{{ r.inherentScore }} <small>{{ r.impact }}×{{ r.likelihood }}</small></span></div>
+          </div>
+          <div class="info-item" pTooltip="Residual Risk" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+            <div class="info-content">
+              <span class="info-value"><span class="residual-badge residual--{{ r.residualLevel }}">{{ r.residualLevel | titlecase }} ({{ r.residualScore }})</span></span>
+            </div>
+          </div>
+          <div class="info-item" pTooltip="Owner" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ r.owner }}</span></div>
+          </div>
+        </div>
+
+        <div class="tags-row">
+          <span class="type-badge type-badge--{{ r.riskType }}">{{ riskTypeLabel(r.riskType) }}</span>
+        </div>
+
+        <footer class="card-footer">
+          <div class="card-actions">
+            <div class="card-actions__icons">
+              <button type="button" class="icon-btn" (click)="openEdit(r)"
+                      [disabled]="r.status === RiskStatuses.Deactivated" pTooltip="Edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn icon-btn--block"
+                            [class.is-blocked]="r.status"
+                            (click)="openConfirmation(r)"
+                            [attr.aria-label]="r.status ? RiskBlockActions.Activate : RiskBlockActions.Deactivate">
+                      <app-draw-icon icon="pi pi-ban"></app-draw-icon>
+                    </button>
+            </div>
+
+            <button type="button" class="btn-view" (click)="openView(r)">
+              View
+            </button>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </div>
+
+  <!-- ======================== HEAT MAP ========================== -->
+  <app-risk-heatmap *ngIf="viewMode() === RiskViewModes.Heatmap"
+                    [risks]="filtered()"
+                    (riskClicked)="openView($event)">
+  </app-risk-heatmap>
+
+  <!-- ======================== PAGINATION ========================= -->
+  @if (filtered().length > 0 && viewMode() !== RiskViewModes.Heatmap) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="risks"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+<!-- ============================ CONFIRMATION =========================== -->
+  <p-dialog
+    header="Confirmation"
+    [visible]="displayConfirmation()"
+    (visibleChange)="$event ? null : closeConfirmation()"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [closable]="false"
+    [style]="{ width: confirmDialogWidth }"
+    styleClass="confirm-dialog"
+  >
+    <div class="confirm-body">
+      <app-draw-icon icon="pi pi-exclamation-triangle" class="confirm-body__icon"></app-draw-icon>
+      <span class="confirm-body__text">
+        Are you sure you want to
+        <strong>{{ confirmationAction() | lowercase }}</strong>
+        <strong>  {{ confirmationTarget()?.title }}</strong>?
+      </span>
+    </div>
+
+    <ng-template pTemplate="footer">
+      <p-button label="No"
+                icon="pi pi-times"
+                [text]="true"
+                severity="secondary"
+                (onClick)="closeConfirmation()"></p-button>
+      <p-button [label]="confirmationAction() === RiskBlockActions.Deactivate ? blockConfirmLabels.Deactivate : blockConfirmLabels.Activate"
+                icon="pi pi-check"
+                [severity]="confirmationAction() === RiskBlockActions.Deactivate ? 'danger' : 'success'"
+                [outlined]="true"
+                autofocus
+                (onClick)="confirmToggleBlocked()"></p-button>
+    </ng-template>
+  </p-dialog>
+
+  
+  <!-- Import dialog -->
+  <app-import-risk (imported)="onImported($event)"></app-import-risk>
+
+</section>

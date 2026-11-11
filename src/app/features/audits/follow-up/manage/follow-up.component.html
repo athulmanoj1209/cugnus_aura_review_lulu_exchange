@@ -1,0 +1,137 @@
+<div class="followup-content">
+
+  <!-- ============================= HEADER ============================= -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-history"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ headerTitle }}</h2>
+        <p class="drawer-subtitle">{{ headerSubtitle }}</p>
+      </div>
+    </div>
+    <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ============================= BODY =============================== -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="drawer-body">
+    <div class="form-grid">
+
+      <!-- Title -->
+      <div class="form-field form-field--full">
+        <label for="title" class="form-label">Title *</label>
+        <input pInputText id="title" formControlName="title"
+               placeholder="Enter follow-up title"
+               [invalid]="isInvalid('title')" />
+        <small *ngIf="getError('title', 'Title') as err" class="error-text">{{ err }}</small>
+      </div>
+<!-- Company -->
+      <div class="form-field">
+        <label class="form-label">Company</label>
+        <p-select formControlName="company" [options]="companyOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select company"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Division -->
+      <div class="form-field">
+        <label class="form-label">Division</label>
+        <p-select formControlName="branch" [options]="branchOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select division"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Sub-Division -->
+      <div class="form-field">
+        <label class="form-label">Sub-Division</label>
+        <p-select formControlName="department" [options]="departmentOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select sub-division"
+                  styleClass="w-full"></p-select>
+      </div>
+      <!-- Finding -->
+      <div class="form-field">
+        <label for="finding" class="form-label">Finding *</label>
+        <p-select id="finding" formControlName="finding"
+                  [options]="findingOptions" optionLabel="label" optionValue="value"
+                  placeholder="Select finding"
+                  [invalid]="isInvalid('finding')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('finding', 'Finding') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Recommendation -->
+      <div class="form-field">
+        <label for="recommendation" class="form-label">Recommendation *</label>
+        <p-select id="recommendation" formControlName="recommendation"
+                  [options]="recommendationOptions" optionLabel="label" optionValue="value"
+                  placeholder="Select recommendation"
+                  [invalid]="isInvalid('recommendation')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('recommendation', 'Recommendation') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Severity -->
+      <div class="form-field">
+        <label for="severity" class="form-label">Severity *</label>
+        <p-select id="severity" formControlName="severity"
+                  [options]="severityOptions" optionLabel="label" optionValue="value"
+                  placeholder="Select severity"
+                  [invalid]="isInvalid('severity')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('severity', 'Severity') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Start Date -->
+      <div class="form-field">
+        <label for="startDate" class="form-label">Start Date *</label>
+        <p-datepicker id="startDate" formControlName="startDate"
+                      placeholder="Select start date"
+                      dateFormat="dd/mm/yy" [showIcon]="true"
+                      [invalid]="isInvalid('startDate')"
+                      styleClass="w-full" inputStyleClass="w-full"></p-datepicker>
+        <small *ngIf="getError('startDate', 'Start Date') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- End Date -->
+      <div class="form-field">
+        <label for="endDate" class="form-label">End Date *</label>
+        <p-datepicker id="endDate" formControlName="endDate"
+                      placeholder="Select end date"
+                      dateFormat="dd/mm/yy" [showIcon]="true"
+                      [minDate]="minEndDate!"
+                      [invalid]="isInvalid('endDate')"
+                      styleClass="w-full" inputStyleClass="w-full"></p-datepicker>
+        <small *ngIf="getError('endDate', 'End Date') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Description -->
+      <div class="form-field form-field--full">
+        <label for="description" class="form-label">Description</label>
+        <textarea pTextarea id="description" formControlName="description"
+                  placeholder="Describe the follow-up action..."
+                  [autoResize]="true"
+                  rows="6"
+                  [class.ng-invalid]="isInvalid('description')"
+                  [class.ng-touched]="isInvalid('description')"></textarea>
+        <small *ngIf="getError('description', 'Description') as err" class="error-text">{{ err }}</small>
+      </div>
+
+    </div>
+
+    
+  </form>
+  <!-- ============================ FOOTER ============================ -->
+    <div class="drawer-footer">
+      <p-button label="Cancel"
+                styleClass="p-button-secondary cancel-btn"
+                (onClick)="onCancel()" type="button"></p-button>
+
+      <p-button [label]="submitLabel"
+                styleClass="submit-btn"
+                type="submit"></p-button>
+    </div>
+
+</div>

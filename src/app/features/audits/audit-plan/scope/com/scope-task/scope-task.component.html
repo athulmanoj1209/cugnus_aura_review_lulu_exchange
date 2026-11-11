@@ -1,0 +1,302 @@
+<!-- ─────────────────── Tab 3: Tasks ────────────────────────────────────── -->
+<div class="tab-content" [formGroup]="taskForm">
+
+    <!-- Task Name -->
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">
+                Task Name <span class="field-required">*</span>
+            </label>
+            <p-inputgroup>
+                <p-inputgroup-addon>
+                    <i class="pi pi-clipboard"></i>
+                </p-inputgroup-addon>
+                <input pInputText type="text" formControlName="taskName" placeholder="Enter task name"
+                    [class.ng-invalid]="isTaskInvalid('taskName')" [class.ng-dirty]="isTaskInvalid('taskName')" />
+            </p-inputgroup>
+            <small class="error-hint" *ngIf="isTaskInvalid('taskName')">
+                {{ getErrorMessage('taskName') }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Status -->
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">
+                Status <span class="field-required">*</span>
+            </label>
+            <p-select formControlName="status" [options]="taskStatusOptions" optionLabel="label"
+                optionValue="value" placeholder="Select status" styleClass="form-dropdown"
+                [invalid]="isTaskInvalid('status')">
+            </p-select>
+            <small class="error-hint" *ngIf="isTaskInvalid('status')">
+                {{ getErrorMessage('status') }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Objective -->
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">
+                Objective
+                <span class="field-optional">(optional)</span>
+            </label>
+            <textarea pTextarea formControlName="objective"
+                placeholder="Describe the task objective (max 500 characters)" rows="3" [autoResize]="false"
+                class="form-textarea--task" [class.ng-invalid]="!!taskForm.get('objective')?.errors?.['maxlength']"
+                [class.ng-dirty]="!!taskForm.get('objective')?.errors?.['maxlength']">
+            </textarea>
+            <div class="char-counter" [class.char-over]="taskObjectiveLength > SCOPE_TASK_OBJECTIVE_MAX_LENGTH">
+                {{ taskObjectiveLength }} / {{ SCOPE_TASK_OBJECTIVE_MAX_LENGTH }}
+            </div>
+            <small class="error-hint" *ngIf="isTaskInvalid('objective')">
+                {{ getErrorMessage('objective') }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Checklist Items -->
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">
+                Checklist Items
+                <span class="field-optional">(from Checklist Library)</span>
+            </label>
+            <p-multiselect formControlName="checklistItems" [options]="checklistOptions" optionLabel="label"
+                optionValue="value" placeholder="Select checklist items" styleClass="form-dropdown" display="chip"
+                [showClear]="true" [filter]="true" filterPlaceholder="Search checklist items">
+            </p-multiselect>
+        </div>
+    </div>
+
+    <!-- ── RFI Linkage ──────────────────────────────────────────────────────
+    <p class="section-label">RFI Linkage</p>
+
+    RFI Source
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">RFI Source</label>
+            <p-selectbutton formControlName="rfiSource" [options]="rfiSourceOptions" optionLabel="label"
+                optionValue="value" styleClass="task-type-selectbtn">
+            </p-selectbutton>
+        </div>
+    </div>
+
+     New RFI fields 
+    @if (taskForm.get('rfiSource')?.value === ScopeTaskRfiSources.New) {
+    <div class="form-row">
+        <div class="form-col">
+            <label class="field-label">RFI Title</label>
+            <p-inputgroup>
+                <p-inputgroup-addon>
+                    <i class="pi pi-file"></i>
+                </p-inputgroup-addon>
+                <input pInputText type="text" formControlName="rfiTitle" placeholder="Enter RFI title" />
+            </p-inputgroup>
+        </div>
+        <div class="form-col">
+            <label class="field-label">RFI Reference No.</label>
+            <p-inputgroup>
+                <p-inputgroup-addon>
+                    <i class="pi pi-hashtag"></i>
+                </p-inputgroup-addon>
+                <input pInputText type="text" formControlName="rfiRef" placeholder="e.g. RFI-001" />
+            </p-inputgroup>
+        </div>
+    </div>
+    }
+
+    Library RFI picker
+    @if (taskForm.get('rfiSource')?.value === ScopeTaskRfiSources.Library) {
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">Select from RFI Library</label>
+            <p-select formControlName="rfiLibraryId" [options]="rfiLibraryOptions" optionLabel="label"
+                optionValue="value" placeholder="Search or select an RFI" styleClass="form-dropdown" [showClear]="true"
+                [filter]="true" filterPlaceholder="Search RFI library">
+            </p-select>
+        </div>
+    </div>
+    }
+
+    ── Assignment & Schedule ──────────────────────────────────────────── -->
+    <p class="section-label">Assignment &amp; Schedule</p>
+
+    <!-- Assigned Auditor -->
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">
+                Assigned Auditor <span class="field-required">*</span>
+            </label>
+            <p-select formControlName="assignedAuditor" [options]="auditorOptions" optionLabel="label"
+                optionValue="value" placeholder="Select auditor" styleClass="form-dropdown" [filter]="true"
+                filterPlaceholder="Search auditors" [invalid]="isTaskInvalid('assignedAuditor')">
+            </p-select>
+            <small class="error-hint" *ngIf="isTaskInvalid('assignedAuditor')">
+                {{ getErrorMessage('assignedAuditor') }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Schedule: Start + End Date -->
+    <div class="form-row">
+        <div class="form-col">
+            <label class="field-label">
+                Start Date <span class="field-required">*</span>
+            </label>
+            <p-datepicker formControlName="startDate" placeholder="Start Date" dateFormat="dd/mm/yy" [showTime]="true" hourFormat="24" [showIcon]="true"
+                [showButtonBar]="true" styleClass="form-datepicker" [minDate]="scopeMinDate" [maxDate]="scopeMaxDate"
+                [invalid]="isTaskInvalid('startDate') || (!!taskForm.errors?.['startBeforeScopeStart'] && f['startDate'].touched)">
+            </p-datepicker>
+            <small class="error-hint" *ngIf="isTaskInvalid('startDate')">
+                {{ getErrorMessage('startDate') }}
+            </small>
+            @if (taskForm.errors?.['startBeforeScopeStart'] && f['startDate'].touched) {
+            <small class="error-hint">Start date cannot be before the scope start date ({{ scopeMinDate | date:'dd/MM/yyyy' }}).</small>
+            }
+        </div>
+        <div class="form-col">
+            <label class="field-label">
+                End Date <span class="field-required">*</span>
+            </label>
+            <p-datepicker formControlName="endDate" placeholder="End Date" dateFormat="dd/mm/yy" timeFormat="HH:mm" [showTime]="true" hourFormat="24" [showIcon]="true"
+                [showButtonBar]="true" styleClass="form-datepicker" [minDate]="scopeMinDate" [maxDate]="scopeMaxDate"
+                [invalid]="isTaskInvalid('endDate') || ((!!taskForm.errors?.['endBeforeStart'] || !!taskForm.errors?.['endAfterScopeEnd']) && taskForm.get('endDate')?.touched)">
+            </p-datepicker>
+            @if (f['endDate'].hasError('required') && f['endDate'].touched) {
+            <small class="error-hint">End date is required.</small>
+            }
+            @if (taskForm.errors?.['endBeforeStart'] && f['endDate'].touched) {
+            <small class="error-hint">End date must be after start date.</small>
+            }
+            @if (taskForm.errors?.['endAfterScopeEnd'] && f['endDate'].touched) {
+            <small class="error-hint">End date cannot be after the scope end date ({{ scopeMaxDate | date:'dd/MM/yyyy' }}).</small>
+            }
+        </div>
+    </div>
+
+    <!-- ── Control & Description ─────────────────────────────────────────── -->
+    <p class="section-label">Control &amp; Description</p>
+
+    <!-- Control Rating -->
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">
+                Control Rating <span class="field-required">*</span>
+            </label>
+            <p-selectbutton formControlName="controlRating" [options]="controlRatingOptions" optionLabel="label"
+                optionValue="value" styleClass="control-rating-selectbtn">
+                <ng-template pTemplate="item" let-item>
+                    <span class="rating-item" [ngClass]="'rating-item--' + item.value">
+                        <i class="pi" [ngClass]="item.icon"></i>
+                        {{ item.label }}
+                    </span>
+                </ng-template>
+            </p-selectbutton>
+            <small class="error-hint" *ngIf="isTaskInvalid('controlRating')">
+                {{ getErrorMessage('controlRating') }}
+            </small>
+        </div>
+    </div>
+
+    <!-- Risk Priority + Tags -->
+    <div class="form-row">
+        <div class="form-col">
+            <label class="field-label">
+                Risk Priority <span class="field-required">*</span>
+            </label>
+            <p-select formControlName="riskPriority" [options]="riskPriorityOptions" optionLabel="label"
+                optionValue="value" placeholder="Select risk priority" styleClass="form-dropdown"
+                [invalid]="isTaskInvalid('riskPriority')">
+                <ng-template pTemplate="selectedItem" let-item>
+                    <span class="risk-priority-badge risk-priority-badge--{{ item.value }}">{{ item.label }}</span>
+                </ng-template>
+                <ng-template pTemplate="item" let-item>
+                    <span class="risk-priority-badge risk-priority-badge--{{ item.value }}">{{ item.label }}</span>
+                </ng-template>
+            </p-select>
+            <small class="error-hint" *ngIf="isTaskInvalid('riskPriority')">
+                {{ getErrorMessage('riskPriority') }}
+            </small>
+        </div>
+        <div class="form-col">
+            <label class="field-label">
+                Tags / Labels
+                <span class="field-optional">(optional)</span>
+            </label>
+            <p-inputgroup>
+                <p-inputgroup-addon>
+                    <i class="pi pi-tag"></i>
+                </p-inputgroup-addon>
+                <input pInputText type="text" #tagInput placeholder="Enter a tag" />
+                <button type="button" class="tag-add-btn" (click)="onAddTag(tagInput)">
+                    <i class="pi pi-plus"></i>
+                </button>
+            </p-inputgroup>
+            <small class="field-hint"><i class="pi pi-info-circle"></i> Click + to add a tag</small>
+            @if (tagsList.length > 0) {
+            <div class="tags-chip-list">
+                @for (tag of tagsList; track $index) {
+                <span class="tag-chip">
+                    {{ tag }}
+                    <button type="button" class="tag-chip-remove" (click)="removeTagChip($index)">
+                        <i class="pi pi-times"></i>
+                    </button>
+                </span>
+                }
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Description -->
+    <div class="form-row">
+        <div class="form-col full">
+            <label class="field-label">
+                Description
+                <span class="field-optional">(optional)</span>
+            </label>
+            <textarea pTextarea formControlName="description" placeholder="Enter a description for this task…" rows="3"
+                class="form-textarea--task" [autoResize]="false">
+      </textarea>
+        </div>
+    </div>
+
+    <!-- Added Tasks List -->
+    @if (tasks.length > 0) {
+    <div class="added-tasks">
+        <p class="section-label">Added Tasks ({{ tasks.length }})</p>
+        <div class="task-list">
+            @for (task of tasks; track $index) {
+            <div class="task-list-item" [class.task-list-item--editing]="editingTaskIndex === $index">
+                <i class="pi pi-clipboard task-list-item-icon"></i>
+                <span class="task-list-item-name">{{ task['taskName'] }}</span>
+                <span class="task-status-badge task-status-badge--{{ task['status'] }} task-list-item-badge">
+                    {{ taskStatusLabel(task) }}
+                </span>
+                <span class="risk-priority-badge risk-priority-badge--{{ task['riskPriority'] }} task-list-item-badge">
+                    {{ getRiskPriority(task) | titlecase }}
+                </span>
+                <button class="task-list-item-edit" type="button" (click)="onEditTask($index)" title="Edit task">
+                    <i class="pi pi-pencil"></i>
+                </button>
+                <button class="task-list-item-remove" type="button" (click)="removeTask($index)"
+                    title="Remove task">
+                    <i class="pi pi-times"></i>
+                </button>
+            </div>
+            }
+        </div>
+    </div>
+    }
+
+    <!-- Inline task action buttons -->
+    <div class="task-inline-actions">
+        <p-button label="Clear" styleClass="task-clear-btn-sm" (onClick)="onClearTask()"></p-button>
+        <p-button [label]="editingTaskIndex !== null ? 'Update Task' : 'Add Task'"
+            styleClass="task-add-btn-sm" (onClick)="onAddTask()"></p-button>
+    </div>
+
+</div>

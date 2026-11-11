@@ -1,0 +1,238 @@
+<div class="scope-management">
+
+  <!-- ── My Assigned Audits ─────────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-briefcase" class="header-icon header-icon--blue"></app-draw-icon>
+      <span class="table-card__title" i18n="@@admin.auditorMyAuditsScopes.myAssignedAudits">My Assigned Audits</span>
+    </div>
+    <p-table [value]="myAudits" [paginator]="true" [rows]="PAGE_SIZE" [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} of {totalRecords}" sortMode="multiple" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="audit"><span i18n="@@common.audit">Audit</span><p-sortIcon field="audit" /></th>
+          <th i18n="@@common.subDivision">Sub-Division</th>
+          <th i18n="@@common.phase">Phase</th>
+          <th style="width: 180px" i18n="@@common.progress">Progress</th>
+          <th pSortableColumn="dueDate"><span i18n="@@common.dueDate">Due Date</span><p-sortIcon field="dueDate" /></th>
+          <th pSortableColumn="status" style="width: 110px"><span i18n="@@common.status">Status</span><p-sortIcon field="status" /></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr [ngClass]="{ 'row-alert': isAlertRow(row.status) }">
+          <td class="audit-name">{{ row.audit }}</td>
+          <td>{{ row.subDivision }}</td>
+          <td>{{ row.phase }}</td>
+          <td>
+            <div class="inline-progress">
+              <div class="progress-track">
+                <div class="progress-fill" [style.width.%]="row.progress"
+                  [style.background]="getProgressColor(row.progress)">
+                </div>
+              </div>
+              <span class="pct-label">{{ row.progress }}%</span>
+            </div>
+          </td>
+          <td>{{ row.dueDate }}</td>
+          <td><p-tag [value]="row.status" [severity]="getStatusSeverity(row.status)" [rounded]="true"></p-tag></td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ── Scope Completion Summary ──────────────────────────── -->
+  <div class="stats-grid-5">
+    @for (card of scopeSummaryCards; track card.label) {
+    <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass" role="button" tabindex="0"
+      (click)="onScopeCardClick(card)" (keydown.enter)="onScopeCardClick(card)">
+      <div class="stat-card__header">
+        <span class="stat-card__label">{{ card.label }}</span>
+        <span class="stat-card__icon">
+          @switch (card.icon) {
+          @case ('pi pi-list') {
+          <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line pathLength="100" x1="8" y1="6" x2="21" y2="6"></line>
+            <line pathLength="100" x1="8" y1="12" x2="21" y2="12"></line>
+            <line pathLength="100" x1="8" y1="18" x2="21" y2="18"></line>
+          </svg>
+          }
+          @case ('pi pi-check-circle') {
+          <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+          }
+          @case ('pi pi-spinner') {
+          <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path pathLength="100" d="M12 2a10 10 0 1 1-7.07 2.93"></path>
+          </svg>
+          }
+          @case ('pi pi-clock') {
+          <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+            <polyline pathLength="100" points="12 6 12 12 16 14"></polyline>
+          </svg>
+          }
+          @case ('pi pi-exclamation-triangle') {
+          <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path pathLength="100"
+              d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line pathLength="100" x1="12" y1="9" x2="12" y2="13"></line>
+            <line pathLength="100" x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          }
+          @default {
+          <i [class]="card.icon"></i>
+          }
+          }
+        </span>
+      </div>
+      <div class="stat-card__value">{{ card.value }}</div>
+    </div>
+    }
+  </div>
+
+  <!-- ── Assigned Scopes + Sub-scopes ──────────────────────── -->
+  <div class="two-col-row">
+
+    <div class="table-card">
+      <div class="table-card__header">
+        <app-draw-icon icon="pi pi-list" class="header-icon header-icon--blue"></app-draw-icon>
+        <span class="table-card__title" i18n="@@admin.auditorMyAuditsScopes.assignedScopes">Assigned Scopes</span>
+      </div>
+      <p-table [value]="assignedScopes" [paginator]="true" [rows]="PAGE_SIZE" [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} of {totalRecords}" sortMode="multiple" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th i18n="@@common.scope">Scope</th>
+            <th i18n="@@common.audit">Audit</th>
+            <th pSortableColumn="priority" style="width: 85px"><span i18n="@@common.priority">Priority</span><p-sortIcon field="priority" /></th>
+            <th pSortableColumn="status" style="width: 110px"><span i18n="@@common.status">Status</span><p-sortIcon field="status" /></th>
+            <th pSortableColumn="progress" style="width: 120px"><span i18n="@@common.progress">Progress</span><p-sortIcon field="progress" /></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr [ngClass]="{ 'row-alert': isAlertRow(row.status) }">
+            <td class="scope-name">{{ row.scope }}</td>
+            <td>{{ row.audit }}</td>
+            <td><p-tag [value]="row.priority" [severity]="getPrioritySeverity(row.priority)" [rounded]="true"></p-tag>
+            </td>
+            <td><p-tag [value]="row.status" [severity]="getStatusSeverity(row.status)" [rounded]="true"></p-tag></td>
+            <td>
+              <div class="inline-progress">
+                <div class="progress-track">
+                  <div class="progress-fill" [style.width.%]="row.progress"
+                    [style.background]="getProgressColor(row.progress)"></div>
+                </div>
+                <span class="pct-label">{{ row.progress }}%</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="table-card">
+      <div class="table-card__header">
+        <app-draw-icon icon="pi pi-sitemap" class="header-icon header-icon--blue"></app-draw-icon>
+        <span class="table-card__title" i18n="@@admin.auditorMyAuditsScopes.assignedSubScopes">Assigned Sub-scopes</span>
+      </div>
+      <p-table [value]="assignedSubScopes" [paginator]="true" [rows]="SUB_SCOPES_PAGE_SIZE" [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first}–{last} of {totalRecords}" sortMode="multiple" styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th i18n="@@common.subScopeSentence">Sub-scope</th>
+            <th i18n="@@common.parentScope">Parent Scope</th>
+            <th pSortableColumn="status" style="width: 110px"><span i18n="@@common.status">Status</span> <p-sortIcon field="status" /></th>
+            <th pSortableColumn="dueDate" style="width: 120px"><span i18n="@@common.dueDate">Due Date</span> <p-sortIcon field="dueDate" /></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr [ngClass]="{ 'row-alert': isAlertRow(row.status) }">
+            <td>{{ row.subScope }}</td>
+            <td>{{ row.parentScope }}</td>
+            <td><p-tag [value]="row.status" [severity]="getStatusSeverity(row.status)" [rounded]="true"></p-tag></td>
+            <td>{{ row.dueDate }}</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+  </div>
+
+  <!-- ── Charts ────────────────────────────────────────────── -->
+  <div class="two-col-row">
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon><span i18n="@@admin.auditorMyAuditsScopes.scopeStatus">Scope Status</span></h3>
+      <app-donut-status-chart [legend]="scopeStatusLegend" [maxWidth]="220"></app-donut-status-chart>
+    </div>
+
+    <div class="chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-line"></app-draw-icon><span i18n="@@admin.auditorMyAuditsScopes.scopeCompletionTrend">Scope Completion Trend</span></h3>
+      <div class="chart-box">
+        <p-chart type="line" [data]="scopeTrendChartData" [options]="scopeTrendChartOptions()" height="230px"></p-chart>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── My Tasks ───────────────────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-check-square" class="header-icon header-icon--blue"></app-draw-icon>
+      <span class="table-card__title" i18n="@@admin.auditorMyAuditsScopes.myTasks">My Tasks</span>
+      <div class="filter-chips">
+        @for (opt of taskFilterOptions; track opt.key) {
+        <button class="chip-btn" [ngClass]="{ 'chip-btn--active': taskFilter === opt.key }" (click)="taskFilter = opt.key">
+          {{ opt.label }}
+        </button>
+        }
+      </div>
+    </div>
+    <p-table [value]="filteredTasks" [paginator]="true" [rows]="PAGE_SIZE" [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} of {totalRecords}" sortMode="multiple" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th i18n="@@common.task">Task</th>
+          <th i18n="@@common.scope">Scope</th>
+          <th pSortableColumn="priority" style="width: 90px"><span i18n="@@common.priority">Priority</span> <p-sortIcon field="priority" /></th>
+          <th pSortableColumn="status" style="width: 115px"><span i18n="@@common.status">Status</span> <p-sortIcon field="status" /></th>
+          <th pSortableColumn="dueDate" style="width: 100px"><span i18n="@@common.dueDate">Due Date</span> <p-sortIcon field="dueDate" /></th>
+          <!-- <th style="width: 80px">Actions</th> -->
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr [ngClass]="{ 'row-alert': isAlertRow(row.status) }">
+          <td>{{ row.task }}</td>
+          <td>{{ row.scope }}</td>
+          <td><p-tag [value]="row.priority" [severity]="getPrioritySeverity(row.priority)" [rounded]="true"></p-tag>
+          </td>
+          <td><p-tag [value]="row.status" [severity]="getStatusSeverity(row.status)" [rounded]="true"></p-tag></td>
+          <td [ngClass]="{ 'due-today': row.dueDate === TASK_ROW_VALUES.DueToday }">{{ row.dueDate }}</td>
+          <!-- <td>
+            <p-button class="view-btn" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="View Task" tooltipPosition="left">
+              <ng-template pTemplate="icon">
+                <svg class="draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </ng-template>
+            </p-button>
+          </td> -->
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="6" class="empty-msg" i18n="@@admin.auditorMyAuditsScopes.noTasksFound">No tasks found.</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+</div>

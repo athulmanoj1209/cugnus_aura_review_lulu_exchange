@@ -1,0 +1,623 @@
+<section class="audit-mgmt">
+
+  <!-- =============================== HEADER =============================== -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title">Follow-up Audit Management</h1>
+        <p class="page-header__subtitle">Track and monitor remediation of audit findings</p>
+      </div>
+    </div>
+    <div class="page-header__actions">
+    <p-button label="+ New Follow Up"
+                styleClass="btn-new-plan"
+                (onClick)="openAddFollowup()"
+                type="button"></p-button>
+
+      <div class="view-toggle" role="group" aria-label="View mode">
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="planViewMode() === 'list'"
+                (click)="setPlanViewMode('list')"
+                pTooltip="List view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="planViewMode() === 'grid'"
+                (click)="setPlanViewMode('grid')"
+                pTooltip="Grid view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+      </div>
+      </div>
+  </header>
+
+  <!-- ================================ TABS ================================ -->
+  <div class="tab-bar" role="tablist" aria-label="Audit views">
+    <button type="button" class="tab-btn"
+            [class.tab-btn--active]="tab() === 'overview'"
+            (click)="setTab('overview')"
+            role="tab" [attr.aria-selected]="tab() === 'overview'">
+      Overview
+    </button>
+    <button type="button" class="tab-btn"
+            [class.tab-btn--active]="tab() === 'findings'"
+            (click)="setTab('findings')"
+            role="tab" [attr.aria-selected]="tab() === 'findings'">
+      Findings
+    </button>
+  </div>
+
+  <!-- =========================== OVERVIEW TAB =========================== -->
+  <ng-container *ngIf="tab() === 'overview'">
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+
+     
+      
+
+       <!-- Filters trigger -->
+      <button type="button" class="filter-bar__trigger"
+              (click)="overviewPanel.toggle($event)">
+        <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+        <span>Filters</span>
+        <span *ngIf="planActiveFilterCount() > 0" class="filter-bar__badge">
+          {{ planActiveFilterCount() }}
+        </span>
+      </button>
+
+      <!-- Active chips -->
+      <div *ngIf="hasActivePlanFilters()" class="filter-bar__chips">
+        <span *ngFor="let chip of planActiveFilterChips()" class="filter-chip">
+          {{ chip.label }}
+          <button type="button" (click)="removePlanFilter(chip.key)">
+            <app-draw-icon icon="pi pi-times"></app-draw-icon>
+          </button>
+        </span>
+      </div>
+
+      <button *ngIf="hasActivePlanFilters()"
+              type="button" class="filter-bar__clear"
+              (click)="clearPlanFilters()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon> Clear all
+      </button>
+
+      <!-- Search pinned right -->
+      <span class="filter-bar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input pInputText type="text"
+               [ngModel]="planSearchQuery()"
+               (ngModelChange)="onPlanSearchChange($event)"
+               placeholder="Search by ID or title…" />
+      </span>
+
+    </div>
+
+    <!-- Overview filter popover -->
+    <p-popover #overviewPanel styleClass="fp-panel">
+      <div class="fp-header">
+        <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Filters</span>
+        <button type="button" class="fp-clear-link"
+                *ngIf="hasActivePlanFilters()"
+                (click)="clearPlanFilters()">Clear all</button>
+      </div>
+
+      <div class="fp-grid">
+        <div class="fp-field">
+          <label class="fp-label">Severity</label>
+          <p-multiSelect [options]="severityFilterOptions"
+                         [ngModel]="planSelectedSeverities()"
+                         (ngModelChange)="onPlanSeveritiesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All severities" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} severities"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+
+        <div class="fp-field">
+          <label class="fp-label">Status</label>
+          <p-multiSelect [options]="planStatusFilterOptions"
+                         [ngModel]="planSelectedStatuses()"
+                         (ngModelChange)="onPlanStatusesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All statuses" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} statuses"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+
+        <div class="fp-field">
+          <label class="fp-label">Sub-Division</label>
+          <p-multiSelect [disabled]="!planSubDivisionFilterVisible()" [options]="planDepartmentFilterOptions()"
+                         [ngModel]="planSelectedDepartments()"
+                         (ngModelChange)="onPlanDepartmentsChange($event)"
+                         optionLabel="label" optionValue="value"
+                         [placeholder]="planSubDivisionFilterVisible() ? 'All sub-divisions' : 'No sub-divisions for this division'" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-divisions"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+
+        <div class="fp-field">
+          <label class="fp-label">Company</label>
+          <p-multiSelect [options]="planCompanyFilterOptions()"
+                         [ngModel]="planSelectedCompanies()"
+                         (ngModelChange)="onPlanCompaniesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All companies" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} companies"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+
+        <div class="fp-field">
+          <label class="fp-label">Division</label>
+          <p-multiSelect [options]="planBranchFilterOptions()"
+                         [ngModel]="planSelectedBranches()"
+                         (ngModelChange)="onPlanBranchesChange($event)"
+                         optionLabel="label" optionValue="value"
+                         placeholder="All divisions" display="chip"
+                         [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions"
+                         styleClass="fp-select"></p-multiSelect>
+        </div>
+
+        <div class="fp-field fp-field--full">
+          <label class="fp-label">Start Date Range</label>
+          <p-datepicker [ngModel]="planDateRange()"
+                        (ngModelChange)="onPlanDateRangeChange($event)"
+                        selectionMode="range"
+                        placeholder="Select date range"
+                        dateFormat="dd M y"
+                        [showIcon]="true"
+                        [readonlyInput]="true"
+                        styleClass="fp-date"></p-datepicker>
+        </div>
+      </div>
+
+      <div class="fp-footer">
+        <button type="button" class="fp-btn fp-btn--ghost"
+                (click)="clearPlanFilters(); overviewPanel.hide()">Reset</button>
+        <button type="button" class="fp-btn fp-btn--primary"
+                (click)="overviewPanel.hide()">
+          Apply<span *ngIf="planActiveFilterCount() > 0"> ({{ planActiveFilterCount() }})</span>
+        </button>
+      </div>
+    </p-popover>
+
+    <!-- LIST VIEW -->
+    <div *ngIf="planViewMode() === 'list'" class="plans-card">
+      <div *ngIf="paginatedPlans().length === 0" class="plans-grid-empty">
+        <app-draw-icon icon="pi pi-search-minus"></app-draw-icon>
+        <span>No follow-up plans match your filters.</span>
+        <button *ngIf="hasActivePlanFilters()" type="button" class="findings-empty__btn"
+                (click)="clearPlanFilters()">Clear filters</button>
+      </div>
+
+      <div *ngIf="paginatedPlans().length > 0" class="plans plans--list">
+        <div class="list-header">
+          <span class="list-header__cell col-plan-id sortable" (click)="onPlanSort('id')" [class.is-sorted]="planSortColumn() === 'id'">
+            ID <i class="pi sortable__arrow" [ngClass]="planSortIconFor('id')"></i>
+          </span>
+          <span class="list-header__cell col-plan-title sortable" (click)="onPlanSort('title')" [class.is-sorted]="planSortColumn() === 'title'">
+            Followup Title <i class="pi sortable__arrow" [ngClass]="planSortIconFor('title')"></i>
+          </span>
+          <span class="list-header__cell col-plan-dept sortable" (click)="onPlanSort('department')" [class.is-sorted]="planSortColumn() === 'department'">
+            Sub-Division <i class="pi sortable__arrow" [ngClass]="planSortIconFor('department')"></i>
+          </span>
+          <span class="list-header__cell col-plan-sev sortable" (click)="onPlanSort('severity')" [class.is-sorted]="planSortColumn() === 'severity'">
+            Severity <i class="pi sortable__arrow" [ngClass]="planSortIconFor('severity')"></i>
+          </span>
+          <span class="list-header__cell col-plan-status sortable" (click)="onPlanSort('status')" [class.is-sorted]="planSortColumn() === 'status'">
+            Status <i class="pi sortable__arrow" [ngClass]="planSortIconFor('status')"></i>
+          </span>
+          <span class="list-header__cell col-plan-start sortable" (click)="onPlanSort('startDate')" [class.is-sorted]="planSortColumn() === 'startDate'">
+            Start Date <i class="pi sortable__arrow" [ngClass]="planSortIconFor('startDate')"></i>
+          </span>
+          <span class="list-header__cell col-plan-end sortable" (click)="onPlanSort('endDate')" [class.is-sorted]="planSortColumn() === 'endDate'">
+            End Date <i class="pi sortable__arrow" [ngClass]="planSortIconFor('endDate')"></i>
+          </span>
+          <span class="list-header__cell col-plan-actions">Actions</span>
+        </div>
+
+        <article *ngFor="let p of paginatedPlans()" class="plan-row">
+          <div class="col-plan-id"><strong>{{ p.id }}</strong></div>
+          <div class="col-plan-title">{{ p.title }}</div>
+          <div class="col-plan-dept">{{ p.department }}</div>
+          <div class="col-plan-sev">
+            <span class="severity" [ngClass]="'severity--' + p.severity">{{ severityLabel(p.severity) }}</span>
+          </div>
+          <div class="col-plan-status">
+            <span class="plan-status" [ngClass]="'plan-status--' + p.status">{{ planStatusLabel(p.status) }}</span>
+          </div>
+          <div class="col-plan-start">{{ p.startDate | date:'MMM d, y' }}</div>
+          <div class="col-plan-end">{{ p.endDate | date:'MMM d, y' }}</div>
+          <div class="col-plan-actions">
+            <div class="row-actions">
+              <button type="button" class="btn-view" (click)="viewPlan(p)">
+                View
+              </button>
+              <button type="button" class="icon-btn" (click)="editPlan(p)" pTooltip="Edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div *ngIf="planViewMode() === 'grid'" class="plans-grid-wrap">
+      <div *ngIf="paginatedPlans().length === 0" class="plans-grid-empty">
+        <app-draw-icon icon="pi pi-search-minus"></app-draw-icon>
+        <span>No follow-up plans match your filters.</span>
+        <button *ngIf="hasActivePlanFilters()" type="button" class="findings-empty__btn"
+                (click)="clearPlanFilters()">Clear filters</button>
+      </div>
+      <div *ngIf="paginatedPlans().length > 0" class="plans-grid">
+        <article *ngFor="let p of paginatedPlans()" class="plan-card">
+          <header class="plan-card__head">
+            <div class="plan-card__icon"><app-draw-icon icon="pi pi-calendar-clock"></app-draw-icon></div>
+            <h3 class="plan-card__title">{{ p.title }}</h3>
+            <p class="plan-card__subtitle">
+              <span class="plan-card__id">{{ p.id }}</span>
+              <span class="plan-card__dot">·</span>
+              <span class="plan-card__dept">{{ p.department }}</span>
+            </p>
+          </header>
+          <div class="plan-card__body info-grid">
+            <div class="info-item" pTooltip="Severity" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="severity" [ngClass]="'severity--' + p.severity">{{ severityLabel(p.severity) }}</span>
+              </div>
+            </div>
+            <div class="info-item" pTooltip="Status" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-flag"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="plan-status" [ngClass]="'plan-status--' + p.status">{{ planStatusLabel(p.status) }}</span>
+              </div>
+            </div>
+            <div class="info-item info-item--full" pTooltip="Timeline" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="info-value">{{ p.startDate | date:'MMM d' }} – {{ p.endDate | date:'MMM d, y' }}</span>
+              </div>
+            </div>
+          </div>
+          <footer class="plan-card__actions">
+            <div class="plan-card__actions-icons">
+              <button type="button" class="icon-btn" (click)="editPlan(p)" pTooltip="Edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+            </div>
+
+            <button type="button" class="btn-view" (click)="viewPlan(p)">
+              View
+            </button>
+          </footer>
+        </article>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div *ngIf="filteredPlans().length > 0" class="plans-pagination">
+      <span class="findings-card__range">{{ planPageRangeLabel() }}</span>
+      <p-paginator [first]="(planCurrentPage() - 1) * planPageSize"
+                   [rows]="planPageSize"
+                   [totalRecords]="filteredPlans().length"
+                   [showCurrentPageReport]="false"
+                   [showFirstLastIcon]="false"
+                   (onPageChange)="onPlanPageChange($event)"
+                   styleClass="findings-paginator"></p-paginator>
+    </div>
+  </ng-container>
+
+  <!-- =========================== FINDINGS TAB =========================== -->
+  <div *ngIf="tab() === 'findings'" class="audit-mgmt__grid">
+
+    <div class="audit-mgmt__main">
+
+      <!-- Severity KPI cards -->
+      <div class="sev-cards">
+        <article class="sev-card sev-card--critical">
+          <div class="sev-card__count">{{ counts().critical }}</div>
+          <div class="sev-card__label">Critical</div>
+          <app-draw-icon icon="pi pi-exclamation-triangle" class="sev-card__icon"></app-draw-icon>
+        </article>
+        <article class="sev-card sev-card--high">
+          <div class="sev-card__count">{{ counts().high }}</div>
+          <div class="sev-card__label">High</div>
+          <app-draw-icon icon="pi pi-exclamation-triangle" class="sev-card__icon"></app-draw-icon>
+        </article>
+        <article class="sev-card sev-card--medium">
+          <div class="sev-card__count">{{ counts().medium }}</div>
+          <div class="sev-card__label">Medium</div>
+          <app-draw-icon icon="pi pi-exclamation-triangle" class="sev-card__icon"></app-draw-icon>
+        </article>
+        <article class="sev-card sev-card--low">
+          <div class="sev-card__count">{{ counts().low }}</div>
+          <div class="sev-card__label">Low</div>
+          <app-draw-icon icon="pi pi-exclamation-triangle" class="sev-card__icon"></app-draw-icon>
+        </article>
+      </div>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+
+        <!-- Filters trigger -->
+        <button type="button" class="filter-bar__trigger"
+                (click)="findingsPanel.toggle($event)">
+          <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+          <span>Filters</span>
+          <span *ngIf="activeFilterCount() > 0" class="filter-bar__badge">
+            {{ activeFilterCount() }}
+          </span>
+        </button>
+
+        <!-- Active chips -->
+        <div *ngIf="hasActiveFilters()" class="filter-bar__chips">
+          <span *ngFor="let chip of activeFilterChips()" class="filter-chip">
+            {{ chip.label }}
+            <button type="button" (click)="removeFilter(chip.key)">
+              <app-draw-icon icon="pi pi-times"></app-draw-icon>
+            </button>
+          </span>
+        </div>
+
+        <button *ngIf="hasActiveFilters()"
+                type="button" class="filter-bar__clear"
+                (click)="clearFilters()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon> Clear all
+        </button>
+
+        <!-- Search pinned right -->
+        <span class="filter-bar__search">
+          <app-draw-icon icon="pi pi-search"></app-draw-icon>
+          <input pInputText type="text"
+                 [ngModel]="searchQuery()"
+                 (ngModelChange)="onSearchChange($event)"
+                 placeholder="Search by ID or title…" />
+        </span>
+      </div>
+
+      <!-- Findings filter popover -->
+      <p-popover #findingsPanel styleClass="fp-panel">
+        <div class="fp-header">
+          <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Filters</span>
+          <button type="button" class="fp-clear-link"
+                  *ngIf="hasActiveFilters()"
+                  (click)="clearFilters()">Clear all</button>
+        </div>
+
+        <div class="fp-grid">
+          <div class="fp-field">
+            <label class="fp-label">Severity</label>
+            <p-multiSelect [options]="severityFilterOptions"
+                           [ngModel]="selectedSeverities()"
+                           (ngModelChange)="onSeveritiesChange($event)"
+                           optionLabel="label" optionValue="value"
+                           placeholder="All severities" display="chip"
+                           [maxSelectedLabels]="1" selectedItemsLabel="{0} severities"
+                           styleClass="fp-select"></p-multiSelect>
+          </div>
+
+          <div class="fp-field">
+            <label class="fp-label">Status</label>
+            <p-multiSelect [options]="statusFilterOptions"
+                           [ngModel]="selectedStatuses()"
+                           (ngModelChange)="onStatusesChange($event)"
+                           optionLabel="label" optionValue="value"
+                           placeholder="All statuses" display="chip"
+                           [maxSelectedLabels]="1" selectedItemsLabel="{0} statuses"
+                           styleClass="fp-select"></p-multiSelect>
+          </div>
+
+          <div class="fp-field">
+            <label class="fp-label">Sub-Division</label>
+            <p-multiSelect [disabled]="!subDivisionFilterVisible()" [options]="departmentFilterOptions()"
+                           [ngModel]="selectedDepartments()"
+                           (ngModelChange)="onDepartmentsChange($event)"
+                           optionLabel="label" optionValue="value"
+                           [placeholder]="subDivisionFilterVisible() ? 'All sub-divisions' : 'No sub-divisions for this division'" display="chip"
+                           [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-divisions"
+                           styleClass="fp-select"></p-multiSelect>
+          </div>
+
+          <div class="fp-field">
+            <label class="fp-label">Company</label>
+            <p-multiSelect [options]="companyFilterOptions()"
+                           [ngModel]="selectedCompanies()"
+                           (ngModelChange)="onCompaniesChange($event)"
+                           optionLabel="label" optionValue="value"
+                           placeholder="All companies" display="chip"
+                           [maxSelectedLabels]="1" selectedItemsLabel="{0} companies"
+                           styleClass="fp-select"></p-multiSelect>
+          </div>
+
+          <div class="fp-field">
+            <label class="fp-label">Division</label>
+            <p-multiSelect [options]="branchFilterOptions()"
+                           [ngModel]="selectedBranches()"
+                           (ngModelChange)="onBranchesChange($event)"
+                           optionLabel="label" optionValue="value"
+                           placeholder="All divisions" display="chip"
+                           [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions"
+                           styleClass="fp-select"></p-multiSelect>
+          </div>
+
+          <div class="fp-field fp-field--full">
+            <label class="fp-label">Due Date Range</label>
+            <p-datepicker [ngModel]="dateRange()"
+                          (ngModelChange)="onDateRangeChange($event)"
+                          selectionMode="range"
+                          placeholder="Select date range"
+                          dateFormat="dd M y"
+                          [showIcon]="true"
+                          [readonlyInput]="true"
+                          styleClass="fp-date"></p-datepicker>
+          </div>
+        </div>
+
+        <div class="fp-footer">
+          <button type="button" class="fp-btn fp-btn--ghost"
+                  (click)="clearFilters(); findingsPanel.hide()">Reset</button>
+          <button type="button" class="fp-btn fp-btn--primary"
+                  (click)="findingsPanel.hide()">
+            Apply<span *ngIf="activeFilterCount() > 0"> ({{ activeFilterCount() }})</span>
+          </button>
+        </div>
+      </p-popover>
+
+      <!-- Findings list -->
+      <div class="findings-card">
+        <div class="findings-list">
+          <div class="findings-list-header">
+            <span class="findings-list-header__cell col-id sortable" (click)="onSort('id')" [class.is-sorted]="sortColumn() === 'id'">
+              Finding ID <i class="pi sortable__arrow" [ngClass]="sortIconFor('id')"></i>
+            </span>
+            <span class="findings-list-header__cell col-title sortable" (click)="onSort('title')" [class.is-sorted]="sortColumn() === 'title'">
+              Title <i class="pi sortable__arrow" [ngClass]="sortIconFor('title')"></i>
+            </span>
+            <span class="findings-list-header__cell col-department sortable" (click)="onSort('department')" [class.is-sorted]="sortColumn() === 'department'">
+              Sub-Division <i class="pi sortable__arrow" [ngClass]="sortIconFor('department')"></i>
+            </span>
+            <span class="findings-list-header__cell col-severity sortable" (click)="onSort('severity')" [class.is-sorted]="sortColumn() === 'severity'">
+              Severity <i class="pi sortable__arrow" [ngClass]="sortIconFor('severity')"></i>
+            </span>
+            <span class="findings-list-header__cell col-status sortable" (click)="onSort('status')" [class.is-sorted]="sortColumn() === 'status'">
+              Status <i class="pi sortable__arrow" [ngClass]="sortIconFor('status')"></i>
+            </span>
+            <span class="findings-list-header__cell col-due sortable" (click)="onSort('dueDate')" [class.is-sorted]="sortColumn() === 'dueDate'">
+              Due Date <i class="pi sortable__arrow" [ngClass]="sortIconFor('dueDate')"></i>
+            </span>
+            <span class="findings-list-header__cell col-owner sortable" (click)="onSort('owner')" [class.is-sorted]="sortColumn() === 'owner'">
+              Owner <i class="pi sortable__arrow" [ngClass]="sortIconFor('owner')"></i>
+            </span>
+            <span class="findings-list-header__cell col-actions">Actions</span>
+          </div>
+
+          <div *ngIf="paginatedFindings().length === 0" class="findings-empty">
+            <app-draw-icon icon="pi pi-search-minus"></app-draw-icon>
+            <span>No findings match your filters.</span>
+            <button *ngIf="hasActiveFilters()" type="button" class="findings-empty__btn"
+                    (click)="clearFilters()">Clear filters</button>
+          </div>
+
+          <article *ngFor="let f of paginatedFindings(); trackBy: trackById"
+              class="findings-row" [attr.data-status]="f.status">
+            <div class="col-id">
+              <div class="cell-id">
+                <span class="cell-id__num">{{ f.id }}</span>
+                <button *ngIf="f.isRepeated" type="button" class="chip chip--repeated"
+                        [class.chip--repeated-flagged]="f.flaggedForEscalation"
+                        [disabled]="!f.previousOccurrenceId"
+                        [attr.title]="f.previousOccurrenceId ? ('Previous: ' + f.previousOccurrenceId + ' — click to open') : 'Repeated finding'"
+                        (click)="$event.stopPropagation(); viewPreviousOccurrence(f)">
+                  <app-draw-icon icon="pi pi-replay"></app-draw-icon>
+                  <span>Repeated</span>
+                </button>
+              </div>
+            </div>
+            <div class="col-title">{{ f.title }}</div>
+            <div class="col-department">{{ f.subDivision }}</div>
+            <div class="col-severity">
+              <span class="severity" [ngClass]="'severity--' + f.severity">{{ severityLabel(f.severity) }}</span>
+            </div>
+            <div class="col-status">
+              <span class="status-chip" [ngClass]="'status-chip--' + f.status">{{ statusLabel(f.status) }}</span>
+            </div>
+            <div class="col-due">
+              <span class="cell-due__date">{{ f.dueDate | date:'MMM d, y' }}</span>
+              <small *ngIf="f.daysOverdue !== undefined" class="cell-due__sla">
+                <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon> Over due
+                <ng-container *ngIf="f.daysOverdue > 0"> · {{ f.daysOverdue }}d</ng-container>
+              </small>
+            </div>
+            <div class="col-owner">
+              <div class="cell-owner">
+                <span class="cell-owner__avatar">
+                  <img *ngIf="f.owner.avatarUrl" [src]="f.owner.avatarUrl" [alt]="f.owner.fullName" />
+                  <span *ngIf="!f.owner.avatarUrl">{{ initials(f.owner.fullName) }}</span>
+                </span>
+                <span class="cell-owner__name">{{ f.owner.fullName }}</span>
+              </div>
+            </div>
+            <div class="col-actions">
+              <button type="button" class="icon-btn"
+                      [disabled]="loadingId() === f.id"
+                      (click)="viewFinding(f)" aria-label="View finding">
+                <i class="pi" [ngClass]="loadingId() === f.id ? 'pi-spin pi-spinner' : 'pi-eye'"></i>
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <div *ngIf="filteredFindings().length > 0" class="findings-card__footer">
+          <span class="findings-card__range">{{ pageRangeLabel() }}</span>
+          <p-paginator [first]="(currentPage() - 1) * pageSize"
+                       [rows]="pageSize"
+                       [totalRecords]="filteredFindings().length"
+                       [showCurrentPageReport]="false"
+                       [showFirstLastIcon]="false"
+                       (onPageChange)="onPageChange($event)"
+                       styleClass="findings-paginator"></p-paginator>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side column -->
+    <aside class="audit-mgmt__side">
+      <div class="side-actions">
+        <p-button label="+  FINDING" icon="pi pi-search" styleClass="add-btn" (onClick)="openAddFinding()" type="button"></p-button>
+        <p-button label="EXPORT PDF" icon="pi pi-file-pdf" styleClass="export-btn" (onClick)="exportPdf()" type="button"></p-button>
+        <p-button label="EXPORT EXCEL" icon="pi pi-file-excel" styleClass="export-btn" (onClick)="exportExcel()" type="button"></p-button>
+      </div>
+      <article class="kpi-card kpi-card--alert">
+        <div class="kpi-card__body">
+          <h4 class="kpi-card__title">Open Findings</h4>
+          <p class="kpi-card__text">Require immediate attention</p>
+        </div>
+        <app-draw-icon icon="pi pi-exclamation-triangle" class="kpi-card__icon"></app-draw-icon>
+      </article>
+      <article class="kpi-card kpi-card--overdue">
+        <div class="kpi-card__body">
+          <h4 class="kpi-card__title">Overdue</h4>
+          <p class="kpi-card__text">Jan 1, 2026 – Mar 31, 2026</p>
+        </div>
+        <app-draw-icon icon="pi pi-shield" class="kpi-card__icon"></app-draw-icon>
+      </article>
+      <article class="kpi-card kpi-card--closure">
+        <div class="kpi-card__body">
+          <h4 class="kpi-card__title">Closure Rate</h4>
+          <p class="kpi-card__text">
+            <span class="kpi-pill">{{ sideStats().closedCount }}</span>
+            {{ sideStats().totalCount }} completed
+          </p>
+        </div>
+        <app-draw-icon icon="pi pi-chart-bar" class="kpi-card__icon"></app-draw-icon>
+      </article>
+      <article class="kpi-card kpi-card--money">
+        <div class="kpi-card__body">
+          <h4 class="kpi-card__title">Repeated Findings</h4>
+          <p class="kpi-card__text">${{ sideStats().repeatedImpact | number:'1.0-0' }}</p>
+        </div>
+        <app-draw-icon icon="pi pi-dollar" class="kpi-card__icon"></app-draw-icon>
+      </article>
+      <article class="kpi-card kpi-card--severity">
+        <div class="kpi-card__body">
+          <h4 class="kpi-card__title">Critical / High</h4>
+          <p class="kpi-card__text">{{ sideStats().criticalHigh }}</p>
+        </div>
+        <app-draw-icon icon="pi pi-sitemap" class="kpi-card__icon"></app-draw-icon>
+      </article>
+      <div class="aging">
+        <h4 class="aging__title">Aging Analysis – Overdue Findings</h4>
+        <article class="aging__card">
+          <div class="aging__body">
+            <div class="aging__count">{{ sideStats().aged30 }}</div>
+            <div class="aging__label">&lt;30 Days</div>
+          </div>
+          <app-draw-icon icon="pi pi-calendar" class="aging__icon"></app-draw-icon>
+        </article>
+      </div>
+    </aside>
+  </div>
+</section>

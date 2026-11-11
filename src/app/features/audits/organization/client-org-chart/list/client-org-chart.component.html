@@ -1,0 +1,728 @@
+<section class="chart-page">
+
+  <!-- =============================== HEADER =============================== -->
+  <header class="page-header" [formGroup]="filters">
+
+    <!-- Row 1: title + view controls -->
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-header__text">
+          <h1 class="page-header__title">Client Org Chart</h1>
+          <p class="page-header__subtitle">Organizational structure of client companies, divisions and sub-divisions</p>
+        </div>
+      </div>
+
+      <div class="page-header__actions" *ngIf="hasCompany()">
+        <button type="button" class="header-action-btn"
+                pTooltip="Expand All" tooltipPosition="bottom"
+                (click)="toggleAll(true)">
+          <app-draw-icon icon="pi pi-angle-double-down"></app-draw-icon>
+        </button>
+        <button type="button" class="header-action-btn"
+                pTooltip="Collapse All" tooltipPosition="bottom"
+                (click)="toggleAll(false)">
+          <app-draw-icon icon="pi pi-angle-double-up"></app-draw-icon>
+        </button>
+
+        <button *ngIf="isFocused()"
+                type="button"
+                class="header-action-btn header-action-btn--focus-reset"
+                pTooltip="Reset Focus" tooltipPosition="bottom"
+                (click)="resetFocus()">
+          <app-draw-icon icon="pi pi-undo"></app-draw-icon>
+        </button>
+
+        <ng-container *ngIf="viewMode() === OrgChartViewModes.Chart">
+          <button type="button" class="header-action-btn header-action-btn--pan"
+                  [class.is-active]="panModeEnabled()"
+                  [pTooltip]="panModeEnabled() ? 'Exit Pan Mode' : 'Pan Mode'" tooltipPosition="bottom"
+                  (click)="togglePanMode()">
+            <span class="pan-hand-icon">✋</span>
+          </button>
+          <button type="button" class="header-action-btn"
+                  pTooltip="Zoom In" tooltipPosition="bottom"
+                  (click)="zoomIn()">
+            <app-draw-icon icon="pi pi-search-plus"></app-draw-icon>
+          </button>
+          <button type="button" class="header-action-btn"
+                  pTooltip="Zoom Out" tooltipPosition="bottom"
+                  (click)="zoomOut()">
+            <app-draw-icon icon="pi pi-search-minus"></app-draw-icon>
+          </button>
+          <button type="button" class="header-action-btn"
+                  pTooltip="Reset Zoom" tooltipPosition="bottom"
+                  (click)="resetZoom()">
+            <app-draw-icon icon="pi pi-expand"></app-draw-icon>
+          </button>
+        </ng-container>
+
+        <div class="view-toggle">
+          <button type="button" class="view-toggle__btn"
+                  [class.is-active]="viewMode() === OrgChartViewModes.List"
+                  (click)="setViewMode(OrgChartViewModes.List)" aria-label="List view">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          </button>
+          <button type="button" class="view-toggle__btn"
+                  [class.is-active]="viewMode() === OrgChartViewModes.Chart"
+                  (click)="setViewMode(OrgChartViewModes.Chart)" aria-label="Chart view">
+            <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: selects + search -->
+    <div class="page-header__filters">
+      <div class="page-header__selects">
+        <!-- Company select -->
+        <p-select formControlName="company"
+                  [options]="companyOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select a company..."
+                  [filter]="true"
+                  filterPlaceholder="Search companies..."
+                  [showClear]="true"
+                  styleClass="company-select">
+        </p-select>
+
+        <!-- Region filter -->
+        <p-select *ngIf="hasCompany()"
+                  formControlName="country"
+                  [options]="countryOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="All Regions"
+                  styleClass="sort-select"></p-select>
+
+        <!-- Emirate / State multi-select -->
+        <p-multiselect *ngIf="hasCompany() && hasEmirateStateOptions()"
+                       formControlName="emirateStates"
+                       [options]="emirateStateOptions()"
+                       optionLabel="label"
+                       optionValue="value"
+                       placeholder="All Provinces"
+                       [showClear]="true"
+                       [showToggleAll]="true"
+                       styleClass="state-multiselect">
+        </p-multiselect>
+      </div>
+
+      <!-- Search (only when company selected) -->
+      <span class="search-input-wrap page-header__search" *ngIf="hasCompany()">
+        <app-draw-icon icon="pi pi-search" class="search-input-wrap__icon"></app-draw-icon>
+        <input pInputText type="text"
+               formControlName="search"
+               placeholder="Search divisions or sub-divisions..." />
+      </span>
+    </div>
+
+  </header>
+
+  <!-- ======================= NO COMPANY SELECTED ========================= -->
+  <div *ngIf="!hasCompany()" class="empty-company-state">
+    <div class="empty-company-state__inner">
+      <div class="empty-company-state__icon-wrap">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      </div>
+      <h3 class="empty-company-state__title">Select a Company to View Org Chart</h3>
+      <p class="empty-company-state__desc">
+        Choose a company from the dropdown above to explore its full organizational structure,
+        including all divisions and sub-divisions.
+      </p>
+      <div class="empty-company-state__pills">
+        <button *ngFor="let c of companyOptions"
+                type="button"
+                class="company-pill"
+                (click)="quickSelect(c.value)">
+          <app-draw-icon icon="pi pi-building"></app-draw-icon>
+          {{ c.label }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= CHART VIEW ================================ -->
+  <div *ngIf="hasCompany() && viewMode() === OrgChartViewModes.Chart" class="chart-wrap"
+       #chartWrap
+       [class.pan-mode-active]="panModeEnabled()"
+       [class.is-panning]="isPanning()"
+       (wheel)="onChartWheel($event)"
+       (mousedown)="onChartMouseDown($event)"
+       (dragstart)="onChartDragStart($event)">
+    <div class="chart-inner" [style.zoom]="zoomLevel()">
+      <ng-container *ngIf="tree().length > 0; else emptyTree">
+        <p-organizationChart [value]="tree()"
+                             [collapsible]="true"
+                             (onNodeExpand)="onChartNodeExpand($event)"
+                             (onNodeCollapse)="onChartNodeCollapse($event)"
+                             styleClass="client-org-chart">
+          <ng-template let-node pTemplate="default">
+            <ng-container *ngTemplateOutlet="orgNode; context: { $implicit: node.data }">
+            </ng-container>
+          </ng-template>
+        </p-organizationChart>
+      </ng-container>
+
+      <ng-template #emptyTree>
+        <div class="empty-state">
+          <app-draw-icon icon="pi pi-filter-slash" class="empty-state__icon"></app-draw-icon>
+          <p class="empty-state__text">No divisions or sub-divisions match your filters.</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- ========================= LIST VIEW ================================= -->
+  <div *ngIf="hasCompany() && viewMode() === OrgChartViewModes.List" class="list-wrap">
+
+    <div *ngIf="flatDivisions().length === 0" class="empty-state">
+      <app-draw-icon icon="pi pi-filter-slash" class="empty-state__icon"></app-draw-icon>
+      <p class="empty-state__text">No divisions match your filters.</p>
+    </div>
+
+    <!-- Company summary row -->
+    <div *ngIf="flatDivisions().length > 0" class="list-company-header">
+      <div class="list-company-icon" [style.background]="getCompanyColor(currentCompany())">
+        <i [class]="getCompanyIcon(currentCompany())"></i>
+      </div>
+      <div class="list-company-info">
+        <h3 class="list-company-name">{{ selectedCompanyLabel() }}</h3>
+        <p class="list-company-meta">{{ flatDivisions().length }} divisions &middot; {{ totalEmployees() }} employees</p>
+      </div>
+      <div class="list-company-badges">
+        <p-tag value="Organization" severity="secondary" styleClass="tag-sm"></p-tag>
+      </div>
+    </div>
+
+    <!-- PrimeNG Tree -->
+    <p-tree *ngIf="flatDivisions().length > 0"
+            [value]="listTree()"
+            (onNodeExpand)="onListNodeExpand($event)"
+            (onNodeCollapse)="onListNodeCollapse($event)"
+            styleClass="list-view-tree">
+      <ng-template let-node pTemplate="default">
+
+        <!-- DIVISION ROW -->
+        <div *ngIf="node.data.type === OrgNodeTypes.Division"
+             class="list-row list-row--division"
+             [class.is-blocked]="isBlocked(node.data.id)">
+          <div class="list-row__avatar list-row__avatar--division"><app-draw-icon icon="pi pi-building"></app-draw-icon></div>
+          <div class="list-row__info">
+            <span class="list-row__name">{{ node.data.name }}</span>
+            <span class="list-row__sub">{{ node.data.id }} &middot; {{ node.data.city }}</span>
+          </div>
+          <div class="list-row__chips">
+            <p-tag [value]="statusLabel(node.data.status)"
+                   [severity]="statusSeverity(node.data.status)" styleClass="tag-sm"></p-tag>
+            <p-tag [value]="divisionTypeLabel(node.data.divisionType)" severity="secondary" styleClass="tag-sm"></p-tag>
+            <p-tag [value]="(node.data.riskRating | titlecase)" [severity]="riskSeverity(node.data.riskRating)" styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="list-row__stats">
+            <div class="stat"><span class="stat__value">{{ node.data.subDivisionCount }}</span><span class="stat__label">Depts</span></div>
+            <div class="stat"><span class="stat__value">{{ node.data.employeeCount ?? 0 }}</span><span class="stat__label">Staff</span></div>
+          </div>
+          <div class="list-row__actions" (click)="$event.stopPropagation()">
+            <button type="button" class="icon-btn icon-btn--view"
+                    (click)="viewDivisionInList(node.data.id, $event)"
+                    pTooltip="View" tooltipPosition="top"><app-draw-icon icon="pi pi-eye"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--edit"
+                    (click)="editDivisionInList(node.data.id, $event)"
+                    pTooltip="Edit" tooltipPosition="top"><app-draw-icon icon="pi pi-pencil"></app-draw-icon></button>
+            <button type="button" class="icon-btn"
+                    [class.icon-btn--activate]="isBlocked(node.data.id)"
+                    [class.icon-btn--deactivate]="!isBlocked(node.data.id)"
+                    (click)="openConfirmationInList(node.data.id, node.data.name, OrgNodeTypes.Division, $event)"
+                    [pTooltip]="toggleLabel(node.data.id)" tooltipPosition="top"><app-draw-icon [icon]="isBlocked(node.data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--focus"
+                    (click)="focusListNode(node.data.id, $event)"
+                    pTooltip="Focus in Chart" tooltipPosition="top"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></button>
+          </div>
+        </div>
+
+        <!-- SUB-DIVISION ROW -->
+        <div *ngIf="node.data.type === OrgNodeTypes.SubDivision"
+             class="list-row list-row--dept"
+             [class.is-blocked]="isBlocked(node.data.id)">
+          <div class="list-row__avatar list-row__avatar--dept"><app-draw-icon icon="pi pi-users"></app-draw-icon></div>
+          <div class="list-row__info">
+            <span class="list-row__name">{{ node.data.name }}</span>
+            <span class="list-row__sub">{{ node.data.numberOfEmployees ?? 0 }} employees</span>
+          </div>
+          <div class="list-row__chips">
+            <p-tag [value]="statusLabel(node.data.status)"
+                   [severity]="statusSeverity(node.data.status)" styleClass="tag-sm"></p-tag>
+            <p-tag [value]="(node.data.riskRating | titlecase)" [severity]="riskSeverity(node.data.riskRating)" styleClass="tag-sm"></p-tag>
+            <p-tag *ngIf="node.children?.length"
+                   [value]="node.children!.length + ' scope' + (node.children!.length > 1 ? 's' : '')"
+                   severity="info" styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="list-row__actions" (click)="$event.stopPropagation()">
+            <button type="button" class="icon-btn icon-btn--view"
+                    (click)="viewDeptInList(node.data.divisionCode!, node.data.name, $event)"
+                    pTooltip="View" tooltipPosition="top"><app-draw-icon icon="pi pi-eye"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--edit"
+                    (click)="editDeptInList(node.data.divisionCode!, node.data.name, $event)"
+                    pTooltip="Edit" tooltipPosition="top"><app-draw-icon icon="pi pi-pencil"></app-draw-icon></button>
+            <button type="button" class="icon-btn"
+                    [class.icon-btn--activate]="isBlocked(node.data.id)"
+                    [class.icon-btn--deactivate]="!isBlocked(node.data.id)"
+                    (click)="openConfirmationInList(node.data.id, node.data.name, OrgNodeTypes.SubDivision, $event)"
+                    [pTooltip]="toggleLabel(node.data.id)" tooltipPosition="top"><app-draw-icon [icon]="isBlocked(node.data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--focus"
+                    (click)="focusListNode(node.data.id, $event)"
+                    pTooltip="Focus in Chart" tooltipPosition="top"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></button>
+          </div>
+        </div>
+
+        <!-- DIVISION SCOPES GROUP ROW — no actions; expand to see the division's own scopes -->
+        <div *ngIf="node.data.type === OrgNodeTypes.DivisionScopes"
+             class="list-row list-row--division-scopes">
+          <div class="list-row__avatar list-row__avatar--scope"><app-draw-icon icon="pi pi-file-check"></app-draw-icon></div>
+          <div class="list-row__info">
+            <span class="list-row__name">{{ node.data.name }}</span>
+            <span class="list-row__sub">{{ node.data.subtitle }}</span>
+          </div>
+          <div class="list-row__chips scope-subscope-chips">
+            <span class="list-row__count">{{ node.data.scopeCount ?? 0 }}</span>
+            <span class="list-row__count-label">{{ node.data.scopeCount === 1 ? 'Scope' : 'Scopes' }}</span>
+            <span class="list-row__count list-row__count--subscope">{{ node.data.subScopeCount ?? 0 }}</span>
+            <span class="list-row__count-label">{{ node.data.subScopeCount === 1 ? 'Sub-scope' : 'Sub-scopes' }}</span>
+            <span class="list-row__count-hint">&middot; Directly under this division</span>
+          </div>
+        </div>
+
+        <!-- SCOPE ROW -->
+        <div *ngIf="node.data.type === OrgNodeTypes.Scope"
+             class="list-row list-row--scope"
+             [class.is-blocked]="isBlocked(node.data.id)">
+          <div class="list-row__avatar list-row__avatar--scope"><app-draw-icon icon="pi pi-file-check"></app-draw-icon></div>
+          <div class="list-row__info">
+            <span class="list-row__name">{{ node.data.name }}</span>
+            <span class="list-row__sub">{{ auditFrequencyLabel(node.data.auditFrequency) }} &middot; {{ modeOfAuditLabel(node.data.modeOfAudit) }}</span>
+          </div>
+          <div class="list-row__chips">
+            <p-tag [value]="scopeTypeLabel(node.data.scopeType)" severity="secondary" styleClass="tag-sm"></p-tag>
+            <p-tag *ngIf="node.data.riskRating" [value]="(node.data.riskRating | titlecase)"
+                   [severity]="riskSeverity(node.data.riskRating)" styleClass="tag-sm"></p-tag>
+            <p-tag *ngIf="node.children?.length"
+                   [value]="node.children!.length + ' sub-scope' + (node.children!.length > 1 ? 's' : '')"
+                   severity="info" styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="list-row__actions" (click)="$event.stopPropagation()">
+            <button type="button" class="icon-btn icon-btn--view"
+                    (click)="viewScope(node.data, $event)"
+                    pTooltip="View" tooltipPosition="top"><app-draw-icon icon="pi pi-eye"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--edit"
+                    (click)="editScope(node.data, $event)"
+                    pTooltip="Edit" tooltipPosition="top"><app-draw-icon icon="pi pi-pencil"></app-draw-icon></button>
+            <button type="button" class="icon-btn"
+                    [class.icon-btn--activate]="isBlocked(node.data.id)"
+                    [class.icon-btn--deactivate]="!isBlocked(node.data.id)"
+                    (click)="openConfirmationInList(node.data.id, node.data.name, OrgNodeTypes.Scope, $event)"
+                    [pTooltip]="toggleLabel(node.data.id)" tooltipPosition="top"><app-draw-icon [icon]="isBlocked(node.data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--focus"
+                    (click)="focusListNode(node.data.id, $event)"
+                    pTooltip="Focus in Chart" tooltipPosition="top"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></button>
+          </div>
+        </div>
+
+        <!-- SUBSCOPE ROW -->
+        <div *ngIf="node.data.type === OrgNodeTypes.SubScope"
+             class="list-row list-row--subscope"
+             [class.is-blocked]="isBlocked(node.data.id)">
+          <div class="list-row__avatar list-row__avatar--subscope"><app-draw-icon icon="pi pi-file"></app-draw-icon></div>
+          <div class="list-row__info">
+            <span class="list-row__name">{{ node.data.name }}</span>
+            <span class="list-row__sub">{{ auditFrequencyLabel(node.data.auditFrequency) }} &middot; {{ modeOfAuditLabel(node.data.modeOfAudit) }}</span>
+          </div>
+          <div class="list-row__chips">
+            <p-tag [value]="scopeTypeLabel(node.data.scopeType)" severity="secondary" styleClass="tag-sm"></p-tag>
+            <p-tag *ngIf="node.data.riskRating" [value]="(node.data.riskRating | titlecase)"
+                   [severity]="riskSeverity(node.data.riskRating)" styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="list-row__actions" (click)="$event.stopPropagation()">
+            <button type="button" class="icon-btn icon-btn--view"
+                    (click)="viewSubscope(node.data, $event)"
+                    pTooltip="View" tooltipPosition="top"><app-draw-icon icon="pi pi-eye"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--edit"
+                    (click)="editSubscope(node.data, $event)"
+                    pTooltip="Edit" tooltipPosition="top"><app-draw-icon icon="pi pi-pencil"></app-draw-icon></button>
+            <button type="button" class="icon-btn"
+                    [class.icon-btn--activate]="isBlocked(node.data.id)"
+                    [class.icon-btn--deactivate]="!isBlocked(node.data.id)"
+                    (click)="openConfirmationInList(node.data.id, node.data.name, OrgNodeTypes.SubScope, $event)"
+                    [pTooltip]="toggleLabel(node.data.id)" tooltipPosition="top"><app-draw-icon [icon]="isBlocked(node.data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon></button>
+            <button type="button" class="icon-btn icon-btn--focus"
+                    (click)="focusListNode(node.data.id, $event)"
+                    pTooltip="Focus in Chart" tooltipPosition="top"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></button>
+          </div>
+        </div>
+
+      </ng-template>
+    </p-tree>
+
+  </div>
+
+</section>
+
+<!-- ======================= ORG NODE TEMPLATE ========================== -->
+<ng-template #orgNode let-data>
+
+  <!-- SPACER (chart only) — invisible copy of a sibling sub-division card under the
+       "Division Scopes" label card, so the division's own scopes line up with sub-division scopes -->
+  <div *ngIf="data.type === OrgNodeTypes.Spacer" class="org-spacer" aria-hidden="true">
+    <div class="org-spacer__ghost">
+      <ng-container *ngTemplateOutlet="orgNode; context: { $implicit: data.mirror }"></ng-container>
+    </div>
+    <!-- Label card for the toggle below it (collapses/expands this division's own scopes).
+         Fills the ghost's box, so it matches the sibling sub-division card's size. No actions. -->
+    <div class="org-spacer__label">
+      <div class="node-card node-card--division-scopes">
+        <div class="node-card__head">
+          <div class="node-card__avatar node-card__avatar--scope">
+            <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+          </div>
+          <div class="node-card__title-block">
+            <h4 class="node-card__name">{{ data.name }}</h4>
+            <span class="org-spacer__division" [title]="data.subtitle">
+              <app-draw-icon icon="pi pi-building"></app-draw-icon>
+              <span class="org-spacer__division-name">{{ data.subtitle }}</span>
+            </span>
+          </div>
+        </div>
+        <div class="org-spacer__stats">
+          <div class="org-spacer__stat org-spacer__stat--scope">
+            <app-draw-icon icon="pi pi-file-check" class="org-spacer__stat-icon"></app-draw-icon>
+            <span class="org-spacer__stat-val">{{ data.scopeCount ?? 0 }}</span>
+            <span class="org-spacer__stat-lbl">{{ data.scopeCount === 1 ? 'Scope' : 'Scopes' }}</span>
+          </div>
+          <div class="org-spacer__stat org-spacer__stat--subscope">
+            <app-draw-icon icon="pi pi-file" class="org-spacer__stat-icon"></app-draw-icon>
+            <span class="org-spacer__stat-val">{{ data.subScopeCount ?? 0 }}</span>
+            <span class="org-spacer__stat-lbl">{{ data.subScopeCount === 1 ? 'Sub-scope' : 'Sub-scopes' }}</span>
+          </div>
+        </div>
+        <div class="node-card__footer org-spacer__label-footer">
+          <span class="node-card__level-badge node-card__level-badge--scope">Scopes</span>
+          <span class="org-spacer__label-hint">Directly under this division</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPANY ROOT NODE -->
+  <div *ngIf="data.type === OrgNodeTypes.Company"
+       class="node-card node-card--company"
+       [class.is-blocked]="isBlocked(data.id)"
+       [style.--company-color]="getCompanyColor(data.companyKey)">
+    <span class="node-card__level-badge node-card__level-badge--company">Company</span>
+    <div class="node-card__company-icon">
+      <i [class]="getCompanyIcon(data.companyKey)"></i>
+    </div>
+    <h3 class="node-card__company-name">{{ data.name }}</h3>
+    <p class="node-card__company-sub">{{ data.subtitle }}</p>
+    <div class="node-card__company-stats">
+      <div class="cstat">
+        <span class="cstat__val">{{ data.divisionCount }}</span>
+        <span class="cstat__lbl">Divisions</span>
+      </div>
+      <div class="cstat cstat--divider">
+        <span class="cstat__val">{{ data.employeeCount }}</span>
+        <span class="cstat__lbl">Employees</span>
+      </div>
+    </div>
+    <footer class="node-card__actions">
+      <button type="button" class="icon-btn icon-btn--view"
+              (click)="viewCompany(data, $event)"
+              pTooltip="View Details" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--edit"
+              (click)="editCompany(data, $event)"
+              pTooltip="Edit" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn"
+              [class.icon-btn--activate]="isBlocked(data.id)"
+              [class.icon-btn--deactivate]="!isBlocked(data.id)"
+              (click)="openConfirmation(data, $event)"
+              [pTooltip]="toggleLabel(data.id)" tooltipPosition="top">
+        <app-draw-icon [icon]="isBlocked(data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--focus"
+              (click)="focusOnSubtree(data, $event)"
+              pTooltip="Focus Subtree" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      </button>
+    </footer>
+  </div>
+
+  <!-- DIVISION NODE -->
+  <div *ngIf="data.type === OrgNodeTypes.Division"
+       class="node-card node-card--division"
+       [class.is-blocked]="isBlocked(data.id)">
+    <div class="node-card__head">
+      <div class="node-card__avatar node-card__avatar--division">
+        <app-draw-icon icon="pi pi-building"></app-draw-icon>
+      </div>
+      <div class="node-card__title-block">
+        <h4 class="node-card__name">{{ data.name }}</h4>
+        <p class="node-card__role">{{ data.subtitle }}</p>
+      </div>
+      <span class="node-card__level-badge node-card__level-badge--division">Division</span>
+    </div>
+    <div class="node-card__body">
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-map-marker" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Location</span>
+        <span class="chip chip--city">{{ data.city }}</span>
+      </div>
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-shield" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Risk</span>
+        <p-tag [value]="(data.riskRating ?? '') | titlecase"
+               [severity]="riskSeverity(data.riskRating)"
+               styleClass="tag-sm"></p-tag>
+        <p-tag [value]="auditLabel(data.auditStatus)"
+               [severity]="auditSeverity(data.auditStatus)"
+               styleClass="tag-sm"></p-tag>
+      </div>
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-users" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Staff</span>
+        <span class="chip chip--emp">{{ data.employeeCount }}</span>
+      </div>
+    </div>
+    <div class="node-card__footer">
+      <p-tag [value]="statusLabel(data.status)"
+             [severity]="statusSeverity(data.status)"
+             styleClass="tag-sm"></p-tag>
+      <p-tag [value]="divisionTypeLabel(data.divisionType)"
+             severity="secondary"
+             styleClass="tag-sm"></p-tag>
+      <span class="dept-count">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon> {{ data.subDivisionCount }} depts
+      </span>
+    </div>
+    <footer class="node-card__actions">
+      <button type="button" class="icon-btn icon-btn--view"
+              (click)="viewDivision(data, $event)"
+              pTooltip="View Details" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--edit"
+              (click)="editDivision(data, $event)"
+              pTooltip="Edit" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn"
+              [class.icon-btn--activate]="isBlocked(data.id)"
+              [class.icon-btn--deactivate]="!isBlocked(data.id)"
+              (click)="openConfirmation(data, $event)"
+              [pTooltip]="toggleLabel(data.id)" tooltipPosition="top">
+        <app-draw-icon [icon]="isBlocked(data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--focus"
+              (click)="focusOnSubtree(data, $event)"
+              pTooltip="Focus Subtree" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      </button>
+    </footer>
+  </div>
+
+  <!-- SUB-DIVISION NODE -->
+  <div *ngIf="data.type === OrgNodeTypes.SubDivision"
+       class="node-card node-card--dept"
+       [class.is-blocked]="isBlocked(data.id)">
+    <div class="node-card__head">
+      <div class="node-card__avatar node-card__avatar--dept">
+        <app-draw-icon icon="pi pi-users"></app-draw-icon>
+      </div>
+      <div class="node-card__title-block">
+        <h4 class="node-card__name node-card__name--sm">{{ data.name }}</h4>
+        <p class="node-card__role">{{ data.subtitle }}</p>
+      </div>
+      <span class="node-card__level-badge node-card__level-badge--dept">Sub-Division</span>
+    </div>
+    <div class="node-card__body">
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-user" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Employees</span>
+        <span class="chip chip--emp">{{ data.numberOfEmployees ?? 0 }}</span>
+      </div>
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-shield" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Risk</span>
+        <p-tag [value]="(data.riskRating ?? '') | titlecase"
+               [severity]="riskSeverity(data.riskRating)"
+               styleClass="tag-sm"></p-tag>
+      </div>
+    </div>
+    <div class="node-card__footer">
+      <p-tag [value]="statusLabel(data.status)"
+             [severity]="statusSeverity(data.status)"
+             styleClass="tag-sm"></p-tag>
+      <p-tag [value]="riskStatusLabel(data.riskStatus)"
+             severity="secondary"
+             styleClass="tag-sm"></p-tag>
+    </div>
+    <footer class="node-card__actions">
+      <button type="button" class="icon-btn icon-btn--view"
+              (click)="viewSubDivision(data, $event)"
+              pTooltip="View Details" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--edit"
+              (click)="editSubDivision(data, $event)"
+              pTooltip="Edit" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn"
+              [class.icon-btn--activate]="isBlocked(data.id)"
+              [class.icon-btn--deactivate]="!isBlocked(data.id)"
+              (click)="openConfirmation(data, $event)"
+              [pTooltip]="toggleLabel(data.id)" tooltipPosition="top">
+        <app-draw-icon [icon]="isBlocked(data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--focus"
+              (click)="focusOnSubtree(data, $event)"
+              pTooltip="Focus Subtree" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      </button>
+    </footer>
+  </div>
+
+  <!-- SCOPE NODE -->
+  <div *ngIf="data.type === OrgNodeTypes.Scope"
+       class="node-card node-card--scope"
+       [class.is-blocked]="isBlocked(data.id)">
+    <div class="node-card__head">
+      <div class="node-card__avatar node-card__avatar--scope">
+        <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+      </div>
+      <div class="node-card__title-block">
+        <h4 class="node-card__name node-card__name--sm">{{ data.name }}</h4>
+        <p class="node-card__role">{{ data.subtitle }}</p>
+      </div>
+      <span class="node-card__level-badge node-card__level-badge--scope">Scope</span>
+    </div>
+    <div class="node-card__body">
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-sync" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Frequency</span>
+        <span class="chip chip--freq">{{ auditFrequencyLabel(data.auditFrequency) }}</span>
+      </div>
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-list" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Mode</span>
+        <span class="chip chip--mode">{{ modeOfAuditLabel(data.modeOfAudit) }}</span>
+      </div>
+      <div class="node-card__row" *ngIf="data.riskRating">
+        <app-draw-icon icon="pi pi-shield" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Risk</span>
+        <p-tag [value]="(data.riskRating ?? '') | titlecase"
+               [severity]="riskSeverity(data.riskRating)"
+               styleClass="tag-sm"></p-tag>
+      </div>
+    </div>
+    <div class="node-card__footer">
+      <p-tag [value]="scopeTypeLabel(data.scopeType)" severity="secondary" styleClass="tag-sm"></p-tag>
+      <span class="dept-count" *ngIf="data.subScopeCount">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon> {{ data.subScopeCount }} sub
+      </span>
+    </div>
+    <footer class="node-card__actions">
+      <button type="button" class="icon-btn icon-btn--view"
+              (click)="viewScope(data, $event)"
+              pTooltip="View Details" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--edit"
+              (click)="editScope(data, $event)"
+              pTooltip="Edit" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn"
+              [class.icon-btn--activate]="isBlocked(data.id)"
+              [class.icon-btn--deactivate]="!isBlocked(data.id)"
+              (click)="openConfirmation(data, $event)"
+              [pTooltip]="toggleLabel(data.id)" tooltipPosition="top">
+        <app-draw-icon [icon]="isBlocked(data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--focus"
+              (click)="focusOnSubtree(data, $event)"
+              pTooltip="Focus Subtree" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      </button>
+    </footer>
+  </div>
+
+  <!-- SUBSCOPE NODE -->
+  <div *ngIf="data.type === OrgNodeTypes.SubScope"
+       class="node-card node-card--subscope"
+       [class.is-blocked]="isBlocked(data.id)">
+    <div class="node-card__head">
+      <div class="node-card__avatar node-card__avatar--subscope">
+        <app-draw-icon icon="pi pi-file"></app-draw-icon>
+      </div>
+      <div class="node-card__title-block">
+        <h4 class="node-card__name node-card__name--sm">{{ data.name }}</h4>
+        <p class="node-card__role">{{ data.subtitle }}</p>
+      </div>
+      <span class="node-card__level-badge node-card__level-badge--subscope">Sub-scope</span>
+    </div>
+    <div class="node-card__body">
+      <div class="node-card__row">
+        <app-draw-icon icon="pi pi-sync" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Frequency</span>
+        <span class="chip chip--freq">{{ auditFrequencyLabel(data.auditFrequency) }}</span>
+      </div>
+      <div class="node-card__row" *ngIf="data.riskRating">
+        <app-draw-icon icon="pi pi-shield" class="node-card__row-icon"></app-draw-icon>
+        <span class="node-card__row-label">Risk</span>
+        <p-tag [value]="(data.riskRating ?? '') | titlecase"
+               [severity]="riskSeverity(data.riskRating)"
+               styleClass="tag-sm"></p-tag>
+      </div>
+    </div>
+    <div class="node-card__footer">
+      <p-tag [value]="scopeTypeLabel(data.scopeType)" severity="secondary" styleClass="tag-sm"></p-tag>
+    </div>
+    <footer class="node-card__actions">
+      <button type="button" class="icon-btn icon-btn--view"
+              (click)="viewSubscope(data, $event)"
+              pTooltip="View Details" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--edit"
+              (click)="editSubscope(data, $event)"
+              pTooltip="Edit" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn"
+              [class.icon-btn--activate]="isBlocked(data.id)"
+              [class.icon-btn--deactivate]="!isBlocked(data.id)"
+              (click)="openConfirmation(data, $event)"
+              [pTooltip]="toggleLabel(data.id)" tooltipPosition="top">
+        <app-draw-icon [icon]="isBlocked(data.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+      </button>
+      <button type="button" class="icon-btn icon-btn--focus"
+              (click)="focusOnSubtree(data, $event)"
+              pTooltip="Focus Subtree" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      </button>
+    </footer>
+  </div>
+
+</ng-template>
+
+<!-- ========================= CONFIRMATION DIALOG ======================= -->
+<app-confirm-action-dialog
+  [visible]="displayConfirmation()"
+  [action]="confirmationAction()"
+  [itemName]="confirmationTarget()?.name ?? ''"
+  (confirmed)="confirmToggleBlocked()"
+  (cancelled)="closeConfirmation()">
+</app-confirm-action-dialog>

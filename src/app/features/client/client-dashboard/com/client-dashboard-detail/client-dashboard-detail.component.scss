@@ -1,0 +1,105 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.detail-drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--surface-card);
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  &__subtitle {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__close {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    background: var(--surface-card);
+    color: var(--text-color-secondary);
+    cursor: pointer;
+
+    &:hover { background: var(--surface-hover); color: var(--text-color); }
+    &:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+  }
+
+  &__chart {
+    position: relative;
+    flex-shrink: 0;
+    padding: 0.75rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+
+    ::ng-deep p-chart {
+      display: block;
+      height: 100%;
+    }
+  }
+
+  &__table-wrap {
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    overflow-x: auto;
+  }
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+
+  th {
+    text-align: start;
+    padding: 0.6rem 0.85rem;
+    background: var(--surface-hover);
+    color: var(--text-color-secondary);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.55rem 0.85rem;
+    border-top: 1px solid var(--surface-border);
+    color: var(--text-color);
+  }
+
+  .is-numeric {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty-row {
+    text-align: center;
+    color: var(--text-color-secondary);
+    padding: 1.5rem;
+  }
+}

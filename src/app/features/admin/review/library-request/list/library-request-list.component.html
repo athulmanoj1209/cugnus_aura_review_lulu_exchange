@@ -1,0 +1,277 @@
+<section class="lib-req-page">
+
+  <!-- ======================== PAGE HEADER ======================== -->
+  <header class="page-header">
+    <div class="page-header__text">
+      <h1 class="page-header__title" i18n="@@admin.libraryRequest.title">Library Pending Approvals</h1>
+      <p class="page-header__subtitle" i18n="@@admin.libraryRequest.subtitle">Centralised queue of audit scope and RFI library items awaiting review or approval</p>
+    </div>
+    <div class="view-toggle" role="group">
+      <button type="button" class="view-toggle__btn"
+              [class.is-active]="viewMode() === LibRequestViewModes.List"
+              (click)="setViewMode(LibRequestViewModes.List)"
+              pTooltip="List view" i18n-pTooltip="@@common.listView" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-list"></app-draw-icon>
+      </button>
+      <button type="button" class="view-toggle__btn"
+              [class.is-active]="viewMode() === LibRequestViewModes.Grid"
+              (click)="setViewMode(LibRequestViewModes.Grid)"
+              pTooltip="Grid view" i18n-pTooltip="@@common.gridView" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- ======================== SUMMARY CARDS ====================== -->
+  <div class="summary-row">
+
+    <div class="summary-card summary-card--total">
+      <div class="summary-card__body">
+        <span class="summary-card__count">{{ totalPending() }}</span>
+        <span class="summary-card__label" i18n="@@admin.libraryRequest.totalPending">Total Pending</span>
+      </div>
+      <app-draw-icon icon="pi pi-inbox" class="summary-card__icon"></app-draw-icon>
+    </div>
+
+    <div class="summary-card summary-card--scope">
+      <div class="summary-card__body">
+        <span class="summary-card__count">{{ scopesCount() }}</span>
+        <span class="summary-card__label" i18n="@@admin.libraryRequest.scopes">Scopes</span>
+      </div>
+      <app-draw-icon icon="pi pi-folder" class="summary-card__icon"></app-draw-icon>
+    </div>
+
+    <div class="summary-card summary-card--subscope">
+      <div class="summary-card__body">
+        <span class="summary-card__count">{{ subscopesCount() }}</span>
+        <span class="summary-card__label" i18n="@@admin.libraryRequest.subscopes">Subscopes</span>
+      </div>
+      <app-draw-icon icon="pi pi-file-check" class="summary-card__icon"></app-draw-icon>
+    </div>
+
+    <div class="summary-card summary-card--rfi">
+      <div class="summary-card__body">
+        <span class="summary-card__count">{{ rfisCount() }}</span>
+        <span class="summary-card__label" i18n="@@admin.libraryRequest.rfis">RFIs</span>
+      </div>
+      <app-draw-icon icon="pi pi-envelope" class="summary-card__icon"></app-draw-icon>
+    </div>
+
+    <div class="summary-card summary-card--critical">
+      <div class="summary-card__body">
+        <span class="summary-card__count">{{ criticalCount() }}</span>
+        <span class="summary-card__label" i18n="@@common.critical">Critical</span>
+      </div>
+      <app-draw-icon icon="pi pi-exclamation-triangle" class="summary-card__icon"></app-draw-icon>
+    </div>
+
+  </div>
+
+  <!-- ======================== FILTER + SEARCH ROW ================ -->
+  <div class="filter-search-bar">
+
+    <div class="filter-search-bar__left">
+
+      <!-- Filters -->
+      <app-filter-modal
+        [typeOptions]="typeOptions"
+        [riskOptions]="riskOptions"
+        [statusOptions]="statusOptions"
+        [companyOptions]="companyOptions()"
+        [divisionOptions]="divisionOptions()"
+        [subDivisionOptions]="subDivisionOptions()"
+        [createdByOptions]="createdByOptions()"
+        [showCreatedBy]="true"
+        [selectedTypes]="selectedTypes()"
+        [selectedRisks]="selectedRisks()"
+        [selectedStatuses]="selectedStatuses()"
+        [selectedCompanies]="selectedCompanies()"
+        [selectedDivisions]="selectedDivisions()"
+        [selectedSubDivisions]="selectedSubDivisions()"
+        [subDivisionDisabledMessage]="subDivisionDisabledMessage()"
+        [selectedCreatedBys]="selectedCreatedBy()"
+        (typesChange)="onTypes($event)"
+        (risksChange)="onRisks($event)"
+        (statusesChange)="onStatuses($event)"
+        (companiesChange)="onCompanies($event)"
+        (divisionsChange)="onDivisions($event)"
+        (subDivisionsChange)="onSubDivisions($event)"
+        (createdBysChange)="onCreatedBy($event)"
+        (filtersCleared)="clearFilters()">
+      </app-filter-modal>
+
+      @if (hasFilters()) {
+        <button type="button" class="fbar-clear" (click)="clearFilters()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon> <span i18n="@@common.clear">Clear</span>
+        </button>
+      }
+    </div>
+
+    <span class="filter-search-bar__search">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input pInputText type="text"
+             [ngModel]="searchQuery()"
+             (ngModelChange)="onSearch($event)"
+             placeholder="Search by ID, title or owner…"
+             i18n-placeholder="@@admin.libraryRequest.searchPlaceholder" />
+    </span>
+
+  </div>
+
+  <!-- ======================== LIST VIEW ========================== -->
+  @if (viewMode() === LibRequestViewModes.List) {
+    @if (paginated().length > 0) {
+      <div class="lib-req--list">
+        <div class="list-header">
+          <span class="list-header__cell col-id sortable" (click)="onSort('id')" [class.is-sorted]="sortColumn() === 'id'">
+            <span i18n="@@common.id">ID</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor('id')"></i>
+          </span>
+          <span class="list-header__cell col-title sortable" (click)="onSort('name')" [class.is-sorted]="sortColumn() === 'name'">
+            <span i18n="@@common.title">Title</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor('name')"></i>
+          </span>
+          <span class="list-header__cell col-type sortable" (click)="onSort('type')" [class.is-sorted]="sortColumn() === 'type'">
+            <span i18n="@@common.type">Type</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor('type')"></i>
+          </span>
+          <span class="list-header__cell col-risk sortable" (click)="onSort('risk')" [class.is-sorted]="sortColumn() === 'risk'">
+            <span i18n="@@common.risk">Risk</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor('risk')"></i>
+          </span>
+          <span class="list-header__cell col-status sortable" (click)="onSort('status')" [class.is-sorted]="sortColumn() === 'status'">
+            <span i18n="@@common.status">Status</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor('status')"></i>
+          </span>
+          <span class="list-header__cell col-submitter sortable" (click)="onSort('submittedBy')" [class.is-sorted]="sortColumn() === 'submittedBy'">
+            <span i18n="@@admin.libraryRequest.submittedBy">Submitted By</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor('submittedBy')"></i>
+          </span>
+          <span class="list-header__cell col-actions" i18n="@@common.actions">Actions</span>
+        </div>
+
+        @for (r of paginated(); track r.id) {
+          <article class="lib-req-row">
+            <div class="col-id">
+              <span class="req-id req-id--{{ r.type.toLowerCase() }}">{{ r.id }}</span>
+            </div>
+            <div class="col-title">
+              <span class="req-name">{{ r.name }}</span>
+              <small class="req-parent">{{ r.parentEntity }}</small>
+            </div>
+            <div class="col-type">
+              <span class="type-badge type-badge--{{ r.type.toLowerCase() }}">
+                <i class="pi" [ngClass]="typeIcon(r.type)"></i>
+                {{ typeLabel(r.type) }}
+              </span>
+            </div>
+            <div class="col-risk">
+              <span class="risk-badge risk-badge--{{ r.risk }}">{{ riskLabel(r.risk) }}</span>
+            </div>
+            <div class="col-status">
+              <span class="status-chip status--{{ r.status }}">{{ statusLabel(r.status) }}</span>
+            </div>
+            <div class="col-submitter">
+              <span class="submitter"><app-draw-icon icon="pi pi-user"></app-draw-icon> {{ r.submittedBy }}</span>
+            </div>
+            <div class="col-actions">
+              <div class="row-actions">
+                <button type="button" class="btn-view" (click)="onView(r)">
+                  <span i18n="@@common.view">View</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="lib-req-empty lib-req-empty--block">
+        <app-draw-icon icon="pi pi-inbox"></app-draw-icon>
+        <span i18n="@@admin.libraryRequest.noPendingRequests">No pending library requests found.</span>
+      </div>
+    }
+  }
+
+  <!-- ======================== GRID VIEW ========================== -->
+  @if (viewMode() === LibRequestViewModes.Grid) {
+    @if (paginated().length === 0) {
+      <div class="lib-req-empty lib-req-empty--block">
+        <app-draw-icon icon="pi pi-inbox"></app-draw-icon>
+        <span i18n="@@admin.libraryRequest.noPendingRequests">No pending library requests found.</span>
+      </div>
+    }
+
+    <div class="lib-req-grid">
+      @for (r of paginated(); track r.id) {
+        <article class="lib-req-card-item" [ngClass]="'card-risk--' + r.risk">
+
+          <header class="lib-req-card-item__head">
+            <div class="lib-req-card-item__icon-wrap">
+              <div class="lib-req-card-item__icon">
+                <i class="pi" [ngClass]="typeIcon(r.type)"></i>
+              </div>
+              <svg class="lib-req-card-item__icon-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+                <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+              </svg>
+            </div>
+            <div class="lib-req-card-item__meta">
+              <span class="req-id req-id--{{ r.type.toLowerCase() }}">{{ r.id }}</span>
+              <h3 class="lib-req-card-item__title">{{ r.name }}</h3>
+            </div>
+          </header>
+
+          <div class="lib-req-card-item__body info-grid">
+            <div class="info-item" pTooltip="Category" i18n-pTooltip="@@admin.libraryRequest.category" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-tag"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="info-value">{{ r.category }}</span>
+              </div>
+            </div>
+            <div class="info-item" pTooltip="Parent" i18n-pTooltip="@@admin.libraryRequest.parent" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-folder"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="info-value">{{ r.parentEntity }}</span>
+              </div>
+            </div>
+            <div class="info-item" pTooltip="Risk" i18n-pTooltip="@@common.risk" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-shield"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="risk-badge risk-badge--{{ r.risk }}">{{ riskLabel(r.risk) }}</span>
+              </div>
+            </div>
+            <div class="info-item" pTooltip="Submitted By" i18n-pTooltip="@@admin.libraryRequest.submittedBy" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+              <div class="info-content">
+                <span class="info-value">{{ r.submittedBy }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="lib-req-card-item__badges">
+            <span class="type-badge type-badge--{{ r.type.toLowerCase() }}">
+              <i class="pi" [ngClass]="typeIcon(r.type)"></i>
+              {{ r.type }}
+            </span>
+            <span class="status-chip status--{{ r.status }}">{{ statusLabel(r.status) }}</span>
+          </div>
+
+          <footer class="lib-req-card-item__actions">
+            <button type="button" class="btn-view" (click)="onView(r)">
+              <span i18n="@@common.view">View</span>
+            </button>
+          </footer>
+
+        </article>
+      }
+    </div>
+  }
+
+  <!-- ======================== PAGINATION ========================= -->
+  @if (filtered().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      entityLabel="items"
+      i18n-entityLabel="@@common.items"
+      [rowsPerPageOptions]="[6, 12, 18, 24, 40, 56]"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onRowsChange($event)">
+    </app-pagination-bar>
+  }
+
+</section>

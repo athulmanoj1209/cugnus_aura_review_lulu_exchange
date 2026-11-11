@@ -1,0 +1,321 @@
+// Branch/division seed used when CLIENT_MODE_VALUE is 'internal-audit' and
+// INTERNAL_AUDIT_CLIENT_KEY_VALUE is 'lulu-exchange' — a single organisation
+// (Lulu International Exchange) auditing itself. Same StaticCompany/
+// StaticDivision shape and field set as the DAR Exchange seed in
+// division-static-indi-org.data.ts; only the mock data differs.
+//
+// Divisions: IT DEPT (sub-divisions SOFTWARE / HARDWARE / CYBER SECURITY),
+// RISK DEPT, FRAUD DEPT (no sub-divisions) and BRANCH OPERATIONS
+// (sub-divisions Branch 1 / Branch 2). Field values are carried over from the
+// matching DAR entry (IT, RISK, AML for FRAUD, OPS for BRANCH OPERATIONS).
+//
+// Scopes / sub-scopes mirror audit-scope-static-lulu-org.data.ts: sub-division
+// scopes sit on each sub-division; RISK DEPT and FRAUD DEPT (no sub-divisions)
+// carry their scopes directly on the division (`scopes`), with `subDivisions: []`.
+
+import type { StaticCompany } from './models/division-static-data.model';
+
+export const LULU_EXCHANGE_BRANCH_COMPANIES: StaticCompany[] = [
+  {
+    "id": "lulu-international-exchange",
+    "companyName": "Lulu International Exchange",
+    "tag": "LULU",
+    "color": "#0b6e75",
+    "industry": "other",
+    "divisions": [
+      {
+        "company": "lulu-international-exchange",
+        "divisionName": "IT DEPT",
+        "divisionCode": "LULU-BR-14",
+        "divisionType": "department",
+        "departmentType": "information-technology",
+        "status": "active",
+        "currency": "AED",
+        "numberOfEmployees": 6,
+        "operationalSince": "2013-01-01",
+        "licenseNumber": "DED-2013-4414",
+        "licenseAuthority": "ded",
+        "licenseIssueDate": "2021-01-01",
+        "licenseExpiryDate": "2026-12-31",
+        "taxRegistrationNumber": "AETRN440014",
+        "commercialRegistrationNumber": "CRN-440014",
+        "divisionTimezone": "Asia/Dubai",
+        "legalEntityName": "Lulu International Exchange LLC",
+        "country": "ae",
+        "emirateState": "dubai",
+        "city": "Dubai",
+        "addressLine1": "Level 4, Business Bay Tower",
+        "addressLine2": "",
+        "postalCode": "44100",
+        "gpsCoordinates": "25.1857,55.2766",
+        "divisionManager": "user-005",
+        "primaryContactPerson": "user-005",
+        "contactEmail": "information.security@luluexchange.example",
+        "contactPhone": "+971 4 000 0014",
+        "alternatePhone": "",
+        "riskRating": "high",
+        "riskStatus": "open",
+        "auditStatus": "planned",
+        "submittedBy": "Jaison George",
+        "lastAuditDate": "2025-12-31",
+        "nextAuditDueDate": "2026-03-31",
+        "sectorActivity": "financial_services",
+        "parentDivision": null,
+        "parentNode": "tech-div",
+        "hasSubDivision": true,
+        "subDivisions": [
+          {
+            "subDivisionName": "SOFTWARE",
+            "company": "lulu-international-exchange",
+            "parentSubDivisions": [],
+            "status": "active",
+            "riskRating": "high",
+            "riskStatus": "open",
+            "primaryContactPerson": "user-005",
+            "contactEmail": "info@luluexchange.example",
+            "contactPhone": "+971 4 000 0000",
+            "description": "Lulu International Exchange sub-division.",
+            "subDivisionHead": "user-005",
+            "numberOfEmployees": 6,
+            "operationalSince": "2013-01-01",
+            "scopes": [
+              { "scopeName": "Information Technology / Software Applications", "scopeType": "functional", "auditFrequency": "quarterly", "riskRating": "high" }
+            ]
+          },
+          {
+            "subDivisionName": "HARDWARE",
+            "company": "lulu-international-exchange",
+            "parentSubDivisions": [],
+            "status": "active",
+            "riskRating": "high",
+            "riskStatus": "open",
+            "primaryContactPerson": "user-005",
+            "contactEmail": "info@luluexchange.example",
+            "contactPhone": "+971 4 000 0000",
+            "description": "Lulu International Exchange sub-division.",
+            "subDivisionHead": "user-005",
+            "numberOfEmployees": 6,
+            "operationalSince": "2013-01-01",
+            "scopes": [
+              { "scopeName": "IT Infrastructure / Hardware & Data Centre", "scopeType": "functional", "auditFrequency": "annually", "riskRating": "medium" }
+            ]
+          },
+          {
+            "subDivisionName": "CYBER SECURITY",
+            "company": "lulu-international-exchange",
+            "parentSubDivisions": [],
+            "status": "active",
+            "riskRating": "high",
+            "riskStatus": "open",
+            "primaryContactPerson": "user-005",
+            "contactEmail": "info@luluexchange.example",
+            "contactPhone": "+971 4 000 0000",
+            "description": "Lulu International Exchange sub-division.",
+            "subDivisionHead": "user-005",
+            "numberOfEmployees": 6,
+            "operationalSince": "2013-01-01",
+            "scopes": [
+              { "scopeName": "Cybersecurity / Information Security", "scopeType": "functional", "auditFrequency": "quarterly", "riskRating": "high" }
+            ]
+          }
+        ],
+        "tradeLicenseFile": { "name": "LULU-BR-14-trade-license.pdf", "url": "https://example.com/docs/trade-license.pdf" },
+        "vatCertificateFile": { "name": "LULU-BR-14-vat-certificate.pdf", "url": "https://example.com/docs/vat-certificate.pdf" },
+        "orgDocumentsFile": { "name": "LULU-BR-14-org-documents.pdf", "url": "https://example.com/docs/org-documents.pdf" },
+        "createdAt": "2026-01-03T09:00:00.000Z"
+      },
+      {
+        "company": "lulu-international-exchange",
+        "divisionName": "RISK DEPT",
+        "divisionCode": "LULU-BR-06",
+        "divisionType": "department",
+        "departmentType": "risk-management",
+        "status": "active",
+        "currency": "AED",
+        "numberOfEmployees": 6,
+        "operationalSince": "2009-01-01",
+        "licenseNumber": "DED-2009-4406",
+        "licenseAuthority": "ded",
+        "licenseIssueDate": "2021-01-01",
+        "licenseExpiryDate": "2026-12-31",
+        "taxRegistrationNumber": "AETRN440006",
+        "commercialRegistrationNumber": "CRN-440006",
+        "divisionTimezone": "Asia/Dubai",
+        "legalEntityName": "Lulu International Exchange LLC",
+        "country": "ae",
+        "emirateState": "dubai",
+        "city": "Dubai",
+        "addressLine1": "Level 4, Business Bay Tower",
+        "addressLine2": "",
+        "postalCode": "44100",
+        "gpsCoordinates": "25.1857,55.2766",
+        "divisionManager": "user-008",
+        "primaryContactPerson": "user-008",
+        "contactEmail": "risk@luluexchange.example",
+        "contactPhone": "+971 4 000 0006",
+        "alternatePhone": "",
+        "riskRating": "high",
+        "riskStatus": "monitored",
+        "auditStatus": "planned",
+        "submittedBy": "Arjun Menon",
+        "lastAuditDate": "2025-12-31",
+        "nextAuditDueDate": "2026-03-31",
+        "sectorActivity": "financial_services",
+        "parentDivision": null,
+        "parentNode": "risk-div",
+        "hasSubDivision": false,
+        "subDivisions": [],
+        "scopes": [
+          { "scopeName": "Risk Management / Business Continuity", "scopeType": "functional", "auditFrequency": "monthly", "riskRating": "high" }
+        ],
+        "tradeLicenseFile": { "name": "LULU-BR-06-trade-license.pdf", "url": "https://example.com/docs/trade-license.pdf" },
+        "vatCertificateFile": { "name": "LULU-BR-06-vat-certificate.pdf", "url": "https://example.com/docs/vat-certificate.pdf" },
+        "orgDocumentsFile": { "name": "LULU-BR-06-org-documents.pdf", "url": "https://example.com/docs/org-documents.pdf" },
+        "createdAt": "2026-01-07T09:00:00.000Z"
+      },
+      {
+        "company": "lulu-international-exchange",
+        "divisionName": "FRAUD DEPT",
+        "divisionCode": "LULU-BR-05",
+        "divisionType": "department",
+        "departmentType": "legal-compliance",
+        "status": "active",
+        "currency": "AED",
+        "numberOfEmployees": 7,
+        "operationalSince": "2009-01-01",
+        "licenseNumber": "DED-2009-4405",
+        "licenseAuthority": "ded",
+        "licenseIssueDate": "2021-01-01",
+        "licenseExpiryDate": "2026-12-31",
+        "taxRegistrationNumber": "AETRN440005",
+        "commercialRegistrationNumber": "CRN-440005",
+        "divisionTimezone": "Asia/Dubai",
+        "legalEntityName": "Lulu International Exchange LLC",
+        "country": "ae",
+        "emirateState": "dubai",
+        "city": "Dubai",
+        "addressLine1": "Level 4, Business Bay Tower",
+        "addressLine2": "",
+        "postalCode": "44100",
+        "gpsCoordinates": "25.1857,55.2766",
+        "divisionManager": "user-007",
+        "primaryContactPerson": "user-007",
+        "contactEmail": "fraud@luluexchange.example",
+        "contactPhone": "+971 4 000 0005",
+        "alternatePhone": "",
+        "riskRating": "high",
+        "riskStatus": "open",
+        "auditStatus": "planned",
+        "submittedBy": "Fatima Al Zaabi",
+        "lastAuditDate": "2025-12-31",
+        "nextAuditDueDate": "2026-03-31",
+        "sectorActivity": "financial_services",
+        "parentDivision": null,
+        "parentNode": "compliance-div",
+        "hasSubDivision": false,
+        "subDivisions": [],
+        "scopes": [
+          { "scopeName": "Fraud Risk Management / Anti-Fraud Controls", "scopeType": "functional", "auditFrequency": "quarterly", "riskRating": "high" }
+        ],
+        "tradeLicenseFile": { "name": "LULU-BR-05-trade-license.pdf", "url": "https://example.com/docs/trade-license.pdf" },
+        "vatCertificateFile": { "name": "LULU-BR-05-vat-certificate.pdf", "url": "https://example.com/docs/vat-certificate.pdf" },
+        "orgDocumentsFile": { "name": "LULU-BR-05-org-documents.pdf", "url": "https://example.com/docs/org-documents.pdf" },
+        "createdAt": "2026-01-06T09:00:00.000Z"
+      },
+      {
+        "company": "lulu-international-exchange",
+        "divisionName": "BRANCH OPERATIONS",
+        "divisionCode": "LULU-BR-12",
+        "divisionType": "department",
+        "departmentType": "operations",
+        "status": "active",
+        "currency": "AED",
+        "numberOfEmployees": 11,
+        "operationalSince": "2009-01-01",
+        "licenseNumber": "DED-2009-4412",
+        "licenseAuthority": "ded",
+        "licenseIssueDate": "2021-01-01",
+        "licenseExpiryDate": "2026-12-31",
+        "taxRegistrationNumber": "AETRN440012",
+        "commercialRegistrationNumber": "CRN-440012",
+        "divisionTimezone": "Asia/Dubai",
+        "legalEntityName": "Lulu International Exchange LLC",
+        "country": "ae",
+        "emirateState": "dubai",
+        "city": "Dubai",
+        "addressLine1": "Level 4, Business Bay Tower",
+        "addressLine2": "",
+        "postalCode": "44100",
+        "gpsCoordinates": "25.1857,55.2766",
+        "divisionManager": "user-001",
+        "primaryContactPerson": "user-001",
+        "contactEmail": "treasury@luluexchange.example",
+        "contactPhone": "+971 4 000 0012",
+        "alternatePhone": "",
+        "riskRating": "high",
+        "riskStatus": "monitored",
+        "auditStatus": "planned",
+        "submittedBy": "Rajeev Nanda",
+        "lastAuditDate": "2025-12-31",
+        "nextAuditDueDate": "2026-12-31",
+        "sectorActivity": "financial_services",
+        "parentDivision": null,
+        "parentNode": "ops-div",
+        "hasSubDivision": true,
+        "subDivisions": [
+          {
+            "subDivisionName": "Branch 1",
+            "company": "lulu-international-exchange",
+            "parentSubDivisions": [],
+            "status": "active",
+            "riskRating": "medium",
+            "riskStatus": "monitored",
+            "primaryContactPerson": "user-006",
+            "contactEmail": "info@luluexchange.example",
+            "contactPhone": "+971 4 000 0000",
+            "description": "Lulu International Exchange sub-division.",
+            "subDivisionHead": "user-006",
+            "numberOfEmployees": 5,
+            "operationalSince": "2009-01-01",
+            "scopes": [
+              { "scopeName": "Administration / Outsourcing of Functions", "scopeType": "functional", "auditFrequency": "quarterly", "riskRating": "medium" }
+            ]
+          },
+          {
+            "subDivisionName": "Branch 2",
+            "company": "lulu-international-exchange",
+            "parentSubDivisions": [],
+            "status": "active",
+            "riskRating": "high",
+            "riskStatus": "monitored",
+            "primaryContactPerson": "user-001",
+            "contactEmail": "info@luluexchange.example",
+            "contactPhone": "+971 4 000 0000",
+            "description": "Lulu International Exchange sub-division.",
+            "subDivisionHead": "user-001",
+            "numberOfEmployees": 11,
+            "operationalSince": "2009-01-01",
+            "scopes": [
+              { "scopeName": "Branch Operations / Operational Controls", "scopeType": "functional", "auditFrequency": "annually", "riskRating": "high" },
+              {
+                "scopeName": "AML/CFT Compliance", "scopeType": "subDivisional", "auditFrequency": "quarterly", "riskRating": "high",
+                "subScopes": [
+                  { "subScopeName": "Policy, Governance & Training", "subScopeType": "functional", "auditFrequency": "annually", "riskRating": "high" },
+                  { "subScopeName": "Transaction Monitoring, Screening & Risk Assessment", "subScopeType": "functional", "auditFrequency": "quarterly", "riskRating": "high" },
+                  { "subScopeName": "Compliance Reporting & Oversight", "subScopeType": "functional", "auditFrequency": "quarterly", "riskRating": "medium" }
+                ]
+              },
+              { "scopeName": "Operations and Other subDivisions", "scopeType": "functional", "auditFrequency": "annually", "riskRating": "medium" },
+              { "scopeName": "Quality Check — Transaction Monitoring and Sanction Screening Alert Management", "scopeType": "functional", "auditFrequency": "quarterly", "riskRating": "high" },
+              { "scopeName": "Consumer Protection and Market Conduct", "scopeType": "functional", "auditFrequency": "quarterly", "riskRating": "high" }
+            ]
+          }
+        ],
+        "tradeLicenseFile": { "name": "LULU-BR-12-trade-license.pdf", "url": "https://example.com/docs/trade-license.pdf" },
+        "vatCertificateFile": { "name": "LULU-BR-12-vat-certificate.pdf", "url": "https://example.com/docs/vat-certificate.pdf" },
+        "orgDocumentsFile": { "name": "LULU-BR-12-org-documents.pdf", "url": "https://example.com/docs/org-documents.pdf" },
+        "createdAt": "2026-01-05T09:00:00.000Z"
+      }
+    ]
+  }
+];

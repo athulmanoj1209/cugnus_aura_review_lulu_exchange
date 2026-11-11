@@ -1,0 +1,226 @@
+<div class="rp-wrap" *ngIf="r() as report; else emptyState">
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <header class="rp-hero">
+    <div class="rp-hero__bg"></div>
+    <button type="button" class="rp-hero__close" (click)="onHide()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+
+    <div class="rp-hero__main">
+      <div class="rp-hero__avatar">
+        <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+      </div>
+
+      <div class="rp-hero__identity">
+        <div class="rp-hero__badges">
+          <span class="level-badge" i18n="@@audit.auditReport.auditReport">Audit Report</span>
+          <span class="type-badge">{{ auditTypeLabel(report.auditType) }}</span>
+        </div>
+        <h1 class="rp-hero__name" [pTooltip]="report.reportTitle" tooltipPosition="top">{{ report.reportTitle }}</h1>
+        <p class="rp-hero__code">{{ report.id }}</p>
+
+        <div class="rp-hero__meta">
+          <span class="meta-chip">
+            <span class="meta-dot" [style.background]="getCompanyColor(report.companyId)"></span>
+            {{ getCompanyLabel(report.companyId) }}
+          </span>
+          <span class="meta-chip">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon>{{ report.divisionName }}
+          </span>
+          <span class="meta-chip meta-chip--status" [ngClass]="'status-' + report.status">
+            <app-draw-icon icon="pi pi-circle-fill"></app-draw-icon>{{ statusLabel(report.status) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ STATS ═══════════════ -->
+  <section class="rp-stats">
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--period"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ reportPeriodLabel(report.reportPeriod) }}</span>
+        <span class="stat-card__label" i18n="@@audit.auditReport.reportPeriod">Report Period</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="periodZoneLabel(report.periodZone) as zone">
+      <div class="stat-card__icon stat-card__icon--zone"><app-draw-icon icon="pi pi-clock"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ zone }}</span>
+        <span class="stat-card__label" i18n="@@audit.auditReport.periodInstance">Period Instance</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--auditor"><app-draw-icon icon="pi pi-user"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value" [pTooltip]="report.leadAuditor" tooltipPosition="top">{{ report.leadAuditor }}</span>
+        <span class="stat-card__label" i18n="@@audit.auditReport.leadAuditor">Lead Auditor</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--status"><app-draw-icon icon="pi pi-verified"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <p-tag [value]="statusLabel(report.status)" [severity]="statusSeverity(report.status)" styleClass="tag-xs"></p-tag>
+        <span class="stat-card__label" i18n="@@common.status">Status</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ BODY ═══════════════ -->
+  <div class="rp-body">
+
+    <!-- LEFT COLUMN ------------------------------------------ -->
+    <div class="rp-col rp-col--main">
+
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-info-circle" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@common.basicInformation">Basic Information</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.reportId">Report ID</span>
+            <span class="info-row__value info-row__value--mono">{{ report.id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.companyId">Company ID</span>
+            <span class="info-row__value">{{ getCompanyLabel(report.companyId) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.division">Division</span>
+            <span class="info-row__value">{{ report.divisionName }} <small>({{ report.divisionCode }})</small></span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.auditType">Audit Type</span>
+            <span class="info-row__value">{{ auditTypeLabel(report.auditType) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.reportName">Report Name</span>
+            <span class="info-row__value info-row__value--link" role="button" tabindex="0"
+              pTooltip="Click to download" i18n-pTooltip="@@audit.auditReport.clickToDownload" tooltipPosition="top"
+              (click)="downloadReportFile()" (keydown.enter)="downloadReportFile()">
+              <app-draw-icon icon="pi pi-file-check"></app-draw-icon><span>{{ report.reportTitle }}</span>
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.reportPeriod">Report Period</span>
+            <span class="info-row__value">
+              {{ reportPeriodLabel(report.reportPeriod) }}<ng-container *ngIf="periodZoneLabel(report.periodZone) as zone"> · {{ zone }}</ng-container>
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-user" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditReport.personnel">Personnel</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.leadAuditor">Lead Auditor</span>
+            <span class="info-row__value">{{ report.leadAuditor }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.preparedBy">Prepared By</span>
+            <span class="info-row__value">{{ report.publishedByName }} <small>({{ report.publishedByRole }})</small></span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.reviewer">Reviewer</span>
+            <span class="info-row__value">{{ report.reviewerName }} <small>({{ report.reviewerRole }})</small></span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN ----------------------------------------- -->
+    <div class="rp-col rp-col--side">
+
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-verified" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@common.status">Status</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.auditReport.currentStatus">Current Status</span>
+            <p-tag [value]="statusLabel(report.status)" [severity]="statusSeverity(report.status)" styleClass="tag-sm"></p-tag>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-calendar" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.auditReport.timeline">Timeline</h2>
+          <span class="duration-pill" *ngIf="durationDays() != null">
+            <app-draw-icon icon="pi pi-clock"></app-draw-icon>{{ durationDays() }}d
+          </span>
+        </header>
+        <div class="panel__body">
+          <div class="timeline-wrap">
+            <div class="timeline-point">
+              <span class="timeline-label"><app-draw-icon icon="pi pi-flag"></app-draw-icon> <span i18n="@@audit.auditReport.created">Created</span></span>
+              <span class="timeline-date">{{ report.createdDate | date:'mediumDate' }}</span>
+            </div>
+            <div class="timeline-bar"><div class="timeline-bar__fill"></div></div>
+            <div class="timeline-point timeline-point--end">
+              <span class="timeline-label"><span i18n="@@audit.auditReport.updated">Updated</span> <app-draw-icon icon="pi pi-flag-fill"></app-draw-icon></span>
+              <span class="timeline-date">{{ report.updatedDate | date:'mediumDate' }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════ TEMPLATE DETAILS ═══════════════ -->
+  <section class="rp-template" *ngIf="report.template as tpl">
+    <header class="rp-template__head">
+      <app-draw-icon icon="pi pi-file-word"></app-draw-icon>
+      <h2 i18n="@@audit.auditReport.templateDetails">Template Details</h2>
+      <p-tag
+        [value]="TEMPLATE_STATUS_LABELS[tpl.status]"
+        [severity]="TEMPLATE_STATUS_SEVERITY[tpl.status]"
+        styleClass="tag-xs">
+      </p-tag>
+    </header>
+
+    <div class="rp-template__body">
+      <div class="rp-template__main">
+        <span class="rp-template__name">{{ tpl.templateName }}</span>
+        <p class="rp-template__desc">{{ tpl.templateDescription }}</p>
+
+        <div class="rp-template__meta">
+          <span class="meta-item"><app-draw-icon icon="pi pi-tag"></app-draw-icon>{{ industryLabel(tpl.industryType) }}</span>
+          <span class="meta-item" pTooltip="Download template" i18n-pTooltip="@@audit.auditReport.downloadTemplate" tooltipPosition="top"
+            (click)="openTemplateFile(tpl.templateFileName)"><app-draw-icon icon="pi pi-file"></app-draw-icon>{{ tpl.templateName }}</span>
+        </div>
+      </div>
+
+      <div class="rp-template__submitter">
+        <div class="submitter-avatar"><app-draw-icon icon="pi pi-user"></app-draw-icon></div>
+        <div class="submitter-info">
+          <span class="submitter-label" i18n="@@audit.auditReport.submittedBy">Submitted By</span>
+          <span class="submitter-name">{{ tpl.submittedByName }}</span>
+          <span class="submitter-role">{{ tpl.submittedByRole }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<ng-template #emptyState>
+  <div class="rp-empty">
+    <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+    <p i18n="@@audit.auditReport.noReportSelected">No report selected.</p>
+  </div>
+</ng-template>

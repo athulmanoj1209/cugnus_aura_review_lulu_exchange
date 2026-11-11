@@ -1,0 +1,332 @@
+@use 'sass:color';
+
+// ── Tokens (shared with base auditor-assignment component) ──────────────────────
+$primary:        var(--primary-color);
+$primary-light:  color-mix(in srgb, var(--primary-color) 16%, transparent);
+$accent-blue:    var(--primary-color);
+$preparer-hue:   var(--p-indigo-500);
+$reviewer-hue:   var(--p-sky-500);
+$surface:        var(--surface-card);
+$surface-alt:    var(--surface-ground);
+$border:         var(--surface-border);
+$text-primary:   var(--text-color);
+$text-secondary: var(--text-color-secondary);
+$text-muted:     var(--text-color-secondary);
+$radius-sm:      6px;
+$radius-md:      10px;
+$radius-lg:      14px;
+$shadow-md:      0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+
+// ── Card ────────────────────────────────────────────────────────────────────────
+.ra-card {
+  position: relative;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+// ── Back button ───────────────────────────────────────────────────────────────
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { background: var(--surface-hover); color: var(--p-indigo-800); border-color: var(--p-indigo-800); }
+  &:dir(rtl) { app-draw-icon { transform: scaleX(-1); } }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.ra-header {
+  display: flex; align-items: center; gap: 14px;
+
+  &__icon {
+    width: 42px; height: 42px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: $accent-blue;
+    border-radius: $radius-md; color: #fff;
+    box-shadow: 0 2px 8px color-mix(in srgb, $accent-blue 30%, transparent);
+  }
+  &__title    { margin: 0; font-size: 17px; font-weight: 700; color: $primary; }
+  &__subtitle { margin: 2px 0 0; font-size: .85rem; color: $text-secondary; }
+}
+
+// ── Box (single card wrapping everything below the header) ──────────────────────
+.ra-box {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 24px;
+}
+
+// ── Section (auditor picker) ────────────────────────────────────────────────────
+.ra-section { }
+
+.ra-section__label {
+  font-size: 11px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; color: $text-secondary; margin-bottom: 10px;
+}
+
+// ── Summary strip ───────────────────────────────────────────────────────────────
+.ra-summary {
+  display: grid; gap: 10px; margin-top: 14px;
+  grid-template-columns: repeat(5, 1fr);
+  @media (max-width: 720px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: repeat(2, 1fr); }
+}
+
+.ra-stat {
+  display: flex; flex-direction: column; gap: 3px;
+  border-radius: $radius-md; padding: 12px 14px;
+  border: 1px solid transparent; transition: transform .12s;
+  &:hover { transform: translateY(-1px); }
+  &__label { font-size: 12px; font-weight: 600; }
+  &__num   { font-size: 22px; font-weight: 700; line-height: 1.1; }
+
+  // soft pastel shades — one per metric
+  &--companies { background: var(--surface-hover); border-color: var(--p-blue-100);
+    .ra-stat__label { color: var(--p-blue-600); } .ra-stat__num { color: var(--p-blue-700); } }
+  &--scopes    { background: var(--surface-hover); border-color: var(--p-teal-100);
+    .ra-stat__label { color: var(--p-teal-500); } .ra-stat__num { color: var(--p-teal-600); } }
+  &--jobs      { background: var(--p-orange-50); border-color: var(--p-orange-100);
+    .ra-stat__label { color: var(--p-orange-600); } .ra-stat__num { color: var(--p-orange-600); } }
+  &--preparer  { background: var(--surface-hover); border-color: var(--p-indigo-100);
+    .ra-stat__label { color: var(--p-indigo-600); } .ra-stat__num { color: var(--primary-color); } }
+  &--reviewer  { background: var(--p-blue-50); border-color: var(--p-blue-100);
+    .ra-stat__label { color: var(--p-blue-600); } .ra-stat__num { color: var(--p-blue-600); } }
+}
+
+// ── Toolbar ─────────────────────────────────────────────────────────────────────
+.ra-toolbar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin-top: 20px; padding-top: 20px; border-top: 1px solid $border;
+}
+
+.ra-searchbox {
+  margin-inline-start: auto; flex: 1; max-width: 380px;
+  display: flex; align-items: center; gap: 8px;
+  border: 1px solid $border; border-radius: $radius-sm;
+  padding: 11px 10px; background: $surface;
+  svg { color: $text-muted; flex-shrink: 0; }
+  input { border: none; outline: none; width: 100%; font-size: 13px; color: $text-primary; background: transparent; }
+}
+
+.ra-filter { flex: 0 0 auto; }
+
+.ra-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 12px; font-size: 13px; font-weight: 600; height: 38px;
+  border: 1px solid $border; border-radius: $radius-sm;
+  background: $surface; color: $text-secondary; cursor: pointer; transition: all .15s;
+  &:hover { border-color: var(--text-color-secondary); }
+  &--on {
+    border-color: $accent-blue; color: color-mix(in srgb, $accent-blue, black 8%);
+    background: color-mix(in srgb, $accent-blue 35%, transparent);
+  }
+}
+
+// ── Body ────────────────────────────────────────────────────────────────────────
+.ra-body {
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid $border;
+}
+
+.ra-placeholder {
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+  padding: 48px 20px; text-align: center; color: $text-secondary;
+  svg { color: $text-muted; }
+  p { margin: 0; font-size: 14px; }
+}
+
+// ── Empty state: auditor has no assignments ─────────────────────────────────────
+.ra-empty {
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 52px 24px;
+
+  &__art {
+    position: relative; width: 88px; height: 88px; margin-bottom: 18px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; background: color-mix(in srgb, $accent-blue 35%, transparent);
+    color: $accent-blue;
+    &::before {
+      content: ''; position: absolute; inset: -6px; border-radius: 50%;
+      border: 1.5px dashed color-mix(in srgb, $accent-blue 35%, transparent);
+    }
+  }
+  &__badge {
+    position: absolute; inset-inline-end: 2px; bottom: 2px;
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--p-green-600); color: #fff; border: 2px solid $surface;
+  }
+
+  &__title {
+    margin: 4px 0 0; font-size: 15.5px; font-weight: 700; color: $primary;
+  }
+  &__text {
+    margin: 8px 0 0; max-width: 340px; font-size: 13px; line-height: 1.55; color: $text-secondary;
+    strong { color: $text-primary; font-weight: 700; }
+  }
+  &__action { margin-top: 16px; }
+}
+
+// ── Skeleton ────────────────────────────────────────────────────────────────────
+@keyframes ra-shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.ra-skeleton { display: flex; flex-direction: column; gap: 12px; }
+.ra-skeleton__bar {
+  height: 54px; border-radius: $radius-md;
+  background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-card) 50%, var(--surface-card) 75%);
+  background-size: 400px 100%; animation: ra-shimmer 1.4s infinite linear;
+}
+
+// ── Sticky footer bars ──────────────────────────────────────────────────────────
+.ra-footerbars {
+  position: sticky; bottom: 0; z-index: 5;
+  margin-top: 20px; padding-top: 18px; border-top: 1px solid $border;
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.ra-bar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 12px 16px; border-radius: $radius-md;
+
+  &__label { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: $text-secondary; white-space: nowrap; }
+  &__label--strong { color: $primary; }
+  &__spacer { flex: 1; }
+  &__badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 22px; height: 22px; padding: 0 6px; border-radius: 11px;
+    background: $accent-blue; color: #fff; font-size: 12px; font-weight: 700;
+  }
+  &__reason {
+    flex: 1; min-width: 180px; height: 38px; padding: 0 12px;
+    border: 1px solid $border; border-radius: $radius-sm; background: $surface;
+    font-size: 13px; color: $text-primary;
+    &::placeholder { color: $text-muted; }
+    &:focus { outline: none; border-color: $accent-blue; box-shadow: 0 0 0 3px color-mix(in srgb, $accent-blue 12%, transparent); }
+  }
+
+  &--bulk { background: color-mix(in srgb, $accent-blue 35%, transparent); border: 1px solid color-mix(in srgb, $accent-blue 35%, transparent); }
+  &--confirm { background: color-mix(in srgb, $accent-blue 35%, transparent); border: 1px solid color-mix(in srgb, $accent-blue 35%, transparent); }
+}
+
+// ── Bulk period duration chip (total days & hours) ───────────────────────────────
+.ra-bulk-duration {
+  display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0;
+  height: 40px; padding: 0 12px; border-radius: $radius-sm;
+  background: $surface; border: 1px solid color-mix(in srgb, $accent-blue 35%, transparent);
+  color: color-mix(in srgb, $accent-blue, black 14%);
+  font-size: 13px; font-weight: 700; white-space: nowrap;
+  svg { flex-shrink: 0; opacity: .9; }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+@keyframes ra-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.ra-toast {
+  position: absolute; left: 50%; bottom: 74px; transform: translateX(-50%);
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 9px 12px 9px 14px; border-radius: $radius-md;
+  background: var(--surface-hover); color: #fff; font-size: 13px;
+  box-shadow: 0 6px 20px rgba(0,0,0,.22); animation: ra-fade .2s ease;
+  svg { color: var(--p-green-300); }
+  &__undo {
+    border: none; background: transparent; color: var(--p-sky-300); font-size: 13px;
+    font-weight: 700; cursor: pointer; padding: 2px 4px;
+    &:hover { text-decoration: underline; }
+  }
+  &__close { border: none; background: transparent; color: rgba(255,255,255,.6); cursor: pointer; display: flex; padding: 2px; &:hover { color: #fff; } }
+}
+
+// ── Buttons ─────────────────────────────────────────────────────────────────────
+.ra-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; font-size: 13px; font-weight: 600; height: 38px;
+  border: none; border-radius: $radius-sm; cursor: pointer; transition: all .18s ease;
+
+  &--primary {
+    background: linear-gradient(135deg, $primary, $primary-light);
+    color: #fff; box-shadow: 0 2px 8px color-mix(in srgb, $primary 28%, transparent);
+    &:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+  &--secondary {
+    background: $surface; color: $text-primary; border: 1.5px solid $border;
+    &:hover:not(:disabled) { border-color: var(--text-color-secondary); background: $surface-alt; }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+  &--ghost {
+    background: transparent; color: $text-secondary; border: 1px solid transparent;
+    &:hover:not(:disabled) { color: $text-primary; background: color-mix(in srgb, $primary 6%, transparent); }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+}
+
+// ── Spinner ─────────────────────────────────────────────────────────────────────
+@keyframes ra-spin { to { transform: rotate(360deg); } }
+.ra-spinner {
+  width: 14px; height: 14px; border-radius: 50%; display: inline-block;
+  border: 2px solid rgba(0,0,0,.12); border-top-color: $text-secondary;
+  animation: ra-spin .7s linear infinite;
+  &--light { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
+}
+
+// ── Chip / option / avatar ──────────────────────────────────────────────────────
+.ra-avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  background: $accent-blue;
+}
+.ra-chip { display: flex; align-items: center; gap: 8px;
+  &__info { display: flex; flex-direction: column; line-height: 1.2; min-width: 0; }
+  &__name { font-size: 13px; font-weight: 600; color: $text-primary; }
+  &__role { font-size: 11px; color: $text-secondary; }
+}
+.ra-option { display: flex; align-items: center; gap: 10px; padding: 4px 0;
+  &__info { display: flex; flex-direction: column; line-height: 1.3; }
+  &__name { font-size: 13px; font-weight: 600; color: $text-primary; }
+  &__meta { font-size: 11.5px; color: $text-secondary; }
+}
+
+// ── PrimeNG overrides ─────────────────────────────────────────────────────────
+:host ::ng-deep {
+  p-select { width: 100%; }
+  .p-select {
+    width: 100% !important; min-height: 48px; border-radius: $radius-sm;
+    border-color: $border; font-size: 13px;
+    display: flex; align-items: center;
+    &.p-focus { border-color: $accent-blue; box-shadow: 0 0 0 3px color-mix(in srgb, $accent-blue 12%, transparent); }
+  }
+  .p-select-label {
+    padding: 0 .75rem; font-size: 13px; color: $text-primary;
+    display: flex; align-items: center;
+    &.p-placeholder { color: $text-muted; }
+  }
+
+  // bulk-bar select is more compact than the main picker
+  .ra-bulk-select .p-select { min-height: 40px; }
+
+  // bulk-bar datepickers
+  .ra-bar--bulk p-datepicker { display: inline-block; width: 160px; }
+  .ra-bulk-dp, .ra-bulk-dp .p-inputwrapper { width: 160px; position: relative; }
+  .ra-bulk-dp .p-datepicker-input,
+  .ra-bulk-dp .p-inputtext,
+  .ra-bulk-dp input {
+    height: 40px; width: 160px; font-size: 13px; padding-inline-end: 2.25rem;
+    border: 1px solid $border; border-radius: $radius-sm;
+  }
+  .ra-bulk-dp .p-datepicker-input-icon-container,
+  .ra-bulk-dp .p-datepicker-trigger {
+    position: absolute; top: 0; inset-inline-end: 0; height: 40px; width: 36px; margin: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: none; color: $text-secondary;
+  }
+}

@@ -1,0 +1,200 @@
+<p-toast position="top-right" />
+<p-confirmDialog />
+
+<!-- ── Add / Edit modal ──────────────────────────────────────────────────── -->
+<app-event-type-form
+  [visible]="showDialog()"
+  [item]="editingItem()"
+  (save)="onFormSave($event)"
+  (close)="onFormClose()"
+/>
+
+<!-- ── View dialog ────────────────────────────────────────────────────────── -->
+<p-dialog
+  [visible]="showView()"
+  (visibleChange)="$event ? null : closeView()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [style]="{ width: '480px' }"
+  styleClass="view-dialog"
+>
+  <ng-template pTemplate="header">
+    <div class="vd-header">
+      <div class="vd-header__left">
+        <span class="vd-header__icon"><app-draw-icon icon="pi pi-calendar-plus"></app-draw-icon></span>
+        <div>
+          <h3 class="vd-header__title">{{ viewItem()?.name }}</h3>
+          <p class="vd-header__sub" i18n="@@admin.eventType.details">Event Type Details</p>
+        </div>
+      </div>
+      <div class="vd-header__right">
+        <span class="status-badge"
+          [class.status-badge--active]="viewItem()?.isActive"
+          [class.status-badge--inactive]="!viewItem()?.isActive">
+          <app-draw-icon [icon]="viewItem()?.isActive ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+          {{ statusLabel(viewItem()?.isActive ?? false) }}
+        </span>
+        <button class="modal-close" (click)="closeView()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon>
+        </button>
+      </div>
+    </div>
+  </ng-template>
+
+  @if (viewItem()) {
+    <div class="vd-body">
+
+      @if (viewItem()!.description) {
+        <div class="vd-section">
+          <span class="vd-field-label"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <span i18n="@@common.description">Description</span></span>
+          <p class="vd-field-value">{{ viewItem()!.description }}</p>
+        </div>
+      }
+
+      <div class="vd-meta-list">
+        <div class="vd-meta-row">
+          <span class="vd-meta-row__icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+          <span class="vd-meta-row__label" i18n="@@common.createdOn">Created On</span>
+          <span class="vd-meta-row__value">{{ formatDate(viewItem()!.createdAt) }}</span>
+        </div>
+        @if (viewItem()!.updatedAt) {
+          <div class="vd-meta-row">
+            <span class="vd-meta-row__icon"><app-draw-icon icon="pi pi-clock"></app-draw-icon></span>
+            <span class="vd-meta-row__label" i18n="@@common.lastUpdated">Last Updated</span>
+            <span class="vd-meta-row__value">{{ formatDate(viewItem()!.updatedAt!) }}</span>
+          </div>
+        }
+      </div>
+
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="vd-footer">
+      <p-button label="Close" i18n-label="@@common.close" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closeView()" />
+      <p-button label="Edit" i18n-label="@@common.edit" icon="pi pi-pencil" [outlined]="true" (onClick)="closeView(); openEdit(viewItem()!, $event)" />
+    </div>
+  </ng-template>
+</p-dialog>
+
+<!-- ── Activate / Deactivate confirmation ───────────────────────────────── -->
+<app-confirm-action-dialog
+  [visible]="displayConfirmation()"
+  [action]="confirmationAction()"
+  [itemName]="confirmationTarget()?.name ?? ''"
+  (confirmed)="confirmToggleBlocked()"
+  (cancelled)="closeConfirmation()"
+/>
+
+<div class="evtype-page">
+
+  <!-- ── Page header ──────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-header__title" i18n="@@admin.eventType.title">Event Types</h2>
+      <p class="page-header__subtitle" i18n="@@admin.eventType.subtitle">Manage master list of audit event types</p>
+    </div>
+    <div class="page-header__actions">
+      <p-button label="+ New Event Type" i18n-label="@@admin.eventType.newEventType" styleClass="btn-add" (onClick)="openAdd()" />
+    </div>
+  </div>
+
+  <div class="search-bar-row">
+    <div class="filter-bar__search">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input
+        type="text"
+        placeholder="Search by name or description…"
+        i18n-placeholder="@@admin.eventType.searchPlaceholder"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+  </div>
+
+  <!-- ── Empty state ──────────────────────────────────────────────────── -->
+  @if (filtered().length === 0) {
+    <div class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-calendar-plus"></app-draw-icon>
+      <span i18n="@@admin.eventType.empty">No event types found.</span>
+      <button class="ev-empty__btn" (click)="openAdd()"><span i18n="@@admin.eventType.addEventType">+ Add Event Type</span></button>
+    </div>
+  }
+
+  <!-- ── List ─────────────────────────────────────────────────────────── -->
+  @if (filtered().length > 0) {
+    <div class="evtype-list">
+      <div class="list-header">
+        <span class="list-header__cell col-id" i18n="@@common.number">#</span>
+        <span class="list-header__cell col-name sortable" i18n="@@admin.eventType.columnName" (click)="toggleSort('name')">EVENT TYPE <i class="sort-icon" [class.pi-sort-alt]="sortField() !== 'name'" [class.pi-sort-amount-up-alt]="sortField() === 'name' && sortDir() === 'asc'" [class.pi-sort-amount-down-alt]="sortField() === 'name' && sortDir() === 'desc'"></i></span>
+        <span class="list-header__cell col-status" i18n="@@common.statusUppercase">STATUS</span>
+        <span class="list-header__cell col-date sortable" (click)="toggleSort('createdAt')"><span i18n="@@common.createdOn">CREATED ON</span> <i class="sort-icon" [class.pi-sort-alt]="sortField() !== 'createdAt'" [class.pi-sort-amount-up-alt]="sortField() === 'createdAt' && sortDir() === 'asc'" [class.pi-sort-amount-down-alt]="sortField() === 'createdAt' && sortDir() === 'desc'"></i></span>
+        <span class="list-header__cell col-actions" i18n="@@common.actionsUppercase">ACTIONS</span>
+      </div>
+
+      @for (item of paginated(); track item.id; let i = $index) {
+        <article class="evtype-row" [class.evtype-row--inactive]="!item.isActive">
+
+          <div class="col-id">
+            <span class="ev-id">{{ ((currentPage() - 1) * pageSize() + i + 1).toString().padStart(2, '0') }}</span>
+          </div>
+
+          <div class="col-name">
+            <span class="ev-title">{{ item.name }}</span>
+            @if (item.description) {
+              <span class="ev-uploader">{{ item.description }}</span>
+            }
+          </div>
+
+          <div class="col-status">
+            <span class="status-badge"
+              [class.status-badge--active]="item.isActive"
+              [class.status-badge--inactive]="!item.isActive">
+              {{ statusLabel(item.isActive) }}
+            </span>
+          </div>
+
+          <div class="col-date">{{ formatDate(item.createdAt) }}</div>
+
+          <div class="col-actions">
+            <div class="row-actions">
+              <button class="icon-btn" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top"
+                (click)="openView(item, $event)">
+                <app-draw-icon icon="pi pi-eye" style="color: rgb(4, 4, 62);"></app-draw-icon>
+              </button>
+              <button class="icon-btn" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top"
+                (click)="openEdit(item, $event)">
+                <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+              </button>
+              <button
+                class="icon-btn"
+                [class.icon-btn--activate]="!item.isActive"
+                [class.icon-btn--deactivate]="item.isActive"
+                [pTooltip]="item.isActive ? deactivateLabel : activateLabel"
+                tooltipPosition="top"
+                (click)="promptToggle(item, $event)">
+                <app-draw-icon [icon]="item.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+
+  @if (filtered().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="event types"
+      i18n-entityLabel="@@admin.eventType.entityLabel"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>

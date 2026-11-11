@@ -1,0 +1,238 @@
+<section class="pa-page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div>
+        <h1 class="page-header__title" i18n="@@admin.executionRequests.title">Pending Approvals</h1>
+        <p class="page-header__subtitle" i18n="@@admin.executionRequests.subtitle">Centralised queue of evidences, observations and recommendations awaiting review or approval</p>
+      </div>
+    </div>
+
+    <div class="page-header__actions">
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-toggle__btn" [class.is-active]="viewMode() === 'grid'"
+                (click)="setView('grid')" pTooltip="Grid view" i18n-pTooltip="@@common.gridView" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+        <button type="button" class="view-toggle__btn" [class.is-active]="viewMode() === 'list'"
+                (click)="setView('list')" pTooltip="List view" i18n-pTooltip="@@common.listView" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary-row">
+    <div class="summary-card summary-card--total">
+      <div class="summary-card__body">
+        <span class="summary-card__num">{{ counts().total }}</span>
+        <span class="summary-card__label" i18n="@@admin.executionRequests.totalPending">Total Pending</span>
+      </div>
+      <app-draw-icon icon="pi pi-inbox" class="summary-card__icon"></app-draw-icon>
+    </div>
+    <div class="summary-card summary-card--obs">
+      <div class="summary-card__body">
+        <span class="summary-card__num">{{ counts().observations }}</span>
+        <span class="summary-card__label" i18n="@@admin.executionRequests.observations">Observations</span>
+      </div>
+      <app-draw-icon icon="pi pi-eye" class="summary-card__icon"></app-draw-icon>
+    </div>
+    <div class="summary-card summary-card--ev">
+      <div class="summary-card__body">
+        <span class="summary-card__num">{{ counts().evidences }}</span>
+        <span class="summary-card__label" i18n="@@admin.executionRequests.evidences">Evidences</span>
+      </div>
+      <app-draw-icon icon="pi pi-paperclip" class="summary-card__icon"></app-draw-icon>
+    </div>
+    <div class="summary-card summary-card--rec">
+      <div class="summary-card__body">
+        <span class="summary-card__num">{{ counts().recommendations }}</span>
+        <span class="summary-card__label" i18n="@@admin.executionRequests.recommendations">Recommendations</span>
+      </div>
+      <app-draw-icon icon="pi pi-check-square" class="summary-card__icon"></app-draw-icon>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+
+    <div class="toolbar__left">
+      <!-- Clear all -->
+      <button *ngIf="hasActiveFilters()" type="button" class="toolbar__clear" (click)="clearAll()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon> <span i18n="@@common.clear">Clear</span>
+      </button>
+
+      <!-- Filter modal (reusable component) -->
+      <app-filter-modal
+      [typeOptions]="typeOptions"
+      [statusOptions]="statusOptions"
+      [companyOptions]="companyOptions()"
+      [divisionOptions]="divisionOptions()"
+      [subDivisionOptions]="subDivisionOptions()"
+      [disableSubDivision]="!subDivisionEnabled()"
+      [submittedByOptions]="submitterOptions()"
+      [selectedTypes]="filterTypes()"
+      [selectedStatuses]="filterStatuses()"
+      [selectedCompanies]="filterCompanies()"
+      [selectedDivisions]="filterDivisions()"
+      [selectedSubDivisions]="filterSubDivisions()"
+      [selectedSubmittedBys]="filterSubmittedBys()"
+      [showRisk]="false"
+      [showSubmittedBy]="true"
+      (typesChange)="onTypesChange($event)"
+      (statusesChange)="onStatusesChange($event)"
+      (companiesChange)="onCompaniesChange($event)"
+      (divisionsChange)="onDivisionsChange($event)"
+      (subDivisionsChange)="onSubDivisionsChange($event)"
+      (submittedBysChange)="onSubmittedBysChange($event)"
+      (filtersCleared)="clearAll()"
+    ></app-filter-modal>
+    </div>
+
+    <!-- Search -->
+    <div class="toolbar__right">
+      <span class="toolbar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input pInputText type="text" [ngModel]="searchQuery()"
+               (ngModelChange)="onSearch($event)"
+               placeholder="Search by ID, title or owner..."
+               i18n-placeholder="@@admin.executionRequests.searchPlaceholder" />
+      </span>
+    </div>
+
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="filtered().length === 0" class="pa-empty">
+    <app-draw-icon icon="pi pi-inbox"></app-draw-icon>
+    <span i18n="@@admin.executionRequests.noPendingItems">No pending items match your filters.</span>
+    <button *ngIf="hasActiveFilters()" type="button" class="pa-empty__btn" (click)="clearAll()" i18n="@@common.clearFilters">Clear filters</button>
+  </div>
+
+  <!-- ── GRID VIEW ── -->
+  <div *ngIf="viewMode() === 'grid' && filtered().length > 0" class="pa-grid">
+    <article *ngFor="let item of paginated(); trackBy: trackById"
+             class="pa-card" [ngClass]="'pa-card--' + item.riskRating"
+             [class.is-removing]="removingIds().has(item.id)">
+
+      <div class="pa-card__bar" [ngClass]="'bar--' + item.riskRating"></div>
+
+      <div class="pa-card__content">
+        <div class="pa-card__head">
+          <div class="pa-card__icon-wrap">
+            <div class="pa-card__icon" [ngClass]="'icon--' + item.type">
+              <i class="pi" [ngClass]="{
+                'pi-eye':          item.type === 'observation',
+                'pi-paperclip':    item.type === 'evidence',
+                'pi-check-square': item.type === 'recommendation'
+              }"></i>
+            </div>
+            <svg class="pa-card__icon-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+              <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <div>
+            <span class="pa-card__id">{{ item.id }}</span>
+            <h3 class="pa-card__title">{{ item.title }}</h3>
+          </div>
+        </div>
+
+        <div class="pa-card__meta info-grid">
+          <div class="info-item" pTooltip="Submitted By" i18n-pTooltip="@@admin.executionRequests.submittedBy" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ item.submittedBy }}</span></div>
+          </div>
+          <div class="info-item" *ngIf="item.dueDate" pTooltip="Due Date" i18n-pTooltip="@@common.dueDate" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+            <div class="info-content">
+              <span class="info-value" [class.overdue]="isOverdue(item.dueDate)">
+                {{ item.dueDate | date:'MMM d, y' }}
+              </span>
+            </div>
+          </div>
+          <div class="info-item info-item--full" pTooltip="Risk" i18n-pTooltip="@@common.risk" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-shield"></app-draw-icon></span>
+            <div class="info-content">
+              <span class="risk-badge" [ngClass]="'risk--' + item.riskRating">{{ riskLabel(item.riskRating) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pa-card__badges">
+          <span class="type-badge" [ngClass]="'type--' + item.type">{{ typeLabel(item.type) }}</span>
+          <span class="status-chip" [ngClass]="'pa-status--' + item.status">{{ statusLabel(item.status) }}</span>
+        </div>
+      </div>
+
+      <footer class="pa-card__foot">
+        <button type="button" class="btn-view" (click)="openDetail(item)">
+          <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          <span i18n="@@common.view">View</span>
+        </button>
+      </footer>
+    </article>
+  </div>
+
+  <!-- ── LIST VIEW ── -->
+  <div *ngIf="viewMode() === 'list' && filtered().length > 0" class="pa pa--list">
+    <div class="list-header">
+      <span class="list-header__cell col-id" i18n="@@common.id">ID</span>
+      <span class="list-header__cell col-title" i18n="@@common.title">Title</span>
+      <span class="list-header__cell col-type" i18n="@@common.type">Type</span>
+      <span class="list-header__cell col-risk" i18n="@@common.risk">Risk</span>
+      <span class="list-header__cell col-status" i18n="@@common.status">Status</span>
+      <span class="list-header__cell col-by" i18n="@@admin.executionRequests.submittedBy">Submitted By</span>
+      <span class="list-header__cell col-due" i18n="@@common.dueDate">Due Date</span>
+      <span class="list-header__cell col-actions" i18n="@@common.actions">Actions</span>
+    </div>
+
+    <article *ngFor="let item of paginated(); trackBy: trackById"
+             class="pa-row" [ngClass]="'pa-row--' + item.riskRating">
+      <div class="col-id"><span class="pa-id">{{ item.id }}</span></div>
+      <div class="col-title"><span class="pa-title">{{ item.title }}</span></div>
+      <div class="col-type">
+        <span class="type-badge" [ngClass]="'type--' + item.type">{{ typeLabel(item.type) }}</span>
+      </div>
+      <div class="col-risk">
+        <span class="risk-badge" [ngClass]="'risk--' + item.riskRating">{{ riskLabel(item.riskRating) }}</span>
+      </div>
+      <div class="col-status">
+        <span class="status-chip" [ngClass]="'pa-status--' + item.status">{{ statusLabel(item.status) }}</span>
+      </div>
+      <div class="col-by"><app-draw-icon icon="pi pi-user"></app-draw-icon> {{ item.submittedBy }}</div>
+      <div class="col-due">
+        <span *ngIf="item.dueDate" [class.overdue]="isOverdue(item.dueDate)">
+          <app-draw-icon icon="pi pi-exclamation-triangle" *ngIf="isOverdue(item.dueDate)"></app-draw-icon>
+          {{ item.dueDate | date:'MMM d, y' }}
+        </span>
+        <span *ngIf="!item.dueDate" class="no-due">—</span>
+      </div>
+      <div class="col-actions">
+        <div class="row-actions">
+          <button type="button" class="view-btn" (click)="openDetail(item)"
+                  pTooltip="View details" i18n-pTooltip="@@common.viewDetails" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- PAGINATION -->
+  @if (filtered().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="pending items"
+      i18n-entityLabel="@@admin.executionRequests.pendingItems"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+</section>

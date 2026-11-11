@@ -1,0 +1,599 @@
+<div class="drawer-inner" [formGroup]="scopeForm">
+ <p-toast></p-toast>
+
+      <!-- Header -->
+      <div class="drawer-header">
+        <div class="drawer-header-left">
+          <div class="drawer-icon-wrap">
+            <i class="pi pi-file-check"></i>
+          </div>
+          <div class="drawer-title-block">
+            <h2 class="drawer-title">{{ drawerTitle }}</h2>
+            <p class="drawer-subtitle">{{ drawerSubtitle }}</p>
+          </div>
+        </div>
+        <button class="close-btn" type="button" (click)="onClose()">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <!-- ── Approval Banner ── -->
+      @if (approvalMode) {
+        <div class="approval-banner">
+          <i class="pi pi-info-circle"></i>
+          @if (canDecide) {
+            <span>You may view and edit the audit scope details. Add your <strong>approver notes</strong> below and approve or reject.</span>
+          } @else {
+            <span>This request has already been <strong>{{ requestStatus }}</strong>. No further action is required.</span>
+          }
+        </div>
+      }
+
+      <div class="drawer-tab p-[1.5rem] bg-gray-100">
+        <!-- Tabs -->
+        <p-tabs [(value)]="activeTabIndex" styleClass="audit-scope-tabs">
+
+          <p-tablist>
+            <p-tab [value]="0">Scope Information</p-tab>
+            <!-- Hidden — Details & Sampling <p-tab [value]="1">Details & Sampling</p-tab> -->
+            <p-tab [value]="1">Tasks</p-tab>
+            <!-- Hidden — Regulations & Audit Trail <p-tab [value]="3">Regulations &amp; Audit Trail</p-tab> -->
+          </p-tablist>
+
+          <p-tabpanels>
+
+            <!-- ─────────────────── Tab 0: Scope Information ─────────────────── -->
+            <p-tabpanel [value]="0">
+              <div class="tab-content">
+
+                <!-- Source Mode Toggle -->
+                @if (!isViewMode) {
+                <div class="source-mode-section">
+                  <div class="source-mode-header">
+                    <div class="source-mode-icon-wrap">
+                      <i class="pi pi-th-large"></i>
+                    </div>
+                    <div class="source-mode-text">
+                      <span class="source-mode-label">Scope Source</span>
+                      <span class="source-mode-sub">Create from scratch or pre-fill from the Scope Library</span>
+                    </div>
+                  </div>
+                  <p-selectbutton [(ngModel)]="scopeSource" [ngModelOptions]="{ standalone: true }"
+                    [options]="scopeSourceOptions" optionLabel="label" optionValue="value"
+                    (onChange)="onScopeSourceChange()" styleClass="scope-source-selectbtn">
+                  </p-selectbutton>
+                </div>
+                }
+
+                <!-- Company (all modes) -->
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Company / Organization <span class="field-required">*</span>
+                    </label>
+                    <p-select appendTo="body" formControlName="company" [options]="companyOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select company / organization" styleClass="form-dropdown"
+                      [filter]="true" filterPlaceholder="Search…" [showClear]="true"
+                      [invalid]="isFieldInvalid('company')" [disabled]="isViewMode"
+                      (onChange)="onCompanyChange()"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('company')">
+                      {{ getErrorMessage('company') }}
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Division (filtered by company) + Sub-Division (filtered by division) -->
+                <div class="form-row">
+                  <div class="form-col">
+                    <label class="field-label">
+                      Division <span class="field-required">*</span>
+                    </label>
+                    <p-select appendTo="body" formControlName="division" [options]="filteredDivisionOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select division" styleClass="form-dropdown"
+                      [filter]="true" filterPlaceholder="Search…" [showClear]="true"
+                      [invalid]="isFieldInvalid('division')"
+                      [disabled]="isViewMode || !scopeForm.get('company')?.value"
+                      (onChange)="onDivisionChange()"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('division')">
+                      {{ getErrorMessage('division') }}
+                    </small>
+                  </div>
+                  <div class="form-col">
+                    <label class="field-label">
+                      Sub-Division
+                      @if (isSubDivisionRequired) {
+                      <span class="field-required">*</span>
+                      } @else if (scopeForm.get('division')?.value && !selectedDivisionHasSubDivisions) {
+                      <span class="field-optional">(not applicable)</span>
+                      } @else {
+                      <span class="field-optional">(optional)</span>
+                      }
+                    </label>
+                    <p-select appendTo="body" formControlName="subDivision" [options]="filteredSubDivisionOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select sub-division" styleClass="form-dropdown"
+                      [filter]="true" filterPlaceholder="Search…" [showClear]="true"
+                      [invalid]="isFieldInvalid('subDivision')"
+                      [disabled]="isViewMode || !scopeForm.get('division')?.value || !selectedDivisionHasSubDivisions"
+                      (onChange)="onSubDivisionChange()"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('subDivision')">
+                      {{ getErrorMessage('subDivision') }}
+                    </small>
+                    @if (!isViewMode && scopeForm.get('division')?.value && !scopeForm.get('subDivision')?.value && !isSubDivisionRequired) {
+                    <small class="field-hint">No sub-division — the scope will be created under the division.</small>
+                    }
+                  </div>
+                </div>
+
+                <!-- Audit Plan (filtered by company / division / sub-division) — bounds the Timeframe -->
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Audit Plan
+                      @if (mode === ScopeDrawerModes.Add) {
+                      <span class="field-required">*</span>
+                      } @else {
+                      <span class="field-optional">(optional)</span>
+                      }
+                    </label>
+                    <p-select appendTo="body" formControlName="auditPlan" [options]="auditPlanOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select audit plan" styleClass="form-dropdown"
+                      [filter]="true" filterPlaceholder="Search…" [showClear]="true"
+                      [invalid]="isFieldInvalid('auditPlan')"
+                      [disabled]="isViewMode || !isScopeOwnerResolved"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('auditPlan')">
+                      {{ getErrorMessage('auditPlan') }}
+                    </small>
+                    @if (!isViewMode && !isScopeOwnerResolved) {
+                    <small class="field-hint">Select a division{{ isSubDivisionRequired ? ' and sub-division' : '' }} first.</small>
+                    } @else if (!isViewMode && auditPlanOptions.length === 0) {
+                    <small class="field-hint">No audit plans found for the selected division / sub-division.</small>
+                    }
+                  </div>
+                </div>
+
+                <!-- Library Scope Picker (library mode — filtered by sub-division) -->
+                @if (scopeSource === ScopeSources.Library && !isViewMode) {
+                <div class="library-select-card">
+                  <div class="library-card-header">
+                    <div class="library-card-icon">
+                      <i class="pi pi-book"></i>
+                    </div>
+                    <div>
+                      <p class="library-card-title">Select from Scope Library</p>
+                      <p class="library-card-sub">Choose a scope template — fields will be pre-filled automatically</p>
+                    </div>
+                  </div>
+                  <p-select appendTo="body" [(ngModel)]="selectedLibraryScopeId" [ngModelOptions]="{ standalone: true }"
+                    [options]="libraryScopeOptions" optionLabel="label" optionValue="value"
+                    placeholder="Search and select a scope from the library…"
+                    (onChange)="onLibraryScopeSelect($event.value)" styleClass="form-dropdown library-picker-select"
+                    [filter]="true" filterPlaceholder="Search scopes…" [showClear]="true"
+                    [disabled]="!isScopeOwnerResolved">
+                    <ng-template pTemplate="item" let-opt>
+                      <div class="library-option-row">
+                        <span class="library-option-label">{{ opt.label }}</span>
+                        <span class="library-option-badge" [class.badge-scope]="opt.scopeLevel === ScopeLevels.Scope"
+                          [class.badge-subscope]="opt.scopeLevel === ScopeLevels.SubScope">
+                          {{ libraryLevelLabels[opt.scopeLevel === ScopeLevels.Scope ? ScopeLevels.Scope : ScopeLevels.SubScope] }}
+                        </span>
+                      </div>
+                    </ng-template>
+                  </p-select>
+                  @if (!selectedLibraryScopeId) {
+                    <p class="library-hint">
+                      <i class="pi pi-lightbulb"></i>
+                      @if (!scopeForm.get('division')?.value) {
+                        Select a division above to see available scope templates
+                      } @else if (!isScopeOwnerResolved) {
+                        Select a sub-division above to see available scope templates
+                      } @else if (libraryScopeOptions.length === 0) {
+                        No scope templates found for the selected sub-division
+                      } @else {
+                        Select a template — scope name and objective will be pre-filled
+                      }
+                    </p>
+                  }
+                  @if (selectedLibraryScopeId) {
+                  <p class="library-hint">
+                    <i class="pi pi-check-circle"></i>
+                    Scope details have been pre-filled. You may edit all fields except the scope name.
+                  </p>
+                  }
+                </div>
+                }
+
+                <!-- Parent Scope (optional / required based on library selection) -->
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Parent Scope
+                      @if (isLibraryParentRequired) {
+                      <span class="field-required">*</span>
+                      } @else {
+                      <span class="field-optional">(optional)</span>
+                      }
+                    </label>
+                    <p-select appendTo="body" formControlName="parentScope" [options]="activeParentScopeOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select parent scope" styleClass="form-dropdown"
+                      [showClear]="true"
+                      [disabled]="isViewMode || !isScopeOwnerResolved || (scopeSource === ScopeSources.Library && selectedLibraryScopeLevel === ScopeLevels.Scope)"
+                      [invalid]="isLibraryParentRequired && isFieldInvalid('parentScope')"></p-select>
+                    @if (isLibraryParentRequired && isFieldInvalid('parentScope')) {
+                    <small class="error-hint">Parent scope is required for a sub-scope.</small>
+                    }
+                  </div>
+                </div>
+
+                <!-- Scope Name + Scope Type -->
+                <div class="form-row">
+                  <div class="form-col">
+                    <label class="field-label">
+                      Scope Name <span class="field-required">*</span>
+                    </label>
+                    <div class="scope-name-wrap">
+                      <input pInputText type="text" formControlName="scopeName" placeholder="Scope Name"
+                        class="form-input" [class.input-error]="isFieldInvalid('scopeName')"
+                        [readonly]="isViewMode || scopeSource === ScopeSources.Library"
+                        [class.autofill-input]="scopeSource === ScopeSources.Library && !!scopeForm.get('scopeName')?.value" />
+                      @if (scopeSource === ScopeSources.Library && !!scopeForm.get('scopeName')?.value) {
+                      <span class="autofill-badge"><i class="pi pi-book"></i> From Library</span>
+                      }
+                    </div>
+                    <small class="error-hint" *ngIf="isFieldInvalid('scopeName')">
+                      {{ getErrorMessage('scopeName') }}
+                    </small>
+                  </div>
+                  <div class="form-col">
+                    <label class="field-label">
+                      Scope Type <span class="field-required">*</span>
+                    </label>
+                    <p-select appendTo="body" formControlName="scopeType" [options]="scopeTypeOptions" optionLabel="label"
+                      optionValue="value" placeholder="Sub-Divisional / Functional / Independent"
+                      styleClass="form-dropdown" [invalid]="isFieldInvalid('scopeType')"
+                      [disabled]="isViewMode"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('scopeType')">
+                      {{ getErrorMessage('scopeType') }}
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Linked Departments (linkedSubDivisions) — division: its sub-divisions; sub-division: itself -->
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Linked Departments
+                      @if (isLinkedDepartmentsSelectable) {
+                      <span class="field-required">*</span>
+                      }
+                    </label>
+                    <p-multiselect appendTo="body" formControlName="linkedSubDivisions" [options]="linkedDepartmentOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select linked departments" styleClass="form-dropdown"
+                      display="chip" [invalid]="isFieldInvalid('linkedSubDivisions')"></p-multiselect>
+                    <small class="error-hint" *ngIf="isFieldInvalid('linkedSubDivisions')">
+                      {{ getErrorMessage('linkedSubDivisions') }}
+                    </small>
+                    @if (!isViewMode && scopeForm.get('subDivision')?.value) {
+                    <small class="field-hint">Linked to the selected sub-division.</small>
+                    } @else if (!isViewMode && scopeForm.get('division')?.value && !isLinkedDepartmentsSelectable) {
+                    <small class="field-hint">The selected division has no sub-divisions to link.</small>
+                    } @else if (!isViewMode && !scopeForm.get('division')?.value) {
+                    <small class="field-hint">Select a division first.</small>
+                    } @else if (!isViewMode && isSubDivisionRequired) {
+                    <small class="field-hint">Select a sub-division — it will be linked automatically.</small>
+                    }
+                  </div>
+                </div>
+
+                <!-- Audit Frequency + Mode of Audit -->
+                <div class="form-row">
+                  <div class="form-col">
+                    <label class="field-label">
+                      Audit Frequency <span class="field-required">*</span>
+                    </label>
+                    <p-select appendTo="body" formControlName="auditFrequency" [options]="auditFrequencyOptions" optionLabel="label"
+                      optionValue="value" placeholder="Quarterly / Annually / Monthly" styleClass="form-dropdown"
+                      [invalid]="isFieldInvalid('auditFrequency')" [disabled]="isViewMode"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('auditFrequency')">
+                      {{ getErrorMessage('auditFrequency') }}
+                    </small>
+                  </div>
+                  <div class="form-col">
+                    <label class="field-label">
+                      Mode of Audit <span class="field-required">*</span>
+                    </label>
+                    <p-select appendTo="body" formControlName="modeOfAudit" [options]="modeOfAuditOptions" optionLabel="label"
+                      optionValue="value" placeholder="Full / Limited / Thematic…" styleClass="form-dropdown"
+                      [invalid]="isFieldInvalid('modeOfAudit')" [disabled]="isViewMode"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('modeOfAudit')">
+                      {{ getErrorMessage('modeOfAudit') }}
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Objective -->
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Objective
+                      @if (scopeSource === ScopeSources.Library && selectedLibraryScopeId) {
+                      <span class="autofill-badge readonly-badge"><i class="pi pi-lock"></i> Read-only</span>
+                      }
+                    </label>
+                    <textarea pTextarea formControlName="objective"
+                      placeholder="Describe the audit objective (max 500 characters)" rows="4" class="form-textarea"
+                      [class.input-error]="!!f['objective'].errors?.['maxlength']"
+                      [readonly]="isViewMode || (scopeSource === ScopeSources.Library && !!selectedLibraryScopeId)"
+                      [class.autofill-input]="scopeSource === ScopeSources.Library && !!selectedLibraryScopeId"></textarea>
+                    <div class="char-counter" [class.char-over]="objectiveLength > SCOPE_OBJECTIVE_MAX_LENGTH">
+                      {{ objectiveLength }} / {{ SCOPE_OBJECTIVE_MAX_LENGTH }}
+                    </div>
+                    <small class="error-hint" *ngIf="isFieldInvalid('objective')">
+                      {{ getErrorMessage('objective') }}
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Timeframe -->
+                <p class="section-label">Timeframe</p>
+                @if (!isViewMode && selectedAuditPlan) {
+                <small class="field-hint">
+                  <i class="pi pi-info-circle"></i>
+                  Must fall within the audit plan period: {{ planMinDate ? (planMinDate | date:'dd/MM/yyyy') : '—' }} – {{ planMaxDate ? (planMaxDate | date:'dd/MM/yyyy') : '—' }}
+                </small>
+                }
+
+                <div class="form-row">
+                  <div class="form-col">
+                    <label class="field-label">
+                      Start Date <span class="field-required">*</span>
+                    </label>
+                    <p-datepicker formControlName="startDate" placeholder="Start Date" dateFormat="dd/mm/yy"
+                      [showTime]="true" hourFormat="24" [showIcon]="true" class="form-datepicker"
+                      [minDate]="planMinDate" [maxDate]="planMaxDate"
+                      [invalid]="isFieldInvalid('startDate') || (!!scopeForm.errors?.['startBeforePlanStart'] && f['startDate'].touched)"
+                      [disabled]="isViewMode"></p-datepicker>
+                    <small class="error-hint" *ngIf="isFieldInvalid('startDate')">
+                      {{ getErrorMessage('startDate') }}
+                    </small>
+                    @if (scopeForm.errors?.['startBeforePlanStart'] && f['startDate'].touched) {
+                    <small class="error-hint">Start date cannot be before the audit plan start date ({{ planMinDate | date:'dd/MM/yyyy' }}).</small>
+                    }
+                  </div>
+                  <div class="form-col">
+                    <label class="field-label">
+                      End Date <span class="field-required">*</span>
+                    </label>
+                    <p-datepicker formControlName="endDate" placeholder="End Date" dateFormat="dd/mm/yy"
+                      [showTime]="true" hourFormat="24" [showIcon]="true" class="form-datepicker"
+                      [minDate]="planMinDate" [maxDate]="planMaxDate"
+                      [invalid]="isFieldInvalid('endDate') || ((!!scopeForm.errors?.['endBeforeStart'] || !!scopeForm.errors?.['endAfterPlanEnd']) && f['endDate'].touched)"
+                      [disabled]="isViewMode"></p-datepicker>
+                    @if (scopeForm.errors?.['endBeforeStart'] && f['endDate'].touched) {
+                    <small class="error-hint">End date must be after start date.</small>
+                    }
+                    @if (scopeForm.errors?.['endAfterPlanEnd'] && f['endDate'].touched) {
+                    <small class="error-hint">End date cannot be after the audit plan end date ({{ planMaxDate | date:'dd/MM/yyyy' }}).</small>
+                    }
+                    @if (f['endDate'].hasError('required') && f['endDate'].touched) {
+                    <small class="error-hint">End date is required.</small>
+                    }
+                  </div>
+                </div>
+
+                <!-- Assigned Auditors -->
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Assigned Auditor(s) <span class="field-required">*</span>
+                    </label>
+                    <p-multiselect appendTo="body" formControlName="assignedAuditors" [options]="auditorOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select auditors from Audit Team" class="form-dropdown"
+                      display="chip" [invalid]="isFieldInvalid('assignedAuditors')"
+                      [disabled]="isViewMode"></p-multiselect>
+                    <small class="error-hint" *ngIf="isFieldInvalid('assignedAuditors')">
+                      {{ getErrorMessage('assignedAuditors') }}
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Assigned Reviewers -->
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Assigned Reviewer(s) <span class="field-required">*</span>
+                    </label>
+                    <p-multiselect appendTo="body" formControlName="assignedReviewers" [options]="reviewerOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select reviewers from Audit Team" class="form-dropdown"
+                      display="chip" [invalid]="isFieldInvalid('assignedReviewers')"
+                      [disabled]="isViewMode"></p-multiselect>
+                    <small class="error-hint" *ngIf="isFieldInvalid('assignedReviewers')">
+                      {{ getErrorMessage('assignedReviewers') }}
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Budget -->
+                <p class="section-label">Budget</p>
+
+                <div class="form-row">
+                  <div class="form-col">
+                    <label class="field-label">Hourly Rate</label>
+                    <p-select appendTo="body" formControlName="hourlyRate" [options]="hourlyRateOptions" optionLabel="label"
+                      optionValue="value" placeholder="Select hourly rate" styleClass="form-dropdown"
+                      [disabled]="isViewMode"></p-select>
+                  </div>
+                  <div class="form-col">
+                    <label class="field-label">Estimated Hours</label>
+                    <p-inputnumber formControlName="estimatedHours" placeholder="Estimated hours" [min]="1"
+                      class="w-full !h-[40.4px]" inputStyleClass="form-input" [readonly]="isViewMode"></p-inputnumber>
+                    <small class="error-hint" *ngIf="isFieldInvalid('estimatedHours')">
+                      {{ getErrorMessage('estimatedHours') }}
+                    </small>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">Budget (Auto-calculated)</label>
+                    <input pInputText type="text" [value]="computedBudget"
+                      placeholder="Auto-calculated from Hourly Rate × Estimated Hours" class="form-input" readonly />
+                    <small class="field-hint">
+                      <i class="pi pi-info-circle"></i>
+                      Calculated as Hourly Rate × Estimated Hours
+                    </small>
+                  </div>
+                </div>
+
+                <!-- Sampling Methodology -->
+                <p class="section-label">Sampling Methodology</p>
+
+                <div class="form-row">
+                  <div class="form-col">
+                    <label class="field-label">
+                      Methodology <span class="field-required">*</span>
+                    </label>
+                    <p-select appendTo="body" formControlName="samplingMethodology" [options]="methodologyOptions" optionLabel="label"
+                      optionValue="value" placeholder="Random / Risk-based / Judgmental" styleClass="form-dropdown"
+                      [invalid]="isFieldInvalid('samplingMethodology')" [disabled]="isViewMode"></p-select>
+                    <small class="error-hint" *ngIf="isFieldInvalid('samplingMethodology')">
+                      {{ getErrorMessage('samplingMethodology') }}
+                    </small>
+                  </div>
+                  <div class="form-col">
+                    <label class="field-label">
+                      Sampling Size <span class="field-required">*</span>
+                    </label>
+                    <p-inputnumber formControlName="samplingSize" placeholder="Sampling Size" [min]="1"
+                      class="w-full !h-[40.4px]" inputStyleClass="form-input" [invalid]="isFieldInvalid('samplingSize')"
+                      [readonly]="isViewMode"></p-inputnumber>
+                    <small class="error-hint" *ngIf="isFieldInvalid('samplingSize')">
+                      {{ getErrorMessage('samplingSize') }}
+                    </small>
+                  </div>
+                </div>
+
+                @if (isJudgmental) {
+                <div class="form-row">
+                  <div class="form-col full">
+                    <label class="field-label">
+                      Justification for Sampling
+                      <span class="field-required">*</span>
+                    </label>
+                    <textarea pTextarea formControlName="justificationForSampling"
+                      placeholder="Provide justification for using Judgmental sampling…" rows="3" class="form-textarea"
+                      [class.input-error]="isFieldInvalid('justificationForSampling')"
+                      [readonly]="isViewMode"></textarea>
+                    <small class="error-hint" *ngIf="isFieldInvalid('justificationForSampling')">
+                      {{ getErrorMessage('justificationForSampling') }}
+                    </small>
+                  </div>
+                </div>
+                }
+
+                <!-- Risk Information -->
+                <p class="section-label">Risk Information</p>
+
+                <div class="form-row">
+                  <div class="form-col">
+                    <label class="field-label">Risk Reference ID</label>
+                    <input pInputText type="text" formControlName="riskReferenceId" placeholder="e.g. RR-001"
+                      class="form-input" [readonly]="isViewMode" />
+                    <small class="field-hint">
+                      <i class="pi pi-link"></i>
+                      Links to Risk Register item
+                    </small>
+                  </div>
+                  <div class="form-col">
+                    <label class="field-label">Risk Rating</label>
+                    <p-select appendTo="body" formControlName="riskRating" [options]="riskRatingOptions" optionLabel="label"
+                      optionValue="value" placeholder="Low / Medium / High" styleClass="form-dropdown"
+                      [disabled]="isViewMode"></p-select>
+                    <small class="field-hint">
+                      <i class="pi pi-info-circle"></i>
+                      Auto-populated when Risk Reference ID is matched
+                    </small>
+                  </div>
+                </div>
+
+                <!-- ── Approver Notes (approval mode only) ── -->
+                @if (canDecide) {
+                  <div class="approver-notes-section">
+                    <div class="approver-notes-header">
+                      <i class="pi pi-comment"></i>
+                      <span class="approver-notes-title">Approver Notes</span>
+                      <span class="approver-notes-required">Required when rejecting</span>
+                    </div>
+                    <textarea pTextarea formControlName="approverNotes"
+                      placeholder="Add your approver notes here..."
+                      [rows]="4" class="form-textarea approver-notes-textarea"
+                      [class.input-error]="isInvalidApproverNotes()"></textarea>
+                    @if (isInvalidApproverNotes()) {
+                      <small class="error-hint"><i class="pi pi-exclamation-circle"></i> Approver notes are required when rejecting</small>
+                    }
+                  </div>
+                }
+              </div>
+            </p-tabpanel>
+
+            <!-- Hidden — Details & Sampling / Sub-Scopes
+            <p-tabpanel [value]="1">
+            </p-tabpanel>
+            -->
+
+            <!-- ─────────────────── Tab 1: Tasks (last tab — submits) ─────────── -->
+            <p-tabpanel [value]="1">
+              <app-scope-task [initialTasks]="$any(scope?.tasks ?? [])"
+                [scopeStartDate]="f['startDate'].value" [scopeEndDate]="f['endDate'].value"></app-scope-task>
+            </p-tabpanel>
+
+            <!-- Hidden — Regulations & Audit Trail
+            <p-tabpanel [value]="3">
+              <div class="tab-content tab-placeholder">
+                <i class="pi pi-book placeholder-icon"></i>
+                <p>Regulations &amp; Audit Trail content goes here.</p>
+              </div>
+            </p-tabpanel>
+            -->
+
+          </p-tabpanels>
+
+        </p-tabs>
+      </div>
+
+      <!-- Approval mode: Reject / Approve on every tab -->
+      @if (canDecide) {
+      <div class="drawer-footer">
+        <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onCancel()"></p-button>
+        <p-button label="Reject" icon="pi pi-times" styleClass="reject-btn" (onClick)="onReject()"></p-button>
+        <p-button label="Approve" icon="pi pi-check" styleClass="approve-btn" (onClick)="onApprove()"></p-button>
+      </div>
+      } @else if (approvalMode) {
+      <div class="drawer-footer">
+        <p-button label="Close" styleClass="cancel-btn" (onClick)="onCancel()"></p-button>
+      </div>
+      }
+      <!-- Sticky footer — Add mode: step-by-step navigation -->
+      @if (!approvalMode && !isViewMode && mode === ScopeDrawerModes.Add) {
+      <div class="drawer-footer">
+        <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onCancel()"></p-button>
+        @if (activeTabIndex < 1) {
+        <p-button label="Next" styleClass="submit-btn" (onClick)="goToNextTab()"></p-button>
+        } @else {
+        <p-button label="Submit" styleClass="submit-btn" (onClick)="onAddScope()"></p-button>
+        }
+      </div>
+      }
+      <!-- Edit mode: only show Save on Tab 0 -->
+      @if (!approvalMode && !isViewMode && mode === ScopeDrawerModes.Edit && activeTabIndex === 0) {
+      <div class="drawer-footer">
+        <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onCancel()"></p-button>
+        <p-button label="Save Changes" styleClass="submit-btn" (onClick)="onSave()"></p-button>
+      </div>
+      }
+      @if (!approvalMode && isViewMode && (activeTabIndex === 0 || activeTabIndex === 1)) {
+      <div class="drawer-footer">
+        <p-button label="Close" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+      </div>
+      }
+
+    </div>

@@ -1,0 +1,300 @@
+<div class="drawer-inner" *ngIf="displayName(); else emptyState">
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <i [ngClass]="isSubscopeMode() ? 'pi pi-file' : 'pi pi-file-check'"></i>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ displayName() }}</h2>
+        <p class="drawer-subtitle">
+          {{ isSubscopeMode() ? subScopeLabel : scopeLabel }}<ng-container *ngIf="displayType()"> · {{ scopeTypeLabel(displayType()) }}</ng-container>
+        </p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onHide()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="scope-detail__body">
+
+    <!-- ── stat cards (overlap the hero) ── -->
+    <div class="stat-grid">
+      <div class="stat-card" *ngIf="displayAuditFrequency()">
+        <span class="stat-ic stat-ic--teal"><app-draw-icon icon="pi pi-sync"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ auditFrequencyLabel(displayAuditFrequency()) }}</span>
+          <span class="stat-lbl" i18n="@@common.auditFrequency">Audit Frequency</span>
+        </div>
+      </div>
+      <div class="stat-card" *ngIf="displayModeOfAudit()">
+        <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-list"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ modeOfAuditLabel(displayModeOfAudit()) }}</span>
+          <span class="stat-lbl" i18n="@@common.modeOfAudit">Mode of Audit</span>
+        </div>
+      </div>
+      <div class="stat-card" *ngIf="displayRiskRating()">
+        <span class="stat-ic stat-ic--amber"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ riskLabel(displayRiskRating()) }}</span>
+          <span class="stat-lbl" i18n="@@common.riskRating">Risk Rating</span>
+        </div>
+      </div>
+      <div class="stat-card" *ngIf="durationDays() != null">
+        <span class="stat-ic stat-ic--violet"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">
+            {{ durationDays() }}
+            <small i18n="@@common.days">days</small>
+          </span>
+          <span class="stat-lbl" i18n="@@common.duration">Duration</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ OVERVIEW ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3 i18n="@@common.overview">Overview</h3>
+      </div>
+
+      <div class="kv-grid">
+        <!-- Company / Division / Sub-Division ('—' when the division has no sub-divisions) -->
+        <ng-container *ngIf="orgLabels() as org">
+          <div class="kv">
+            <span class="kv__k" i18n="@@common.company">Company</span>
+            <span class="kv__v"><app-draw-icon icon="pi pi-building" class="kv-ic"></app-draw-icon>{{ org.companyName }}</span>
+          </div>
+          <div class="kv">
+            <span class="kv__k" i18n="@@common.division">Division</span>
+            <span class="kv__v"><app-draw-icon icon="pi pi-map-marker" class="kv-ic"></app-draw-icon>{{ org.divisionName }}</span>
+          </div>
+          <div class="kv">
+            <span class="kv__k" i18n="@@common.subDivision">Sub-Division</span>
+            <span class="kv__v"><app-draw-icon icon="pi pi-sitemap" class="kv-ic"></app-draw-icon>{{ org.subDivisionName }}</span>
+          </div>
+        </ng-container>
+        <div class="kv" *ngIf="displayType()">
+          <span class="kv__k" i18n="@@common.scopeType">Scope Type</span>
+          <span class="kv__v">{{ scopeTypeLabel(displayType()) }}</span>
+        </div>
+        <div class="kv" *ngIf="displayAuditFrequency()">
+          <span class="kv__k" i18n="@@common.auditFrequency">Audit Frequency</span>
+          <span class="kv__v">{{ auditFrequencyLabel(displayAuditFrequency()) }}</span>
+        </div>
+        <div class="kv" *ngIf="displayModeOfAudit()">
+          <span class="kv__k" i18n="@@common.modeOfAudit">Mode of Audit</span>
+          <span class="kv__v">{{ modeOfAuditLabel(displayModeOfAudit()) }}</span>
+        </div>
+        <div class="kv" *ngIf="parentScopeName()">
+          <span class="kv__k" i18n="@@common.parentScope">Parent Scope</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-arrow-up-right" class="kv-ic"></app-draw-icon>{{ parentScopeName() }}</span>
+        </div>
+      </div>
+
+      <div class="notes" *ngIf="displayLinkedSubDivisions().length">
+        <span class="notes__k"><app-draw-icon icon="pi pi-users"></app-draw-icon> <span i18n="@@common.linkedSubDivisions">Linked Sub-Divisions</span></span>
+        <div class="chip-row">
+          <span class="item-chip" *ngFor="let subDivision of displayLinkedSubDivisions()">
+            <app-draw-icon icon="pi pi-users"></app-draw-icon>{{ subDivision }}
+          </span>
+        </div>
+      </div>
+
+      <div class="notes" *ngIf="displayObjective()">
+        <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <span i18n="@@common.objective">Objective</span></span>
+        <p class="notes__v">{{ displayObjective() }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ TIMELINE ═══════════════ -->
+    <div class="sec-card" *ngIf="displayStartDate() || displayEndDate()">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+        <h3 i18n="@@common.timeline">Timeline</h3>
+      </div>
+
+      <div class="timeline-wrap">
+        <div class="timeline-row">
+          <div class="timeline-point">
+            <span class="timeline-label" i18n="@@common.start">Start</span>
+            <span class="timeline-date">{{ displayStartDate() | date:'mediumDate' }}</span>
+          </div>
+          <div class="timeline-bar">
+            <div class="timeline-bar__fill"></div>
+          </div>
+          <div class="timeline-point timeline-point--end">
+            <span class="timeline-label" i18n="@@common.end">End</span>
+            <span class="timeline-date">{{ displayEndDate() | date:'mediumDate' }}</span>
+          </div>
+        </div>
+        <p class="timeline-duration" *ngIf="durationDays() != null">
+          <app-draw-icon icon="pi pi-clock"></app-draw-icon> 
+          <span i18n="@@common.durationLabel">Duration:</span>
+          <strong>{{ durationDays() }} <span i18n="@@common.days">days</span></strong>
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ASSIGNED AUDITORS & REVIEWERS ═══════════════ -->
+    <div class="sec-card sec-card--flush"
+      *ngIf="displayAssignedAuditors().length > 0 || displayAssignedReviewers().length > 0">
+      <app-assignees-panel
+        [auditors]="displayAssignedAuditors()"
+        [reviewers]="displayAssignedReviewers()"
+        [showScopeExpansion]="false"
+        [auditorSubtitle]="auditorSubtitleLabel"
+        [reviewerSubtitle]="reviewerSubtitleLabel">
+      </app-assignees-panel>
+    </div>
+
+    <!-- ═══════════════ SAMPLING ═══════════════ -->
+    <div class="sec-card"
+      *ngIf="displaySamplingMethodology() || displaySamplingSize() != null || displayJustification()">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--violet"><app-draw-icon icon="pi pi-filter"></app-draw-icon></span>
+        <h3 i18n="@@common.sampling">Sampling</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv" *ngIf="displaySamplingMethodology()">
+          <span class="kv__k" i18n="@@common.methodology">Methodology</span>
+          <span class="kv__v">{{ methodologyLabel(displaySamplingMethodology()) }}</span>
+        </div>
+        <div class="kv" *ngIf="displaySamplingSize() != null">
+          <span class="kv__k" i18n="@@common.sampleSize">Sample Size</span>
+          <span class="kv__v">{{ displaySamplingSize() }}</span>
+        </div>
+      </div>
+
+      <div class="notes" *ngIf="displayJustification()">
+        <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <span i18n="@@common.justification">Justification</span></span>
+        <p class="notes__v">{{ displayJustification() }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BUDGET ═══════════════ -->
+    <div class="sec-card" *ngIf="displayEstimatedHours() || displayHourlyRate()">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--amber"><app-draw-icon icon="pi pi-wallet"></app-draw-icon></span>
+        <h3 i18n="@@common.budget">Budget</h3>
+      </div>
+
+      <div class="budget-row">
+        <div class="budget-item" *ngIf="displayHourlyRate()">
+          <span class="budget-item__label" i18n="@@common.hourlyRate">Hourly Rate</span>
+          <span class="budget-item__value">{{ displayHourlyRate() }}/<span i18n="@@common.hour">hr</span></span>
+        </div>
+        <span class="budget-times" *ngIf="displayHourlyRate() && displayEstimatedHours()">×</span>
+        <div class="budget-item" *ngIf="displayEstimatedHours()">
+          <span class="budget-item__label" i18n="@@common.estimatedHours">Est. Hours</span>
+          <span class="budget-item__value">{{ displayEstimatedHours() }} <span i18n="@@common.hoursShort">hrs</span></span>
+        </div>
+        <span class="budget-equals" *ngIf="computedBudget() != null">=</span>
+        <div class="budget-total" *ngIf="computedBudget() != null">
+          <span class="budget-total__label" i18n="@@common.totalBudget">Total Budget</span>
+          <span class="budget-total__value">{{ computedBudget() | number }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ RISK ═══════════════ -->
+    <div class="sec-card" *ngIf="displayRiskRating() || displayRiskRefId()">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--red"><app-draw-icon icon="pi pi-shield"></app-draw-icon></span>
+        <h3 i18n="@@common.risk">Risk</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv" *ngIf="displayRiskRefId()">
+          <span class="kv__k" i18n="@@common.riskReferenceId">Risk Reference ID</span>
+          <span class="kv__v">{{ displayRiskRefId() }}</span>
+        </div>
+        <div class="kv" *ngIf="displayRiskRating()">
+          <span class="kv__k" i18n="@@common.riskRating">Risk Rating</span>
+          <span class="kv__v">
+            <p-tag [value]="riskLabel(displayRiskRating())" [severity]="riskSeverity(displayRiskRating())"
+              styleClass="tag-sm"></p-tag>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SUB-SCOPES (scope mode only) ═══════════════ -->
+    <div class="sec-card sec-card--flush" *ngIf="!isSubscopeMode() && subScopes().length > 0">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></span>
+        <h3 i18n="@@common.subScopes">Sub-Scopes</h3>
+        <span class="sec-count">{{ subScopes().length }}</span>
+      </div>
+
+      <div class="subscope-search">
+        <p-iconfield class="w-full">
+          <p-inputicon><app-draw-icon icon="pi pi-search"></app-draw-icon></p-inputicon>
+          <input pInputText type="text" placeholder="Search sub-scopes…" i18n-placeholder="@@client.scopeProfile.searchSubScopes"
+                 [value]="getSubscopeSearch()" (input)="setSubscopeSearch($any($event.target).value)"
+                 class="w-full" />
+        </p-iconfield>
+      </div>
+
+      <ng-container *ngIf="filteredSubScopes().length > 0; else noSubscopeResult">
+        <ul class="file-list">
+          <li class="file-list__item" *ngFor="let ss of pagedSubScopes()">
+            <div class="file-list__icon-wrap"><app-draw-icon icon="pi pi-file"></app-draw-icon></div>
+            <div class="file-list__info">
+              <span class="file-list__name">{{ ss.subScopeName }}</span>
+              <span class="file-list__size">
+                {{ scopeTypeLabel(ss.subScopeType) }} &middot; {{ auditFrequencyLabel(ss.auditFrequency) }}
+              </span>
+            </div>
+            <p-tag *ngIf="ss.riskRating" [value]="riskLabel(ss.riskRating)" [severity]="riskSeverity(ss.riskRating)"
+              styleClass="tag-xs"></p-tag>
+          </li>
+        </ul>
+      </ng-container>
+      <ng-template #noSubscopeResult>
+        <div class="assign-empty">
+          <app-draw-icon icon="pi pi-search"></app-draw-icon>
+          <span i18n="@@client.scopeProfile.noSubScopesMatch">No sub-scopes match your search.</span>
+        </div>
+      </ng-template>
+
+      <p-paginator
+        *ngIf="filteredSubScopes().length > SUBSCOPE_PAGE_SIZE"
+        [rows]="SUBSCOPE_PAGE_SIZE"
+        [totalRecords]="filteredSubScopes().length"
+        [first]="getSubscopeFirst()"
+        (onPageChange)="onSubscopePageChange($event)"
+        styleClass="assign-paginator">
+      </p-paginator>
+    </div>
+
+    <!-- ═══════════════ COMPLETION NOTES ═══════════════ -->
+    <div class="sec-card" *ngIf="displayCompletionNote()">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--green"><app-draw-icon icon="pi pi-check-circle"></app-draw-icon></span>
+        <h3 i18n="@@common.completionNotes">Completion Notes</h3>
+      </div>
+      <p class="completion-note">{{ displayCompletionNote() }}</p>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="drawer-footer">
+    <p-button [label]="closeLabel" styleClass="cancel-btn" (onClick)="onHide()" type="button"></p-button>
+  </div>
+
+</div>
+
+<ng-template #emptyState>
+  <div class="sp-empty">
+    <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+    <p i18n="@@client.scopeProfile.noScopeSelected">No scope selected.</p>
+  </div>
+</ng-template>

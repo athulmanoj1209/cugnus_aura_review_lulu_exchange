@@ -1,0 +1,144 @@
+<div class="drawer-inner">
+
+  <!-- ═══════════════ HEADER ═══════════════ -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ ev.title }}</h2>
+        <p class="drawer-subtitle">{{ ev.id }} · {{ ev.scope }}</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="drawer-body">
+
+    <!-- ── stat cards (overlap the hero) ── -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--teal"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ ev.files.length }}</span>
+          <span class="stat-lbl">{{ filesAttachedLabel(ev.files.length) }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-database"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ formatFileSize(totalSize) }}</span>
+          <span class="stat-lbl" i18n="@@audit.evidence.totalSize">Total Size</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--violet"><app-draw-icon icon="pi pi-tag"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ evidenceTypeLabel(ev.evidenceType) }}</span>
+          <span class="stat-lbl" i18n="@@audit.evidence.evidenceType">Evidence Type</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--amber"><app-draw-icon icon="pi pi-check-square"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ ev.taskId }}</span>
+          <span class="stat-lbl" i18n="@@audit.evidence.linkedTask">Linked Task</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3 i18n="@@audit.evidence.basicInformation">Basic Information</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.evidence.evidenceId">Evidence ID</span>
+          <span class="kv__v"><strong>{{ ev.id }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.type">Type</span>
+          <span class="kv__v"><span class="type-badge">{{ evidenceTypeLabel(ev.evidenceType) }}</span></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.scope">Scope</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-sitemap" class="kv-ic"></app-draw-icon>{{ ev.scope }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.subScope">Sub-Scope</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-tag" class="kv-ic"></app-draw-icon>{{ ev.subscope }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.evidence.task">Task</span>
+          <span class="kv__v"><span class="task-chip">{{ ev.taskId }}</span></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.evidence.created">Created</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-calendar" class="kv-ic"></app-draw-icon>{{ ev.createdDate | date:'MMM d, y' }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.evidence.uploadedBy">Uploaded By</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-user" class="kv-ic"></app-draw-icon>{{ ev.uploadedBy || '—' }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.evidence.files">Files</span>
+          <span class="kv__v">{{ fileCountLabel(ev.files.length) }} · {{ formatFileSize(totalSize) }}</span>
+        </div>
+      </div>
+
+      <div class="notes" *ngIf="ev.description">
+        <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <span i18n="@@common.description">Description</span></span>
+        <p class="notes__v">{{ ev.description }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ATTACHED FILES ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon></span>
+        <h3 i18n="@@audit.evidence.attachedFiles">Attached Files</h3>
+        <span class="sec-count">{{ ev.files.length }}</span>
+      </div>
+
+      <ul class="file-list">
+        <li *ngFor="let f of ev.files"
+            class="file-list__item"
+            [class.file-list__item--clickable]="canDownload(f)"
+            (click)="canDownload(f) && downloadFile(f)"
+            [pTooltip]="canDownload(f) ? clickToDownloadLabel : ''"
+            tooltipPosition="top">
+          <div class="file-list__icon-wrap">
+            <i class="pi" [ngClass]="fileIcon(f.name)"></i>
+          </div>
+          <div class="file-list__info">
+            <span class="file-list__name">{{ f.name }}</span>
+            <span class="file-list__size">{{ formatFileSize(f.size) }}</span>
+          </div>
+          <button type="button"
+                  class="file-list__download"
+                  [class.file-list__download--disabled]="!canDownload(f)"
+                  (click)="$event.stopPropagation(); downloadFile(f)"
+                  [disabled]="!canDownload(f)"
+                  pTooltip="Download" i18n-pTooltip="@@common.download" tooltipPosition="top"
+                  aria-label="Download file" i18n-aria-label="@@audit.evidence.downloadFile">
+            <app-draw-icon icon="pi pi-download"></app-draw-icon>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="drawer-footer">
+    <p-button label="Close" i18n-label="@@common.close" styleClass="cancel-btn" icon="pi pi-times" (onClick)="onClose()" type="button"></p-button>
+  </div>
+
+</div>

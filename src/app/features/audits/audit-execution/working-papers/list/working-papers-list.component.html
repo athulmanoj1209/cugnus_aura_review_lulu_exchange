@@ -1,0 +1,398 @@
+<section class="wp-page">
+
+  <!-- ======================== PAGE HEADER ======================== -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title" i18n="@@audit.workingPapers.title">Working Papers</h1>
+        <p class="page-header__subtitle" i18n="@@audit.workingPapers.subtitle">Prepare, review and manage audit working papers</p>
+      </div>
+    </div>
+    <div class="page-header__actions">
+      <p-button label="+ New Working Paper" i18n-label="@@audit.workingPapers.newWorkingPaper" styleClass="btn-add" (onClick)="openAdd()" type="button"></p-button>
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === WorkingPaperViewModes.List"
+                (click)="setViewMode(WorkingPaperViewModes.List)"
+                pTooltip="List view" i18n-pTooltip="@@common.listView" aria-label="List view" i18n-aria-label="@@common.listView" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === WorkingPaperViewModes.Grid"
+                (click)="setViewMode(WorkingPaperViewModes.Grid)"
+                pTooltip="Grid view" i18n-pTooltip="@@common.gridView" aria-label="Grid view" i18n-aria-label="@@common.gridView" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================== FILTER BAR ========================= -->
+  <div class="filter-bar">
+    <button type="button" class="filter-bar__trigger" (click)="filterPanel.toggle($event)">
+      <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+      <span i18n="@@common.filters">Filters</span>
+      <span *ngIf="activeFilterCount() > 0" class="filter-bar__badge">{{ activeFilterCount() }}</span>
+    </button>
+
+    <div *ngIf="hasActiveFilters()" class="filter-bar__chips">
+      <span *ngFor="let chip of activeFilterChips()" class="filter-chip">
+        {{ chip.label }}
+        <button type="button" (click)="removeFilter(chip.key)" aria-label="Remove filter" i18n-aria-label="@@common.removeFilter"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+      </span>
+    </div>
+
+    <button *ngIf="hasActiveFilters()" type="button" class="filter-bar__clear" (click)="clearFilters()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon> <span i18n="@@common.clearAll">Clear all</span>
+    </button>
+
+    <span class="filter-bar__search">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input pInputText type="text"
+             [ngModel]="searchQuery()"
+             (ngModelChange)="onSearchChange($event)"
+             placeholder="Search by ref, title or finding…"
+             i18n-placeholder="@@audit.workingPapers.searchPlaceholder" />
+    </span>
+  </div>
+
+  <!-- ======================== FILTER OVERLAY PANEL ================ -->
+  <p-popover #filterPanel styleClass="wp-filter-panel">
+    <div class="fp-header">
+      <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> <span i18n="@@common.filters">Filters</span></span>
+      <button type="button" class="fp-clear-link" *ngIf="hasActiveFilters()" (click)="clearFilters()" i18n="@@common.clearAll">Clear all</button>
+    </div>
+    <div class="fp-grid">
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.status">Status</label>
+        <p-multiSelect [options]="statusOptions" [ngModel]="selectedStatuses()" (ngModelChange)="onStatusesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All statuses" i18n-placeholder="@@audit.workingPapers.allStatuses" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} statuses" i18n-selectedItemsLabel="@@audit.workingPapers.selectedStatuses" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@audit.workingPapers.risk">Risk</label>
+        <p-multiSelect [options]="riskOptions" [ngModel]="selectedRisks()" (ngModelChange)="onRisksChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All risk levels" i18n-placeholder="@@audit.workingPapers.allRiskLevels" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} risk levels" i18n-selectedItemsLabel="@@audit.workingPapers.selectedRiskLevels" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@audit.workingPapers.type">Type</label>
+        <p-multiSelect [options]="typeOptions" [ngModel]="selectedTypes()" (ngModelChange)="onTypesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All types" i18n-placeholder="@@audit.workingPapers.allTypes" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} types" i18n-selectedItemsLabel="@@audit.workingPapers.selectedTypes" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@audit.workingPapers.auditArea">Audit Area</label>
+        <p-multiSelect [options]="scopeFilterOptions()" [ngModel]="selectedScopes()" (ngModelChange)="onScopesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All areas" i18n-placeholder="@@audit.workingPapers.allAreas" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} areas" i18n-selectedItemsLabel="@@audit.workingPapers.selectedAreas" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.company">Company</label>
+        <p-multiSelect [options]="companyFilterOptions()" [ngModel]="selectedCompanies()" (ngModelChange)="onCompaniesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All companies" i18n-placeholder="@@audit.workingPapers.allCompanies" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} companies" i18n-selectedItemsLabel="@@audit.workingPapers.selectedCompanies" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.division">Division</label>
+        <p-multiSelect [options]="divisionFilterOptions()" [ngModel]="selectedDivisions()" (ngModelChange)="onDivisionsChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All divisions" i18n-placeholder="@@audit.workingPapers.allDivisions" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions" i18n-selectedItemsLabel="@@audit.workingPapers.selectedDivisions" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.subDivision">Sub-Division</label>
+        <p-multiSelect [disabled]="!subDivisionFilterVisible()" [options]="subDivisionFilterOptions()" [ngModel]="selectedSubDivisions()" (ngModelChange)="onSubDivisionsChange($event)"
+          optionLabel="label" optionValue="value" [placeholder]="subDivisionFilterPlaceholder" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-divisions" i18n-selectedItemsLabel="@@audit.workingPapers.selectedSubDivisions" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.preparer">Preparer</label>
+        <p-multiSelect [options]="preparerFilterOptions()" [ngModel]="selectedPreparers()" (ngModelChange)="onPreparersChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All preparers" i18n-placeholder="@@audit.workingPapers.allPreparers" display="chip"
+          [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} preparers" i18n-selectedItemsLabel="@@audit.workingPapers.selectedPreparers" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field fp-field--full">
+        <label class="fp-label" i18n="@@audit.workingPapers.task">Task</label>
+        <p-multiSelect [options]="taskFilterOptions()" [ngModel]="selectedTasks()" (ngModelChange)="onTasksChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All tasks" i18n-placeholder="@@audit.workingPapers.allTasks" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} tasks" i18n-selectedItemsLabel="@@audit.workingPapers.selectedTasks" styleClass="fp-select"></p-multiSelect>
+      </div>
+
+      <div class="fp-field fp-field--full">
+        <label class="fp-label" i18n="@@audit.workingPapers.createdDateRange">Created Date Range</label>
+        <p-datepicker [ngModel]="dateRange()" (ngModelChange)="onDateRangeChange($event)"
+          selectionMode="range" placeholder="Select date range" i18n-placeholder="@@audit.workingPapers.selectDateRange" dateFormat="dd M y"
+          [showIcon]="true" [readonlyInput]="true" styleClass="fp-date"></p-datepicker>
+      </div>
+    </div>
+    <div class="fp-footer">
+      <button type="button" class="fp-btn fp-btn--ghost" (click)="clearFilters(); filterPanel.hide()" i18n="@@common.reset">Reset</button>
+      <button type="button" class="fp-btn fp-btn--primary" (click)="filterPanel.hide()">
+        <span i18n="@@common.applyFilters">Apply filters</span><span *ngIf="activeFilterCount() > 0"> ({{ activeFilterCount() }})</span>
+      </button>
+    </div>
+  </p-popover>
+
+  <!-- ======================== LIST VIEW ========================== -->
+  <div *ngIf="viewMode() === WorkingPaperViewModes.List" class="wp-list">
+
+    <div *ngIf="paginated().length === 0" class="wp-empty wp-empty--standalone">
+      <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+      <span i18n="@@audit.workingPapers.noMatchingWorkingPapers">No working papers match your filters.</span>
+      <button *ngIf="hasActiveFilters()" type="button" class="wp-empty__btn" (click)="clearFilters()" i18n="@@audit.workingPapers.clearFilters">Clear filters</button>
+    </div>
+
+    <ng-container *ngIf="paginated().length > 0">
+      <div class="list-header">
+        <span class="list-header__cell col-id sortable" (click)="onSort(WorkingPaperSortColumns.Id)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.Id">
+          <span i18n="@@audit.workingPapers.ref">Ref</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.Id)"></i>
+        </span>
+        <span class="list-header__cell col-title sortable" (click)="onSort(WorkingPaperSortColumns.Title)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.Title">
+          <span i18n="@@common.title">Title</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.Title)"></i>
+        </span>
+        <span class="list-header__cell col-type sortable" (click)="onSort(WorkingPaperSortColumns.WpType)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.WpType">
+          <span i18n="@@audit.workingPapers.type">Type</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.WpType)"></i>
+        </span>
+        <span class="list-header__cell col-scope sortable" (click)="onSort(WorkingPaperSortColumns.Scope)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.Scope">
+          <span i18n="@@audit.workingPapers.area">Area</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.Scope)"></i>
+        </span>
+        <span class="list-header__cell col-risk sortable" (click)="onSort(WorkingPaperSortColumns.RiskLevel)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.RiskLevel">
+          <span i18n="@@audit.workingPapers.risk">Risk</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.RiskLevel)"></i>
+        </span>
+        <span class="list-header__cell col-status sortable" (click)="onSort(WorkingPaperSortColumns.Status)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.Status">
+          <span i18n="@@common.status">Status</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.Status)"></i>
+        </span>
+        <span class="list-header__cell col-files sortable" (click)="onSort(WorkingPaperSortColumns.Files)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.Files">
+          <span i18n="@@audit.workingPapers.files">Files</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.Files)"></i>
+        </span>
+        <span class="list-header__cell col-date sortable" (click)="onSort(WorkingPaperSortColumns.CreatedDate)" [class.is-sorted]="sortColumn() === WorkingPaperSortColumns.CreatedDate">
+          <span i18n="@@audit.workingPapers.created">Created</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(WorkingPaperSortColumns.CreatedDate)"></i>
+        </span>
+        <span class="list-header__cell col-actions" i18n="@@common.actions">Actions</span>
+      </div>
+
+      <article *ngFor="let w of paginated(); trackBy: trackById"
+               class="wp-row"
+               [class.wp-row--inactive]="!w.isActive">
+
+        <div class="col-id"><span class="wp-id">{{ w.id }}</span></div>
+
+        <div class="col-title">
+          <span class="wp-title">{{ w.title }}</span>
+          <small *ngIf="w.preparedBy" class="wp-preparer">
+            <app-draw-icon icon="pi pi-user"></app-draw-icon> {{ w.preparedBy }}
+          </small>
+        </div>
+
+        <div class="col-type"><span class="type-badge">{{ typeLabel(w.wpType) }}</span></div>
+
+        <div class="col-scope">
+          <span class="scope-badge">{{ w.scope }}</span>
+          <small class="subscope-label">{{ w.assertion }}</small>
+        </div>
+
+        <div class="col-risk">
+          <span class="risk-badge" [ngClass]="'risk-badge--' + w.riskLevel">{{ riskLabel(w.riskLevel) }}</span>
+        </div>
+
+        <div class="col-status">
+          <span class="status-badge" [ngClass]="'status-badge--' + w.status">{{ statusLabel(w.status) }}</span>
+        </div>
+
+        <div class="col-files">
+          <div class="file-pills">
+            <span *ngFor="let f of w.files.slice(0, filePreviewCount.List)"
+                  class="file-pill file-pill--clickable"
+                  [pTooltip]="fileDownloadTooltip(f.name, f.size)"
+                  tooltipPosition="top"
+                  (click)="downloadFile(f)" role="button" tabindex="0"
+                  (keydown.enter)="downloadFile(f)">
+              <i class="pi" [ngClass]="fileIcon(f.name)"></i>
+              <span class="file-pill__name">{{ f.name }}</span>
+              <app-draw-icon icon="pi pi-download" class="file-pill__dl"></app-draw-icon>
+            </span>
+            <span *ngIf="w.files.length > filePreviewCount.List"
+                  class="file-pill file-pill--more file-pill--clickable"
+                  pTooltip="Click to see all files" i18n-pTooltip="@@audit.workingPapers.seeAllFiles" tooltipPosition="top"
+                  (click)="showMoreFiles(w, $event)" role="button" tabindex="0">
+              <app-draw-icon icon="pi pi-plus" [size]="10"></app-draw-icon>
+              {{ moreFilesLabel(w.files.length - filePreviewCount.List) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="col-date">{{ w.createdDate | date:'MMM d, y' }}</div>
+
+        <div class="col-actions">
+          <div class="row-actions">
+            <button type="button" class="icon-btn"
+                    (click)="openView(w)" pTooltip="View" i18n-pTooltip="@@common.view" aria-label="View" i18n-aria-label="@@common.view" tooltipPosition="top">
+              <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+            </button>
+            <button type="button" class="icon-btn"
+                    (click)="openEdit(w)" pTooltip="Edit" i18n-pTooltip="@@common.edit" aria-label="Edit" i18n-aria-label="@@common.edit" tooltipPosition="top">
+              <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+            </button>
+            <button type="button" class="icon-btn"
+                    [class.icon-btn--activate]="!w.isActive"
+                    [class.icon-btn--deactivate]="w.isActive"
+                    [pTooltip]="w.isActive ? activeLabels.Deactivate : activeLabels.Activate"
+                    tooltipPosition="top"
+                    (click)="openConfirmation(w)">
+              <app-draw-icon [icon]="w.isActive ? activeIcons.Deactivate : activeIcons.Activate"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+      </article>
+    </ng-container>
+  </div>
+
+  <!-- ======================== GRID VIEW ========================== -->
+  <div *ngIf="viewMode() === WorkingPaperViewModes.Grid">
+    <div *ngIf="paginated().length === 0" class="wp-empty wp-empty--standalone">
+      <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+      <span>No working papers match your filters.</span>
+      <button *ngIf="hasActiveFilters()" type="button" class="wp-empty__btn" (click)="clearFilters()">Clear filters</button>
+    </div>
+
+    <div class="wp-grid">
+      <article *ngFor="let w of paginated(); trackBy: trackById"
+               class="wp-card-item"
+               [class.wp-card-item--inactive]="!w.isActive">
+
+        <span class="status-badge status-tag--corner" [ngClass]="'status-badge--' + w.status">{{ statusLabel(w.status) }}</span>
+
+        <div class="card-header">
+          <div class="wp-avatar-wrap">
+            <div class="wp-badge"><app-draw-icon icon="pi pi-file-edit"></app-draw-icon></div>
+            <svg class="wp-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+              <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <h3 class="wp-card-item__title">{{ w.title }}</h3>
+          <span class="wp-id-sub"><app-draw-icon icon="pi pi-hashtag"></app-draw-icon>{{ w.id }}</span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item" pTooltip="Type" i18n-pTooltip="@@audit.workingPapers.type" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-tag"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value"><span class="type-badge type-badge--sm">{{ typeLabel(w.wpType) }}</span></span></div>
+          </div>
+          <div class="info-item" pTooltip="Audit Area" i18n-pTooltip="@@audit.workingPapers.auditArea" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ w.scope }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Assertion" i18n-pTooltip="@@audit.workingPapers.assertion" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-check-square"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ w.assertion }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Risk" i18n-pTooltip="@@audit.workingPapers.risk" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value"><span class="risk-badge risk-badge--sm" [ngClass]="'risk-badge--' + w.riskLevel">{{ riskLabel(w.riskLevel) }}</span></span></div>
+          </div>
+          <div class="info-item" pTooltip="Prepared By" i18n-pTooltip="@@audit.workingPapers.preparedBy" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ w.preparedBy || emptyValue }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Reviewed By" i18n-pTooltip="@@audit.workingPapers.reviewedBy" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-user-edit"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ w.reviewedBy || emptyValue }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Created" i18n-pTooltip="@@audit.workingPapers.created" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ w.createdDate | date:'MMM d, y' }}</span></div>
+          </div>
+        </div>
+
+        <div class="wp-card-item__files" *ngIf="w.files.length">
+          <span *ngFor="let f of w.files.slice(0, filePreviewCount.Grid)"
+                class="file-pill file-pill--clickable"
+                [pTooltip]="fileNameDownloadTooltip(f.name)" tooltipPosition="top"
+                (click)="downloadFile(f)" role="button" tabindex="0"
+                (keydown.enter)="downloadFile(f)">
+            <i class="pi" [ngClass]="fileIcon(f.name)"></i>
+            <span class="file-pill__name">{{ f.name }}</span>
+            <app-draw-icon icon="pi pi-download" class="file-pill__dl"></app-draw-icon>
+          </span>
+          <span *ngIf="w.files.length > filePreviewCount.Grid"
+                class="file-pill file-pill--more file-pill--clickable"
+                pTooltip="Click to see all files" i18n-pTooltip="@@audit.workingPapers.seeAllFiles" tooltipPosition="top"
+                (click)="showMoreFiles(w, $event)" role="button" tabindex="0">
+            <app-draw-icon icon="pi pi-plus" [size]="10"></app-draw-icon>
+            {{ moreFilesLabel(w.files.length - filePreviewCount.Grid) }}
+          </span>
+        </div>
+
+        <footer class="card-footer">
+          <div class="card-actions">
+            <div class="card-actions__icons">
+              <button type="button" class="icon-btn"
+                      (click)="openEdit(w)" pTooltip="Edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn"
+                      [class.icon-btn--activate]="!w.isActive"
+                      [class.icon-btn--deactivate]="w.isActive"
+                      [pTooltip]="w.isActive ? activeLabels.Deactivate : activeLabels.Activate"
+                      tooltipPosition="top"
+                      (click)="openConfirmation(w)">
+                <app-draw-icon [icon]="w.isActive ? activeIcons.Deactivate : activeIcons.Activate"></app-draw-icon>
+              </button>
+            </div>
+
+            <button type="button" class="btn-view" (click)="openView(w)" i18n="@@common.view">View</button>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </div>
+
+  <!-- ======================== PAGINATION ========================= -->
+  <div *ngIf="filtered().length > 0" class="wp-pagination">
+    <span class="wp-pagination__label">{{ pageRangeLabel() }}</span>
+    <p-paginator [first]="(currentPage() - 1) * pageSize"
+                 [rows]="pageSize"
+                 [totalRecords]="filtered().length"
+                 [showCurrentPageReport]="false"
+                 [showFirstLastIcon]="false"
+                 (onPageChange)="onPageChange($event)"
+                 styleClass="wp-paginator"></p-paginator>
+  </div>
+
+
+  <!-- ======================== FILES POPOVER ====================== -->
+  <p-popover #filesPopover styleClass="wp-files-popover">
+    @if (moreFilesPaper()) {
+      <div class="fp-files">
+        <div class="fp-files__header">
+          <app-draw-icon icon="pi pi-paperclip"></app-draw-icon>
+          <span i18n="@@audit.workingPapers.allFiles">All Files</span>
+          <span class="fp-files__count">{{ moreFilesPaper()!.files.length }}</span>
+        </div>
+        <div class="fp-files__list">
+          @for (f of moreFilesPaper()!.files; track f.name) {
+            <div class="fp-file-row" (click)="downloadFile(f)" role="button" tabindex="0"
+                 (keydown.enter)="downloadFile(f)"
+                 [pTooltip]="formatFileSize(f.size)" tooltipPosition="left">
+              <i class="pi fp-file-row__icon" [ngClass]="fileIcon(f.name)"></i>
+              <span class="fp-file-row__name">{{ f.name }}</span>
+              <span class="fp-file-row__size">{{ formatFileSize(f.size) }}</span>
+              <app-draw-icon icon="pi pi-download" class="fp-file-row__dl"></app-draw-icon>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </p-popover>
+
+  <!-- ======================== SHARED CONFIRM DIALOG ============== -->
+  <app-confirm-action-dialog
+    [visible]="displayConfirmation()"
+    [action]="confirmationAction()"
+    [itemName]="confirmationTarget()?.title ?? ''"
+    (confirmed)="confirmToggleBlocked()"
+    (cancelled)="closeConfirmation()"
+  />
+
+</section>

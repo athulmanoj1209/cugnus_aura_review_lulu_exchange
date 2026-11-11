@@ -1,0 +1,277 @@
+<ng-container *ngIf="u() as data; else emptyState">
+<div class="drawer-inner">
+
+  <!-- =========================== HEADER =========================== -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-user"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ data.fullName }}</h2>
+        <p class="drawer-subtitle">
+          <span *ngIf="data.email">{{ data.email }}</span>
+          <span *ngIf="data.email && roleLabel()"> · </span>
+          <span *ngIf="roleLabel()">{{ roleLabel() }}</span>
+        </p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+  <!-- =========================== STATS =========================== -->
+  <section class="user-stats">
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--role"><app-draw-icon icon="pi pi-shield"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ roleLabel() }}</span>
+        <span class="stat-card__label" i18n="@@common.role">Role</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon" [ngClass]="'stat-card__icon--status-' + data.status">
+        <i class="pi"
+           [ngClass]="data.status === 'active'    ? 'pi-check-circle' :
+                      data.status === 'pending'   ? 'pi-clock' :
+                      data.status === 'suspended' ? 'pi-ban' : 'pi-trash'"></i>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ statusInfo().label }}</span>
+        <span class="stat-card__label" i18n="@@common.status">Status</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--login"><app-draw-icon icon="pi pi-sign-in"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ lastLoginRelative() }}</span>
+        <span class="stat-card__label" i18n="@@common.lastLogin">Last Login</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon" [ngClass]="data.twoFactorEnabled ? 'stat-card__icon--2fa-on' : 'stat-card__icon--2fa-off'">
+        <app-draw-icon icon="pi pi-key"></app-draw-icon>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value"><span i18n="@@common.userId">User ID</span>:</span>
+        <span class="stat-card__label" i18n="@@common.employeeNumber">EMP#123</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== BODY =========================== -->
+  <div class="user-body">
+    <!-- LEFT COLUMN ---------------------------------------------- -->
+    <div class="user-col user-col--main">
+
+      <!-- Personal Information — mirrors the extended profile fields -->
+      <section class="panel"
+               *ngIf="data.designation || data.employeeId || data.joiningDate || data.location">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-user" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@user.profile.personalInformation">Personal Information</h2>
+        </header>
+        <div class="panel__body info-grid">
+
+          <div class="info-row" *ngIf="data.designation">
+            <span class="info-row__label" i18n="@@common.designation">Designation</span>
+            <span class="info-row__value">{{ data.designation }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.employeeId">
+            <span class="info-row__label" i18n="@@common.employeeId">Employee ID</span>
+            <span class="info-row__value mono">{{ data.employeeId }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.joiningDate">
+            <span class="info-row__label" i18n="@@common.joiningDate">Joining Date</span>
+            <span class="info-row__value">
+              {{ data.joiningDate | date:'mediumDate' }}
+            </span>
+          </div>
+
+          <div class="info-row" *ngIf="data.location">
+            <span class="info-row__label" i18n="@@common.location">Location</span>
+            <span class="info-row__value">{{ data.location }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Account Information -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-id-card" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@user.profile.accountInformation">Account Information</h2>
+        </header>
+        <div class="panel__body contact-grid">
+
+          <div class="contact-row">
+            <span class="contact-row__icon"><app-draw-icon icon="pi pi-envelope"></app-draw-icon></span>
+            <div class="contact-row__text">
+              <span class="contact-row__label" i18n="@@common.email">Email</span>
+              <a class="contact-row__value" [href]="'mailto:' + data.email">{{ data.email }}</a>
+            </div>
+            <button type="button" class="copy-btn"
+                    (click)="copy('email', data.email)" aria-label="Copy" i18n-aria-label="@@common.copy">
+              <i class="pi" [ngClass]="copiedField() === 'email' ? 'pi-check' : 'pi-copy'"></i>
+            </button>
+          </div>
+
+          <div class="contact-row" *ngIf="data.phone">
+            <span class="contact-row__icon"><app-draw-icon icon="pi pi-phone"></app-draw-icon></span>
+            <div class="contact-row__text">
+              <span class="contact-row__label" i18n="@@common.phone">Phone</span>
+              <a class="contact-row__value" [href]="'tel:' + data.phone">{{ data.phone }}</a>
+            </div>
+            <button type="button" class="copy-btn"
+                    (click)="copy('phone', data.phone)" aria-label="Copy" i18n-aria-label="@@common.copy">
+              <i class="pi" [ngClass]="copiedField() === 'phone' ? 'pi-check' : 'pi-copy'"></i>
+            </button>
+          </div>
+
+          <div class="contact-row" *ngIf="data.subDivision">
+            <span class="contact-row__icon"><app-draw-icon icon="pi pi-briefcase"></app-draw-icon></span>
+            <div class="contact-row__text">
+              <span class="contact-row__label" i18n="@@common.subDivision">Sub-Division</span>
+              <span class="contact-row__value">{{ data.subDivision }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Access & Permissions -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-shield" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@user.profile.accessPermissions">Access &amp; Permissions</h2>
+        </header>
+        <div class="panel__body info-grid">
+
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.role">Role</span>
+            <span class="info-row__value">{{ roleLabel() }}</span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.accountStatus">Account Status</span>
+            <span class="badge-pill" [ngClass]="'status-' + data.status">
+              {{ statusInfo().label }}
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.twoFactorAuth">Two-Factor Auth</span>
+            <span class="badge-pill" [ngClass]="data.twoFactorEnabled ? 'is-yes' : 'is-no'">
+              <i class="pi" [ngClass]="data.twoFactorEnabled ? 'pi-check' : 'pi-times'"></i>
+              {{ data.twoFactorEnabled ? twoFactorEnabledLabel : twoFactorDisabledLabel }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN --------------------------------------------- -->
+    <div class="user-col user-col--side">
+
+      <!-- Areas of Expertise -->
+      <section class="panel" *ngIf="data.expertise?.length">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-bookmark" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@common.areasOfExpertise">Areas of Expertise</h2>
+        </header>
+        <div class="panel__body tag-grid">
+          <span *ngFor="let e of data.expertise" class="tag tag--exp">{{ e }}</span>
+        </div>
+      </section>
+
+      <!-- Reports To -->
+      <section class="panel" *ngIf="data.reportsTo as boss">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-sitemap" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@common.reportsTo">Reports To</h2>
+        </header>
+        <div class="panel__body">
+          <div class="mini-person">
+            <div class="mini-person__avatar">
+              <img *ngIf="boss.avatarUrl" [src]="boss.avatarUrl" [alt]="boss.fullName" />
+              <span *ngIf="!boss.avatarUrl">{{ boss.fullName[0] }}</span>
+            </div>
+            <div class="mini-person__text">
+              <span class="mini-person__name">{{ boss.fullName }}</span>
+              <span class="mini-person__title" *ngIf="boss.designation">{{ boss.designation }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Activity -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-clock" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@common.activity">Activity</h2>
+        </header>
+        <div class="panel__body info-grid">
+
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.lastLogin">Last Login</span>
+            <span class="info-row__value">
+              <ng-container *ngIf="data.lastLoginAt; else neverLogged">
+                {{ data.lastLoginAt | date:'medium' }}
+                <small>({{ lastLoginRelative() }})</small>
+              </ng-container>
+              <ng-template #neverLogged>
+                <span i18n="@@user.profile.neverSignedIn">Never signed in</span>
+              </ng-template>
+            </span>
+          </div>
+
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.accountCreated">Account Created</span>
+            <span class="info-row__value">
+              {{ data.createdAt | date:'mediumDate' }}
+            </span>
+          </div>
+
+          <div class="info-row" *ngIf="data.deletedAt">
+            <span class="info-row__label" i18n="@@common.deleted">Deleted</span>
+            <span class="info-row__value">
+              {{ data.deletedAt | date:'medium' }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ID block -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-hashtag" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@common.identifiers">Identifiers</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.userId">User ID</span>
+            <span class="info-row__value mono">{{ data.id }}</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  </div>
+</div>
+</ng-container>
+
+<ng-template #emptyState>
+  <div class="user-empty">
+    <app-draw-icon icon="pi pi-user"></app-draw-icon>
+    <p i18n="@@user.profile.noUserSelected">No user selected.</p>
+  </div>
+</ng-template>

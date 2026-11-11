@@ -1,0 +1,685 @@
+$primary: var(--primary-color);
+$primary-light: color-mix(in srgb, var(--primary-color), transparent 85%);
+$bg-page: var(--surface-hover);
+$card-bg: var(--surface-card);
+$border: var(--surface-border);
+$text-muted: var(--text-color-secondary);
+$text-dark: var(--text-color);
+
+:host {
+  display: block;
+}
+
+.sub-divisions-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  // background-color: $bg-page;
+  min-height: 100%;
+}
+
+/* ── Header ──────────────────────────────── */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page-header__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.page-header__filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.06);
+}
+
+.page-header__selects {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.page-header__search {
+  flex: 0 0 340px;
+  min-width: 260px;
+  position: relative;
+}
+
+.page-header__title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.page-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: $primary;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 11px;
+  color: $text-muted;
+  margin: 0;
+}
+
+/* ── Filter multiselect ───────────────────── */
+.filter-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.filter-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+:host ::ng-deep .filter-multiselect {
+  .p-multiselect {
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    background: var(--surface-card);
+    font-size: 13px;
+    min-width: 160px;
+  }
+}
+
+/* ── Add button ──────────────────────────── */
+:host ::ng-deep .sub-division-btn.p-button {
+  background-color: transparent !important;
+  border: 1.5px solid var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  border-radius: 8px !important;
+  height: 38px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0 18px;
+  white-space: nowrap;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+
+  .p-button-label { color: var(--primary-color) !important; }
+
+  &:hover {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+    color: #fff !important;
+    .p-button-label { color: #fff !important; }
+  }
+}
+
+/* ── Search ──────────────────────────────── */
+.search-wrapper {
+  position: relative;
+
+  .search-input {
+    width: 100%;
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    padding-left: 36px;
+    font-size: 13px;
+    color: $text-dark;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    background: var(--surface-card);
+
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+    }
+  }
+}
+
+/* ── Grid ────────────────────────────────── */
+.sub-divisions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* ---------- Responsive --------------------------------------------- */
+@media (max-width: 1600px) {
+  .sub-divisions-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .sub-divisions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .sub-divisions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Card ────────────────────────────────── */
+.sub-division-card {
+  position: relative;
+  background: $card-bg;
+  border-radius: 16px;
+  border: 1px solid $border;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Card header ─────────────────────────── */
+.card-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-division-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.9rem;
+}
+
+.company-badge {
+  position: relative;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Ring — hidden by default, draws around the badge on card hover */
+.sub-division-avatar-ring {
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  pointer-events: none;
+  transform: scaleX(-1);
+  transform-origin: 26px 26px;
+
+  circle {
+    stroke: var(--p-blue-600);
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 0.45s ease;
+  }
+}
+
+.sub-division-card:hover .sub-division-avatar-ring circle {
+  stroke-dashoffset: 0;
+}
+
+.sub-division-name {
+  font-size: 17px;
+  font-weight: 700;
+  color: $text-dark;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub-division-division {
+  margin-top: 2px;
+  font-size: 13px;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  i { font-size: 12px; }
+}
+
+:host ::ng-deep .status-tag.p-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+:host ::ng-deep .status-tag--corner {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+/* ── Info grid ───────────────────────────── */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  // .sub-division-card already applies a 12px flex gap above this element.
+  margin-top: 30px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.info-icon {
+  width: auto;
+  height: auto;
+  background: transparent;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 12px; color: $text-muted; }
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.info-value {
+  font-size: 0.82rem;
+  line-height: 1.25;
+  color: $text-dark;
+  font-weight: 400;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.email-val { color: $text-dark; }
+  &.sub-division-id-badge {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: $primary;
+    background: $primary-light;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+}
+
+/* ── Description ─────────────────────────── */
+.sub-division-description {
+  p {
+    font-size: 12px;
+    color: $text-muted;
+    margin: 0;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ── Tags row ────────────────────────────── */
+.tags-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+:host ::ng-deep .meta-tag.p-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* ── Footer ──────────────────────────────── */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid $border;
+}
+
+.company-label {
+  font-size: 12px;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+
+  i { font-size: 11px; color: $primary; flex-shrink: 0; }
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 0.4rem;
+}
+
+.card-actions .icon-btn {
+  background: transparent;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+}
+
+/* ── Empty state ─────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  background: $card-bg;
+  border-radius: 14px;
+  border: 1px dashed $border;
+
+  .empty-icon {
+    font-size: 48px;
+    color: var(--text-color-secondary);
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 13px;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+/* ── Pagination ──────────────────────────── */
+/* Pagination is rendered by the shared <app-pagination-bar> component —
+ * see pagination-bar.scss for its own styling. Its default white card
+ * background is dropped here so it sits flush with the page instead of
+ * looking like another card. */
+.sub-divisions-page > app-pagination-bar {
+  ::ng-deep .pagination-bar {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+/* ── View toggle ──────────────────────────────────────── */
+.view-toggle {
+  display: flex;
+  border: 1px solid $border;
+  border-radius: 6px;
+  overflow: hidden;
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: var(--surface-card);
+    border: none;
+    cursor: pointer;
+    color: $text-muted;
+    transition: background 0.15s, color 0.15s;
+
+    &:not(:last-child) {
+      border-right: 1px solid $border;
+    }
+
+    &:hover {
+      background: var(--surface-hover);
+    }
+
+    &.is-active {
+      background: $primary;
+      color: #fff;
+    }
+  }
+}
+
+/* ── List view (row cards, mirrors Companies / Divisions pages) ────── */
+$sub-division-list-cols: 2.1fr 1.3fr 0.9fr 0.8fr 1.6fr 1.3fr 1.2fr;
+
+.sub-divisions--list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: $sub-division-list-cols;
+  padding: 0 1.25rem;
+
+  &__cell {
+    font-weight: 600;
+    color: $text-muted;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .col-actions { text-align: right; }
+}
+
+.sub-division-row {
+  display: grid;
+  grid-template-columns: $sub-division-list-cols;
+  align-items: center;
+  gap: 0.5rem;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .col-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+.cell-name {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  &__block {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  &__text {
+    font-weight: 600;
+    color: $text-dark;
+    font-size: 13px;
+  }
+
+  &__type {
+    font-size: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    color: $primary;
+    background: $primary-light;
+    border-radius: 4px;
+    padding: 1px 5px;
+    display: inline-block;
+    width: fit-content;
+  }
+}
+
+.cell-badge {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cell-division {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: $text-muted;
+  font-size: 13px;
+
+  i { font-size: 11px; color: $primary; }
+}
+
+.cell-employees { font-weight: 600; color: $text-dark; }
+
+.cell-head { font-size: 13px; color: $text-dark; }
+
+.cell-empty { color: $text-muted; }
+
+.cell-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: background 0.15s, color 0.15s;
+
+  .pi { font-size: 14px; }
+
+  &:hover              { background: var(--surface-hover); }
+  &--activate          { color: var(--p-green-500) !important; }
+  &--deactivate        { color: var(--p-orange-600) !important; }
+  &--activate:hover    { background: var(--surface-hover) !important; color: var(--p-green-500) !important; }
+  &--deactivate:hover  { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent) !important; color: var(--p-orange-600) !important; }
+}
+
+:host-context(.app-dark) .icon-btn--deactivate:hover {
+  background: rgba(234, 88, 12, 0.15) !important;
+}
+
+@media (max-width: 640px) {
+  .list-header {
+    display: none;
+  }
+
+  .sub-division-row {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+
+    .col-actions {
+      justify-content: flex-start;
+    }
+  }
+}
+
+/* ── Inactive card (grid view) ────────────────────────────────────────── */
+.sub-division-card--inactive {
+  opacity: 0.5;
+  pointer-events: none;
+
+  .card-actions {
+    pointer-events: all;
+    .icon-btn { opacity: 0.6; }
+    .icon-btn--activate { opacity: 1; }
+  }
+}
+
+/* ── Inactive row (list view) ─────────────────────────────────────────── */
+.sub-division-row--inactive {
+  opacity: 0.5;
+  pointer-events: none;
+
+  .row-actions {
+    pointer-events: all;
+    .icon-btn { opacity: 0.6; }
+    .icon-btn--activate { opacity: 1; }
+  }
+}

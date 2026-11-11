@@ -1,0 +1,156 @@
+<section class="team-overview">
+    <div class="stats-grid">
+        @for (card of kpiCards; track card.label) {
+            <div class="stat-card" [ngClass]="[card.cardClass, card.action ? 'stat-card--clickable' : '']" [attr.role]="card.action ? 'button' : null" [attr.tabindex]="card.action ? 0 : null" (click)="card.action && onKpiClick(card)" (keydown.enter)="card.action && onKpiClick(card)">
+                <div class="stat-card__header">
+                    <span class="stat-card__label">{{ card.label }}</span>
+                    <span class="stat-card__icon"><i [class]="card.icon"></i></span>
+                </div>
+                <div class="stat-card__value">{{ card.value }}</div>
+            </div>
+        }
+    </div>
+
+    <!-- <div class="three-col-row">
+        <div class="chart-card">
+            <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon>Work Distribution</h3>
+            <app-donut-status-chart [legend]="teamWorkDistribution" [maxWidth]="200"></app-donut-status-chart>
+        </div>
+        <div class="chart-card">
+            <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon>Task Status</h3>
+            <app-donut-status-chart [legend]="teamTaskStatus" [maxWidth]="200"></app-donut-status-chart>
+        </div>
+        <div class="chart-card">
+            <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon>Audit Progress</h3>
+            <div class="progress-list">
+                @for (audit of pagedTeamAuditProgress; track audit.id) {
+                    <div class="progress-item">
+                        <div class="progress-item__header"><span class="progress-item__name">{{ audit.name }}</span><span class="progress-item__pct">{{ audit.progress }}%</span></div>
+                        <div class="progress-track"><div class="progress-fill" [style.width.%]="audit.progress" [style.background]="progressColor(audit.progress)"></div></div>
+                    </div>
+                }
+            </div>
+            <p-paginator [rows]="auditRows" [totalRecords]="teamAuditProgress.length" [first]="auditFirst" (onPageChange)="onAuditPageChange($event)" styleClass="list-paginator"></p-paginator>
+        </div>
+    </div> -->
+
+    <div class="team-workload-card">
+        <div class="team-workload-card__header">
+            <div>
+                <h3>Workload Distribution</h3>
+                <p>Work allocation by audit</p>
+            </div>
+        </div>
+
+        <div class="team-workload-list">
+            @for (audit of pagedTeamAuditWorkload; track audit.auditId) {
+                <div class="team-workload-row">
+                    <div class="team-workload-row__title">
+                        <strong>{{ audit.auditName }}</strong>
+                        <span>{{ audit.completionPercentage }}% complete</span>
+                    </div>
+                    <div class="team-workload-row__bar">
+                        <div class="team-workload-row__fill" [class]="workloadFillClass(audit.completionPercentage)" [style.width.%]="audit.completionPercentage"></div>
+                    </div>
+                    <div class="team-workload-row__metrics">
+                        <span><i class="pi pi-users"></i> {{ audit.assignedTeamMembers }} members</span>
+                        <span><i class="pi pi-sitemap"></i> {{ audit.teamScopeCount }} scopes</span>
+                        <span><i class="pi pi-check-square"></i> {{ audit.teamTaskCount }} tasks</span>
+                        <span><i class="pi pi-chart-line"></i> {{ audit.completionPercentage }}%</span>
+                    </div>
+                </div>
+            }
+        </div>
+        <p-paginator [rows]="workloadRows" [totalRecords]="teamAuditWorkload.length" [first]="workloadFirst" (onPageChange)="onWorkloadPageChange($event)" styleClass="list-paginator"></p-paginator>
+    </div>
+
+    <div class="team-aging-card">
+        <div class="team-workload-card__header">
+            <div>
+                <h3>Task Aging</h3>
+                <p>Open team tasks grouped by age</p>
+            </div>
+            <span class="team-aging-total">{{ teamTaskAgingTotal }} open tasks</span>
+        </div>
+
+        <div class="team-aging-list">
+            @for (bucket of teamTaskAging; track bucket.label) {
+                <div class="team-aging-row">
+                    <div class="team-aging-row__label"><strong>{{ bucket.label }}</strong><span>{{ bucket.taskCount }}</span></div>
+                    <div class="team-aging-row__track"><div class="team-aging-row__fill" [class]="taskAgingFillClass(bucket.minDays)" [style.width.%]="teamTaskAgingTotal ? bucket.taskCount / teamTaskAgingTotal * 100 : 0"></div></div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="rfi-funnel-card">
+        <div class="team-workload-card__header">
+            <div>
+                <h3>RFI &amp; Client-Response Monitoring</h3>
+                <p>Team response funnel</p>
+            </div>
+            <div class="rfi-funnel-summary"><span>{{ teamRfiResponseFunnel.pending }} pending</span><span>{{ teamRfiResponseFunnel.overdue }} overdue</span><strong>{{ teamRfiResponseFunnel.averageResponseDays }} days avg. response</strong></div>
+        </div>
+        <div class="rfi-funnel">
+            @for (stage of teamRfiFunnelStages; track stage.label; let index = $index) {
+                <div class="rfi-funnel__stage">
+                    <div class="rfi-funnel__label"><span>{{ stage.label }}</span><strong>{{ stage.value }}</strong></div>
+                    <div class="rfi-funnel__track"><div class="rfi-funnel__bar {{ stage.className }}" [style.width.%]="teamRfiResponseFunnel.raised ? stage.value / teamRfiResponseFunnel.raised * 100 : 0"></div></div>
+                </div>
+            }
+        </div>
+        <div class="rfi-funnel__footer"><span>Responses rejected: <strong>{{ teamRfiResponseFunnel.rejected }}</strong></span><span>Responses received includes under review, accepted, and rejected responses.</span></div>
+    </div>
+
+    <div class="two-col-row">
+        <div class="team-findings-card">
+            <div class="team-workload-card__header">
+                <div>
+                    <h3>Findings by Severity</h3>
+                    <p>Team's overall risk distribution</p>
+                </div>
+            </div>
+            <app-donut-status-chart [legend]="teamFindingSeverity" centerLabel="Findings" [maxWidth]="220"></app-donut-status-chart>
+        </div>
+
+        <div class="team-findings-card">
+            <div class="team-workload-card__header">
+                <div>
+                    <h3>Findings by Status</h3>
+                    <p>Team findings grouped by lifecycle status</p>
+                </div>
+            </div>
+            <div class="team-findings-bars">
+                @for (group of teamFindingStatus; track group.key) {
+                    <div class="team-findings-bar team-findings-bar--status">
+                        <span class="team-findings-bar__label">{{ group.label }}</span>
+                        <div class="team-findings-bar__track"><div class="team-findings-bar__fill team-findings-bar__fill--{{ group.key }}" [style.width.%]="teamFindingStatusMax ? group.count / teamFindingStatusMax * 100 : 0"></div></div>
+                        <strong class="team-findings-bar__count">{{ group.count }}</strong>
+                    </div>
+                }
+            </div>
+            <p class="team-findings-note">Repeated findings are also counted in their current status group.</p>
+        </div>
+    </div>
+
+    <div class="team-findings-card">
+        <div class="team-workload-card__header">
+            <div>
+                <h3>Findings Aging</h3>
+                <p>Team findings not yet closed, grouped by age</p>
+            </div>
+            <span class="team-aging-total">{{ teamFindingAgingTotal }} open findings</span>
+        </div>
+        <div class="team-findings-bars">
+            @for (bucket of teamFindingAging; track bucket.key) {
+                <div class="team-findings-bar">
+                    <span class="team-findings-bar__label">{{ bucket.label }}</span>
+                    <div class="team-findings-bar__track"><div class="team-findings-bar__fill team-findings-bar__fill--{{ bucket.key }}" [style.width.%]="teamFindingAgingMax ? bucket.count / teamFindingAgingMax * 100 : 0"></div></div>
+                    <strong class="team-findings-bar__count">{{ bucket.count }}</strong>
+                </div>
+            }
+        </div>
+    </div>
+
+
+</section>

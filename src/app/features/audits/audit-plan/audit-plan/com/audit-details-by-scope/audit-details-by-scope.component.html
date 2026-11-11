@@ -1,0 +1,74 @@
+@if (store.instanceVM(); as v) {
+  <p-dialog
+    [visible]="true" (visibleChange)="store.closeInstance()"
+    [modal]="true" [style]="{ width: '540px', maxWidth: '94vw' }"
+    [header]="(v.selectedJob ? v.selectedJob.job.name + ' · ' : '') + v.scope.name + ' — ' + v.monthLabel"
+    [dismissableMask]="true" [draggable]="false">
+
+    <h4>Scope details</h4>
+    <div class="grid">
+      <div class="card"><span class="k">{{ v.subDivision.isDivisionLevel ? 'Division' : 'Sub-Division' }}</span><span class="v">{{ v.subDivision.name }}</span></div>
+      <div class="card"><span class="k">Scope status</span><span class="v"><span class="tag st-{{ v.status }}">{{ meta[v.status].label }}</span></span></div>
+      <div class="card"><span class="k">Frequency</span><span class="v">{{ freqLabels[v.scope.freq] }}</span></div>
+      <div class="card"><span class="k">Risk rating</span><span class="v"><span class="risk risk-{{ v.scope.risk }}">{{ v.scope.risk }}</span></span></div>
+      <div class="card"><span class="k">Lead auditor</span><span class="v">{{ v.scope.auditor }}</span></div>
+      <div class="card"><span class="k">Open RFIs</span><span class="v">{{ v.scope.rfi }}</span></div>
+    </div>
+
+    @if (v.runs.length > 1) {
+      <h4>Runs — {{ v.monthLabel }} ({{ freqLabels[v.scope.freq] }})</h4>
+      <div class="runs">
+        @for (r of v.runs; track $index; let ri = $index) {
+          <div class="run st-{{ r }}">
+            <span class="rk">{{ runLongLabel(v.scope.freq) }} {{ ri + 1 }}</span>
+            <span class="rv">{{ meta[r].label }}</span>
+          </div>
+        }
+      </div>
+    }
+
+    @if (v.selectedJob; as sel) {
+      <h4>Scope job details</h4>
+      <div class="grid">
+        <div class="card hi wide"><span class="k">Job</span><span class="v">{{ sel.job.name }}</span></div>
+        <div class="card"><span class="k">Assigned to</span><span class="v">{{ sel.job.auditor }}</span></div>
+        <div class="card"><span class="k">Job status</span><span class="v"><span class="tag st-{{ sel.status }}">{{ meta[sel.status].label }}</span></span></div>
+        <div class="card"><span class="k">Estimated hours</span><span class="v">{{ sel.job.hrs }} h</span></div>
+        <div class="card"><span class="k">Job ref.</span><span class="v mono">{{ jobRef(v.scope.code, sel.job.id) }}</span></div>
+      </div>
+    }
+
+    <h4>Scope jobs — this instance</h4>
+    @for (j of v.jobs; track j.job.id) {
+      <button class="job-row" [class.sel]="v.selectedJob?.job?.id === j.job.id"
+              (click)="store.openInstance({ scopeId: v.scope.id, monthIndex: v.monthIndex, jobId: j.job.id })">
+        <span class="tag st-{{ j.status }}">{{ meta[j.status].label }}</span>
+        <span class="name">{{ j.job.name }}
+          @if (j.job.run !== undefined) {
+            <span class="run-tag">{{ runShortLabel(v.scope.freq) }} {{ j.job.run }}</span>
+          }
+        </span>
+        <span class="who">{{ j.job.auditor }} · {{ j.job.hrs }}h</span>
+      </button>
+    }
+
+    <h4>Findings this instance</h4>
+    @if (v.scope.findings > 0) {
+      @for (f of findingsArray(v.scope.findings); track f) {
+        <div class="finding">
+          <span class="fbadge">F-{{ findingRefBase + f }}</span>
+          <span class="ftext">Finding observation {{ f }} — awaiting management action plan</span>
+          <span class="fstate">Open</span>
+        </div>
+      }
+    } @else {
+      <p class="none">No findings for this instance.</p>
+    }
+
+    <ng-template pTemplate="footer">
+      <button pButton label="Open scope detail" size="small"
+              (click)="store.closeInstance(); store.drillToScope(v.scope.id)"></button>
+      <button pButton label="Close" outlined size="small" (click)="store.closeInstance()"></button>
+    </ng-template>
+  </p-dialog>
+}

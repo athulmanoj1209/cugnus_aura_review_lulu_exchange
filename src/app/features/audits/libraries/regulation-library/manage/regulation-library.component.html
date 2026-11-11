@@ -1,0 +1,278 @@
+<!-- :host = flex column | .reg-add = scrollable | .drawer-footer = sticky bottom -->
+
+<!-- ══════════════════════════════════════════════════════════
+     DRAWER HEADER
+══════════════════════════════════════════════════════════ -->
+<div class="drawer-header">
+  <div class="drawer-header-left">
+    <div class="drawer-icon-wrap">
+      <app-draw-icon icon="pi pi-file-plus"></app-draw-icon>
+    </div>
+    <div class="drawer-title-block">
+      <h2 class="drawer-title">Add Regulation</h2>
+      <p class="drawer-subtitle">Fill in the details to register a new regulatory document.</p>
+    </div>
+  </div>
+  <button type="button" class="close-btn" (click)="onCancel()">
+    <app-draw-icon icon="pi pi-times"></app-draw-icon>
+  </button>
+</div>
+
+<div class="reg-add" [formGroup]="form">
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 1 — CLASSIFICATION
+  ══════════════════════════════════════════════════════════ -->
+  <div class="reg-add__card">
+    <h2 class="reg-add__section-title"><app-draw-icon icon="pi pi-tag"></app-draw-icon> Classification</h2>
+    <p-divider styleClass="reg-add__divider"></p-divider>
+
+    <div class="reg-add__grid reg-add__grid--2">
+ <!-- Title -->
+      <div class="reg-add__field reg-add__field--span2">
+        <label class="reg-add__label">Title <span class="req">*</span></label>
+        <input pInputText formControlName="title"
+               placeholder="e.g. Anti-Money Laundering and Combating the Financing of Terrorism Guidelines"
+               [class.ng-invalid]="isInvalid('title')" />
+        <small class="reg-add__error" *ngIf="getError('title','Title') as err">{{ err }}</small>
+      </div>
+
+      <!-- Description -->
+      <div class="reg-add__field reg-add__field--span2">
+        <label class="reg-add__label">Description <span class="req">*</span></label>
+        <textarea pTextarea formControlName="description" rows="3" autoResize="true"
+                  placeholder="Provide a brief summary of the regulation's scope and purpose..."
+                  [class.ng-invalid]="isInvalid('description')"></textarea>
+        <small class="reg-add__error" *ngIf="getError('description','Description') as err">{{ err }}</small>
+      </div>
+
+
+      <div class="reg-add__field reg-add__field">
+        <label class="reg-add__label">Country <span class="req">*</span></label>
+        <p-select formControlName="country" [options]="countryOptions" [filter]="true"
+                  optionLabel="label" optionValue="value" placeholder="Select Country"
+                  [class.ng-invalid]="isInvalid('country')" styleClass="w-full"></p-select>
+        <small class="reg-add__error" *ngIf="getError('country','Country') as err">{{ err }}</small>
+      </div>
+
+      <!-- Company -->
+      <div class="reg-add__field">
+        <label class="reg-add__label">Company</label>
+        <p-select formControlName="company" [options]="companyOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select company"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Division -->
+      <div class="reg-add__field">
+        <label class="reg-add__label">Division</label>
+        <p-select formControlName="division" [options]="divisionOptions"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="form.get('company')?.value ? 'Select division' : 'Select a company first'"
+                  [disabled]="!form.get('company')?.value"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Sub-Division -->
+      <div class="reg-add__field">
+        <label class="reg-add__label">Sub-Division</label>
+        <p-select formControlName="subDivision" [options]="subDivisionOptions"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="!form.get('division')?.value ? 'Select a division first' : hasSubDivision ? 'Select sub-division' : 'No sub-divisions for this division'"
+                  [disabled]="!form.get('division')?.value || !hasSubDivision"
+                  styleClass="w-full"></p-select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 2 — DOCUMENT DETAILS  (+ file upload)
+  ══════════════════════════════════════════════════════════ -->
+  <div class="reg-add__card">
+    <h2 class="reg-add__section-title"><app-draw-icon icon="pi pi-file-edit"></app-draw-icon> Document Details</h2>
+    <p-divider styleClass="reg-add__divider"></p-divider>
+
+    <div class="reg-add__grid reg-add__grid--2">
+
+     
+
+    
+      <div class="reg-add__field">
+        <label class="reg-add__label">Last Amended
+          <span class="reg-add__optional">(optional)</span>
+        </label>
+        <p-datepicker formControlName="amendedDate" dateFormat="dd/mm/yy"
+                      placeholder="DD/MM/YYYY" [showIcon]="true"
+                      styleClass="w-full"></p-datepicker>
+      </div>
+  
+
+      <!-- Effective Date (moved here for proximity) -->
+      <div class="reg-add__field">
+        <label class="reg-add__label">Effective Date <span class="req">*</span></label>
+        <p-datepicker formControlName="effectiveDate" dateFormat="dd/mm/yy"
+                      placeholder="DD/MM/YYYY" [showIcon]="true"
+                      [class.ng-invalid]="isInvalid('effectiveDate')"
+                      styleClass="w-full"></p-datepicker>
+        <small class="reg-add__error" *ngIf="getError('effectiveDate','EffectiveDate') as err">{{ err }}</small>
+      </div>
+
+      
+
+      <!-- ── File Upload ── -->
+      <div class="reg-add__field reg-add__field--span2">
+        <label class="reg-add__label">Attachment</label>
+
+        <!-- Hidden native input -->
+        <input #fileInput type="file" [accept]="acceptedTypes"
+               class="reg-add__file-input" (change)="onFileSelected($event)" />
+
+        <!-- Drop zone (shown when no file selected) -->
+        <div *ngIf="!selectedFile"
+             class="reg-add__upload-zone"
+             [class.reg-add__upload-zone--active]="isDragging"
+             (click)="triggerFileInput()"
+             (dragover)="onDragOver($event)"
+             (dragleave)="onDragLeave($event)"
+             (drop)="onDrop($event)">
+          <app-draw-icon icon="pi pi-cloud-upload" class="reg-add__upload-icon"></app-draw-icon>
+          <span class="reg-add__upload-text">
+            Click to upload <span class="reg-add__upload-link">or drag &amp; drop</span>
+          </span>
+          <span class="reg-add__upload-hint">PDF, DOCX, XLSX · max {{ maxSizeMB }} MB</span>
+        </div>
+
+        <!-- File preview (shown after selection) -->
+        <div *ngIf="selectedFile" class="reg-add__file-preview">
+          <div class="reg-add__file-preview-icon">
+            <i [class]="fileIconClass"></i>
+          </div>
+          <div class="reg-add__file-preview-info">
+            <span class="reg-add__file-name">{{ selectedFile.name }}</span>
+            <span class="reg-add__file-size">{{ fileSizeLabel }}</span>
+          </div>
+          <button type="button" class="reg-add__file-remove"
+                  pTooltip="Remove file" tooltipPosition="top"
+                  (click)="removeFile()">
+            <app-draw-icon icon="pi pi-times"></app-draw-icon>
+          </button>
+        </div>
+
+      </div><!-- /upload field -->
+
+    </div>
+  </div>
+
+
+ <!-- ══════════════════════════════════════════════════════════
+       SECTION 4 — KEYWORDS & TAGS
+  ══════════════════════════════════════════════════════════ -->
+ <div class="reg-add__card">
+    <h2 class="reg-add__section-title"><app-draw-icon icon="pi pi-hashtag"></app-draw-icon> Keywords &amp; Tags</h2>
+    <p-divider styleClass="reg-add__divider"></p-divider>
+
+    <div class="reg-add__field">
+      <label class="reg-add__label">Tags <span class="req">*</span></label>
+
+      <!-- chip input: ng-invalid applied here so red border shows -->
+      <div class="reg-add__chip-input"
+           [class.reg-add__chip-input--focus]="tagInputFocused"
+           [class.reg-add__chip-input--invalid]="isInvalid('tags')"
+           (click)="tagInput.focus()">
+        <span *ngFor="let tag of tagsValue" class="reg-add__chip">
+          {{ tag }}
+          <button type="button" class="reg-add__chip-remove" (click)="removeTag(tag)">
+            <app-draw-icon icon="pi pi-times"></app-draw-icon>
+          </button>
+        </span>
+        <input #tagInput
+               type="text"
+               class="reg-add__chip-text"
+               placeholder="Type and press Enter…"
+               (keydown.enter)="addTag($event, tagInput)"
+               (keydown.comma)="addTag($event, tagInput)"
+               (focus)="tagInputFocused = true"
+               (blur)="tagInputFocused = false; markTagsTouched()" />
+      </div>
+
+      <small class="reg-add__error" *ngIf="isInvalid('tags')">At least one tag is required.</small>
+      <small class="reg-add__hint"  *ngIf="!isInvalid('tags')">e.g. AML, CFT, KYC, CDD</small>
+    </div>
+  </div>
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 5 — RELATED FUNCTIONS
+  ══════════════════════════════════════════════════════════ -->
+  <div class="reg-add__card">
+    <h2 class="reg-add__section-title"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon> Related Functions</h2>
+    <p-divider styleClass="reg-add__divider"></p-divider>
+
+    <div class="reg-add__field">
+      <label class="reg-add__label">Functions</label>
+      <p-multiselect formControlName="relatedFunctions" [options]="relatedFunctionOptions"
+                     optionLabel="label" optionValue="value"
+                     placeholder="Select related functions" display="chip"
+                     [showToggleAll]="false" styleClass="w-full"></p-multiselect>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 6 — CROSS-REFERENCES
+  ══════════════════════════════════════════════════════════ -->
+  <div class="reg-add__card">
+    <h2 class="reg-add__section-title"><app-draw-icon icon="pi pi-arrow-right-arrow-left"></app-draw-icon> Cross-References</h2>
+    <p class="reg-add__section-sub">Related regulations referenced in this document</p>
+    <p-divider styleClass="reg-add__divider"></p-divider>
+
+    <div class="reg-add__field">
+      <label class="reg-add__label">Linked Regulations</label>
+      <p-multiselect formControlName="crossReferences" [options]="crossRefOptions"
+                     optionLabel="label" optionValue="value"
+                     placeholder="Search and select regulations..." display="chip"
+                     [filter]="true" filterPlaceholder="Search regulations..."
+                     [showToggleAll]="false" styleClass="w-full"></p-multiselect>
+
+      <div class="reg-add__xref-list" *ngIf="form.get('crossReferences')?.value?.length > 0">
+        <div class="reg-add__xref-row" *ngFor="let ref of form.get('crossReferences')?.value">
+          <div class="reg-add__xref-info">
+            <span class="reg-add__xref-title">{{ getLabelFor(crossRefOptions, ref) }}</span>
+            <span class="reg-add__xref-code">{{ ref }}</span>
+          </div>
+          <span class="reg-add__xref-badge">{{ ref.split('-')[0] }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SECTION 7 — SCOPE
+  ══════════════════════════════════════════════════════════ -->
+  <div class="reg-add__card reg-add__card--last">
+    <h2 class="reg-add__section-title"><app-draw-icon icon="pi pi-users"></app-draw-icon> Scope</h2>
+    <p class="reg-add__section-sub">Entity types this regulation applies to</p>
+    <p-divider styleClass="reg-add__divider"></p-divider>
+
+    <div class="reg-add__field">
+      <label class="reg-add__label">Applicable Entities <span class="req">*</span></label>
+      <p-multiselect formControlName="scope" [options]="scopeOptions"
+                     optionLabel="label" optionValue="value"
+                     placeholder="Select entity types..." display="chip"
+                     [filter]="true" filterPlaceholder="Search entities..."
+                     [showToggleAll]="true"
+                     [class.ng-invalid]="isInvalid('scope')"
+                     styleClass="w-full"></p-multiselect>
+      <small class="reg-add__error" *ngIf="getError('scope','Scope') as err">{{ err }}</small>
+    </div>
+  </div>
+
+</div><!-- /.reg-add (scrollable region ends) -->
+
+<!-- ══════════════════════════════════════════════════════════
+     STICKY FOOTER
+══════════════════════════════════════════════════════════ -->
+<div class="drawer-footer">
+  <p-button label="Cancel" icon="pi pi-times" styleClass="cancel-btn"
+            (onClick)="onCancel()" type="button"></p-button>
+  <p-button label="Save Regulation" icon="pi pi-check" styleClass="submit-btn"
+            (onClick)="onSubmit()" type="button"></p-button>
+</div>

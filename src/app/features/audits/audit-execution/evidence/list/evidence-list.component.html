@@ -1,0 +1,369 @@
+<section class="ev-page">
+
+  <!-- ======================== PAGE HEADER ======================== -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title" i18n="@@audit.evidence.title">Evidence Repository</h1>
+        <p class="page-header__subtitle" i18n="@@audit.evidence.subtitle">Manage supporting documents attached to audit findings</p>
+      </div>
+    </div>
+    <div class="page-header__actions">
+      <p-button label="+ New Evidence" i18n-label="@@audit.evidence.newEvidence" styleClass="btn-add" (onClick)="openAdd()" type="button"></p-button>
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === EvidenceViewModes.List"
+                (click)="setViewMode(EvidenceViewModes.List)"
+                pTooltip="List view" i18n-pTooltip="@@common.listView" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === EvidenceViewModes.Grid"
+                (click)="setViewMode(EvidenceViewModes.Grid)"
+                pTooltip="Grid view" i18n-pTooltip="@@common.gridView" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================== FILTER BAR ========================= -->
+  <div class="filter-bar">
+    <button type="button" class="filter-bar__trigger" (click)="filterPanel.toggle($event)">
+      <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+      <span i18n="@@common.filters">Filters</span>
+      <span *ngIf="activeFilterCount() > 0" class="filter-bar__badge">{{ activeFilterCount() }}</span>
+    </button>
+
+    <div *ngIf="hasActiveFilters()" class="filter-bar__chips">
+      <span *ngFor="let chip of activeFilterChips()" class="filter-chip">
+        {{ chip.label }}
+        <button type="button" (click)="removeFilter(chip.key)"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+      </span>
+    </div>
+
+    <button *ngIf="hasActiveFilters()" type="button" class="filter-bar__clear" (click)="clearFilters()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon> <span i18n="@@common.clearAll">Clear all</span>
+    </button>
+
+    <span class="filter-bar__search">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input pInputText type="text"
+             [ngModel]="searchQuery()"
+             (ngModelChange)="onSearchChange($event)"
+             placeholder="Search by ID or title…"
+             i18n-placeholder="@@audit.evidence.searchPlaceholder" />
+    </span>
+  </div>
+
+  <!-- ======================== FILTER OVERLAY PANEL ================ -->
+  <p-popover #filterPanel styleClass="ev-filter-panel">
+    <div class="fp-header">
+      <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> <span i18n="@@common.filters">Filters</span></span>
+      <button type="button" class="fp-clear-link" *ngIf="hasActiveFilters()" (click)="clearFilters()"><span i18n="@@common.clearAll">Clear all</span></button>
+    </div>
+    <div class="fp-grid">
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.company">Company</label>
+        <p-multiSelect [options]="companyFilterOptions()" [ngModel]="selectedCompanies()" (ngModelChange)="onCompaniesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All companies" i18n-placeholder="@@audit.evidence.allCompanies" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} companies" i18n-selectedItemsLabel="@@audit.evidence.selectedCompanies" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" for="ev-filter-division" i18n="@@common.division">Division</label>
+        <p-multiSelect inputId="ev-filter-division" [options]="divisionFilterOptions()" [ngModel]="selectedDivisions()" (ngModelChange)="onDivisionsChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All divisions" i18n-placeholder="@@audit.evidence.allDivisions" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions" i18n-selectedItemsLabel="@@audit.evidence.selectedDivisions" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" for="ev-filter-subdivision" i18n="@@common.subDivision">Sub-Division</label>
+        <p-multiSelect [disabled]="!subDivisionFilterVisible()" inputId="ev-filter-subdivision" [options]="subDivisionFilterOptions()" [ngModel]="selectedSubDivisions()" (ngModelChange)="onSubDivisionsChange($event)"
+          optionLabel="label" optionValue="value" [placeholder]="subDivisionFilterVisible() ? allSubDivisionsLabel : noSubDivisionsLabel" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-divisions" i18n-selectedItemsLabel="@@audit.evidence.selectedSubDivisions" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@audit.evidence.auditor">Auditor</label>
+        <p-multiSelect [options]="auditorFilterOptions()" [ngModel]="selectedAuditors()" (ngModelChange)="onAuditorsChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All auditors" i18n-placeholder="@@audit.evidence.allAuditors" display="chip"
+          [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} auditors" i18n-selectedItemsLabel="@@audit.evidence.selectedAuditors" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.type">Type</label>
+        <p-multiSelect [options]="evidenceTypeOptions" [ngModel]="selectedTypes()" (ngModelChange)="onTypesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All types" i18n-placeholder="@@audit.evidence.allTypes" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} types" i18n-selectedItemsLabel="@@audit.evidence.selectedTypes" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label" i18n="@@common.scope">Scope</label>
+        <p-multiSelect [options]="scopeFilterOptions()" [ngModel]="selectedScopes()" (ngModelChange)="onScopesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All scopes" i18n-placeholder="@@audit.evidence.allScopes" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} scopes" i18n-selectedItemsLabel="@@audit.evidence.selectedScopes" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field fp-field--full">
+        <label class="fp-label" i18n="@@audit.evidence.task">Task</label>
+        <p-multiSelect [options]="taskFilterOptions()" [ngModel]="selectedTasks()" (ngModelChange)="onTasksChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All tasks" i18n-placeholder="@@audit.evidence.allTasks" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} tasks" i18n-selectedItemsLabel="@@audit.evidence.selectedTasks" styleClass="fp-select"></p-multiSelect>
+      </div>
+      
+      <div class="fp-field fp-field--full">
+        <label class="fp-label" i18n="@@audit.evidence.createdDateRange">Created Date Range</label>
+        <p-datepicker [ngModel]="dateRange()" (ngModelChange)="onDateRangeChange($event)"
+          selectionMode="range" placeholder="Select date range" i18n-placeholder="@@audit.evidence.selectDateRange" dateFormat="dd M y"
+          [showIcon]="true" [readonlyInput]="true" styleClass="fp-date"></p-datepicker>
+      </div>
+    </div>
+    <div class="fp-footer">
+      <button type="button" class="fp-btn fp-btn--ghost" (click)="clearFilters(); filterPanel.hide()"><span i18n="@@common.reset">Reset</span></button>
+      <button type="button" class="fp-btn fp-btn--primary" (click)="filterPanel.hide()">
+        <span i18n="@@common.applyFilters">Apply filters</span><span *ngIf="activeFilterCount() > 0"> ({{ activeFilterCount() }})</span>
+      </button>
+    </div>
+  </p-popover>
+
+  <!-- ======================== LIST VIEW ========================== -->
+  <div *ngIf="viewMode() === EvidenceViewModes.List" class="evidence evidence--list">
+    <ng-container *ngIf="paginated().length > 0; else evidenceListEmpty">
+      <div class="list-header">
+        <span class="list-header__cell col-id sortable" (click)="onSort(EvidenceSortColumns.Id)" [class.is-sorted]="sortColumn() === EvidenceSortColumns.Id">
+          <span i18n="@@common.id">ID</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(EvidenceSortColumns.Id)"></i>
+        </span>
+        <span class="list-header__cell col-title sortable" (click)="onSort(EvidenceSortColumns.Title)" [class.is-sorted]="sortColumn() === EvidenceSortColumns.Title">
+          <span i18n="@@common.title">Title</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(EvidenceSortColumns.Title)"></i>
+        </span>
+        <span class="list-header__cell col-type sortable" (click)="onSort(EvidenceSortColumns.EvidenceType)" [class.is-sorted]="sortColumn() === EvidenceSortColumns.EvidenceType">
+          <span i18n="@@common.type">Type</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(EvidenceSortColumns.EvidenceType)"></i>
+        </span>
+        <span class="list-header__cell col-scope sortable" (click)="onSort(EvidenceSortColumns.Scope)" [class.is-sorted]="sortColumn() === EvidenceSortColumns.Scope">
+          <span i18n="@@common.scope">Scope</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(EvidenceSortColumns.Scope)"></i>
+        </span>
+        <span class="list-header__cell col-task"><span i18n="@@audit.evidence.task">Task</span></span>
+        <span class="list-header__cell col-files sortable" (click)="onSort(EvidenceSortColumns.Files)" [class.is-sorted]="sortColumn() === EvidenceSortColumns.Files">
+          <span i18n="@@audit.evidence.files">Files</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(EvidenceSortColumns.Files)"></i>
+        </span>
+        <span class="list-header__cell col-date sortable" (click)="onSort(EvidenceSortColumns.CreatedDate)" [class.is-sorted]="sortColumn() === EvidenceSortColumns.CreatedDate">
+          <span i18n="@@audit.evidence.created">Created</span> <i class="pi sortable__arrow" [ngClass]="sortIconFor(EvidenceSortColumns.CreatedDate)"></i>
+        </span>
+        <span class="list-header__cell col-actions" i18n="@@common.actions">Actions</span>
+      </div>
+
+      <article *ngFor="let e of paginated(); trackBy: trackById"
+               class="ev-row"
+               [class.ev-row--inactive]="!e.isActive">
+        <div class="col-id"><span class="ev-id">{{ e.id }}</span></div>
+        <div class="col-title">
+          <span class="ev-title">{{ e.title }}</span>
+          <small *ngIf="e.uploadedBy" class="ev-uploader">
+            <app-draw-icon icon="pi pi-user"></app-draw-icon> {{ e.uploadedBy }}
+          </small>
+        </div>
+        <div class="col-type"><span class="type-badge">{{ evidenceTypeLabel(e.evidenceType) }}</span></div>
+        <div class="col-scope">
+          <span class="scope-badge">{{ e.scope }}</span>
+          <small class="subscope-label">{{ e.subscope }}</small>
+        </div>
+        <div class="col-task">
+          <span class="task-chip"><app-draw-icon icon="pi pi-check-square"></app-draw-icon> {{ e.taskId }}</span>
+          <small class="task-title">{{ e.taskTitle }}</small>
+        </div>
+        <div class="col-files">
+          <div class="file-pills">
+            <span *ngFor="let f of e.files.slice(0, filePreviewCount.List)"
+                  class="file-pill file-pill--clickable"
+                  [pTooltip]="fileDownloadTooltip(f.name, f.size)"
+                  tooltipPosition="top"
+                  (click)="downloadFile(f)" role="button" tabindex="0"
+                  (keydown.enter)="downloadFile(f)">
+              <i class="pi" [ngClass]="fileIcon(f.name)"></i>
+              <span class="file-pill__name">{{ f.name }}</span>
+              <app-draw-icon icon="pi pi-download" class="file-pill__dl"></app-draw-icon>
+            </span>
+            <span *ngIf="e.files.length > filePreviewCount.List"
+                  class="file-pill file-pill--more file-pill--clickable"
+                  pTooltip="Click to see all files" i18n-pTooltip="@@audit.evidence.clickToSeeAllFiles" tooltipPosition="top"
+                  (click)="showMoreFiles(e, $event)" role="button" tabindex="0">
+              <app-draw-icon icon="pi pi-plus" [size]="10"></app-draw-icon>
+              <span i18n="@@audit.evidence.moreFiles">{{ e.files.length - filePreviewCount.List }} more</span>
+            </span>
+          </div>
+        </div>
+        <div class="col-date">{{ e.createdDate | date:'MMM d, y' }}</div>
+        <div class="col-actions">
+          <div class="row-actions">
+            <button type="button" class="icon-btn"
+                    (click)="openView(e)" pTooltip="View" i18n-pTooltip="@@common.view" aria-label="View" i18n-aria-label="@@common.view" tooltipPosition="top">
+              <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+            </button>
+            <button type="button" class="icon-btn"
+                    (click)="openEdit(e)" pTooltip="Edit" i18n-pTooltip="@@common.edit" aria-label="Edit" i18n-aria-label="@@common.edit" tooltipPosition="top">
+              <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+            </button>
+            <button type="button" class="icon-btn"
+                    [class.icon-btn--activate]="!e.isActive"
+                    [class.icon-btn--deactivate]="e.isActive"
+                    [pTooltip]="e.isActive ? deactivateLabel : activateLabel"
+                    [attr.aria-label]="e.isActive ? deactivateLabel : activateLabel"
+                    tooltipPosition="top"
+                    (click)="openConfirmation(e)">
+              <app-draw-icon [icon]="e.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+      </article>
+    </ng-container>
+
+    <ng-template #evidenceListEmpty>
+      <div class="ev-empty ev-empty--standalone">
+        <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+        <span i18n="@@audit.evidence.noEvidenceMatches">No evidence records match your filters.</span>
+        <button *ngIf="hasActiveFilters()" type="button" class="ev-empty__btn" (click)="clearFilters()"><span i18n="@@common.clearFilters">Clear filters</span></button>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- ======================== GRID VIEW ========================== -->
+  <div *ngIf="viewMode() === EvidenceViewModes.Grid">
+    <div *ngIf="paginated().length === 0" class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-folder-open"></app-draw-icon>
+      <span i18n="@@audit.evidence.noEvidenceMatches">No evidence records match your filters.</span>
+      <button *ngIf="hasActiveFilters()" type="button" class="ev-empty__btn" (click)="clearFilters()"><span i18n="@@common.clearFilters">Clear filters</span></button>
+    </div>
+
+    <div class="ev-grid">
+      <article *ngFor="let e of paginated(); trackBy: trackById"
+               class="ev-card-item"
+               [class.ev-card-item--inactive]="!e.isActive">
+
+        <span class="type-badge status-tag--corner">{{ evidenceTypeLabel(e.evidenceType) }}</span>
+
+        <div class="card-header">
+          <div class="ev-avatar-wrap">
+            <div class="ev-badge"><app-draw-icon icon="pi pi-file-edit"></app-draw-icon></div>
+            <svg class="ev-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+              <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <h3 class="ev-card-item__title">{{ e.title }}</h3>
+          <span class="ev-id-sub"><app-draw-icon icon="pi pi-hashtag"></app-draw-icon>{{ e.id }}</span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item" pTooltip="Scope" i18n-pTooltip="@@common.scope" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ e.scope }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Subscope" i18n-pTooltip="@@common.subscope" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ e.subscope }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Task" i18n-pTooltip="@@audit.evidence.task" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-check-square"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ e.taskId }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Created" i18n-pTooltip="@@audit.evidence.created" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ e.createdDate | date:'MMM d, y' }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Uploaded By" i18n-pTooltip="@@audit.evidence.uploadedBy" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ e.uploadedBy || '—' }}</span></div>
+          </div>
+        </div>
+
+        <div class="ev-card-item__files" *ngIf="e.files.length">
+          <span *ngFor="let f of e.files.slice(0, filePreviewCount.Grid)"
+                class="file-pill file-pill--clickable"
+                [pTooltip]="fileDownloadSimpleTooltip(f.name)" tooltipPosition="top"
+                (click)="downloadFile(f)" role="button" tabindex="0"
+                (keydown.enter)="downloadFile(f)">
+            <i class="pi" [ngClass]="fileIcon(f.name)"></i>
+            <span class="file-pill__name">{{ f.name }}</span>
+            <app-draw-icon icon="pi pi-download" class="file-pill__dl"></app-draw-icon>
+          </span>
+          <span *ngIf="e.files.length > filePreviewCount.Grid"
+                class="file-pill file-pill--more file-pill--clickable"
+                pTooltip="Click to see all files" i18n-pTooltip="@@audit.evidence.clickToSeeAllFiles" tooltipPosition="top"
+                (click)="showMoreFiles(e, $event)" role="button" tabindex="0">
+            <app-draw-icon icon="pi pi-plus" [size]="10"></app-draw-icon>
+            <span i18n="@@audit.evidence.moreFiles">{{ e.files.length - filePreviewCount.Grid }} more</span>
+          </span>
+        </div>
+
+        <footer class="card-footer">
+          <div class="card-actions">
+            <div class="card-actions__icons">
+              <button type="button" class="icon-btn"
+                      (click)="openEdit(e)" pTooltip="Edit" i18n-pTooltip="@@common.edit" aria-label="Edit" i18n-aria-label="@@common.edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn"
+                      [class.icon-btn--activate]="!e.isActive"
+                      [class.icon-btn--deactivate]="e.isActive"
+                      [pTooltip]="e.isActive ? deactivateLabel : activateLabel"
+                      [attr.aria-label]="e.isActive ? deactivateLabel : activateLabel"
+                      tooltipPosition="top"
+                      (click)="openConfirmation(e)">
+                <app-draw-icon [icon]="e.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+              </button>
+            </div>
+
+            <button type="button" class="btn-view" (click)="openView(e)">
+              <span i18n="@@common.view">View</span>
+            </button>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </div>
+
+  <!-- ======================== PAGINATION ========================= -->
+  @if (filtered().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="evidence records"
+      i18n-entityLabel="@@audit.evidence.evidenceRecords"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+
+  <!-- ======================== FILES POPOVER ====================== -->
+  <p-popover #filesPopover styleClass="ev-files-popover">
+    @if (moreFilesEvidence()) {
+      <div class="fp-files">
+        <div class="fp-files__header">
+          <app-draw-icon icon="pi pi-paperclip"></app-draw-icon>
+          <span i18n="@@audit.evidence.allFiles">All Files</span>
+          <span class="fp-files__count">{{ moreFilesEvidence()!.files.length }}</span>
+        </div>
+        <div class="fp-files__list">
+          @for (f of moreFilesEvidence()!.files; track f.name) {
+            <div class="fp-file-row" (click)="downloadFile(f)" role="button" tabindex="0"
+                 (keydown.enter)="downloadFile(f)"
+                 [pTooltip]="formatFileSize(f.size)" tooltipPosition="left">
+              <i class="pi fp-file-row__icon" [ngClass]="fileIcon(f.name)"></i>
+              <span class="fp-file-row__name">{{ f.name }}</span>
+              <span class="fp-file-row__size">{{ formatFileSize(f.size) }}</span>
+              <app-draw-icon icon="pi pi-download" class="fp-file-row__dl"></app-draw-icon>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </p-popover>
+
+  <!-- ======================== SHARED CONFIRM DIALOG ============== -->
+  <app-confirm-action-dialog
+    [visible]="displayConfirmation()"
+    [action]="confirmationAction()"
+    [itemName]="confirmationTarget()?.title ?? ''"
+    (confirmed)="confirmToggleBlocked()"
+    (cancelled)="closeConfirmation()"
+  />
+
+</section>

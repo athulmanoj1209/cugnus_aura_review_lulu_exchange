@@ -1,0 +1,77 @@
+<div class="aps-shell">
+
+  
+
+  <!-- ── Title bar ── -->
+  <div class="aps-titlebar">
+    <div class="aps-titlebar__lead">
+      <app-back-button></app-back-button>
+      <div>
+        <h1 class="aps-titlebar__title">Audit Plan</h1>
+        <p class="aps-titlebar__sub">Select a company to view and manage its annual audit plan.</p>
+      </div>
+    </div>
+    <p-button label="View All Audit Plans" icon="pi pi-list" [outlined]="true"
+              pTooltip="Create, edit and activate audit plans" tooltipPosition="left"
+              (onClick)="goToPlanList()" />
+  </div>
+
+  <!-- ── Company selector bar ── -->
+  <div class="aps-filterbar">
+    <p-select
+      [options]="dropdownOptions()"
+      [(ngModel)]="selected"
+      (ngModelChange)="onDropdownChange($event)"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="Select a company..."
+      [showClear]="true"
+      styleClass="aps-dropdown"
+      appendTo="body">
+      <ng-template pTemplate="selectedItem" let-opt>
+        <span class="aps-dropdown__item">
+          <app-draw-icon icon="pi pi-building"></app-draw-icon>{{ opt.label }}
+        </span>
+      </ng-template>
+      <ng-template pTemplate="item" let-opt>
+        <span class="aps-dropdown__item">
+          <app-draw-icon icon="pi pi-building"></app-draw-icon>{{ opt.label }}
+        </span>
+      </ng-template>
+    </p-select>
+  </div>
+
+  <!-- ── Main content ── -->
+  <main class="aps-main">
+    <div class="aps-card">
+
+      <!-- Icon -->
+      <div class="aps-card__icon-wrap">
+        <app-draw-icon icon="pi pi-sitemap" class="aps-card__icon"></app-draw-icon>
+      </div>
+
+      <!-- Heading -->
+      <h2 class="aps-card__title">Select a Company to View Audit Plan</h2>
+      <p class="aps-card__desc">
+        Choose a company below to explore its full audit plan,
+        including all scopes, jobs, and execution timelines.
+      </p>
+
+      <!-- Company chips -->
+      <div class="aps-chip-grid">
+        @for (co of companies(); track co.id) {
+          <button
+            class="aps-chip"
+            [class.aps-chip--active]="selected() === co.id"
+            (click)="selectCompany(co.id)"
+            pRipple>
+            <app-draw-icon icon="pi pi-building" class="aps-chip__icon"></app-draw-icon>
+            <span>{{ co.companyName }}</span>
+          </button>
+        }
+      </div>
+
+    </div>
+  </main>
+
+</div>

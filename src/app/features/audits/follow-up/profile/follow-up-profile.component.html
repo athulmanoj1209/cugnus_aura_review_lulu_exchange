@@ -1,0 +1,120 @@
+<div class="drawer-inner">
+
+  <!-- ======================== HEADER ======================== -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-history"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ plan.title }}</h2>
+        <p class="drawer-subtitle">{{ plan.id }}</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ======================== BODY ======================== -->
+  <div class="detail-body">
+
+    <!-- ---- Status + Severity badges ---- -->
+    <div class="badge-row">
+      <span class="badge badge--status" [ngClass]="'badge--' + plan.status">
+        {{ statusLabel(plan.status) }}
+      </span>
+      <span class="badge badge--severity" [ngClass]="'badge--sev-' + plan.severity">
+        <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon>
+        {{ severityLabel(plan.severity) }}
+      </span>
+      <span *ngIf="isOverdue" class="badge badge--overdue">
+        <app-draw-icon icon="pi pi-clock"></app-draw-icon>
+        Overdue
+      </span>
+    </div>
+
+    <!-- ---- Timeline progress ---- -->
+    <div class="timeline-card">
+      <div class="timeline-card__header">
+        <span class="timeline-card__label">Timeline Progress</span>
+        <span class="timeline-card__pct">{{ timeProgress }}%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-bar__fill"
+             [class.progress-bar__fill--overdue]="isOverdue"
+             [style.width.%]="timeProgress"></div>
+      </div>
+      <div class="timeline-card__dates">
+        <span>
+          <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+          {{ plan.startDate | date:'MMM d, y' }}
+        </span>
+        <span class="timeline-card__remaining"
+              [class.is-overdue]="isOverdue">
+          <app-draw-icon icon="pi pi-flag"></app-draw-icon>
+          <ng-container *ngIf="!isOverdue">{{ daysRemaining }}d remaining</ng-container>
+          <ng-container *ngIf="isOverdue">{{ -daysRemaining }}d overdue</ng-container>
+        </span>
+        <span>
+          <app-draw-icon icon="pi pi-calendar-times"></app-draw-icon>
+          {{ plan.endDate | date:'MMM d, y' }}
+        </span>
+      </div>
+    </div>
+
+    <!-- ---- Info grid ---- -->
+    <div class="info-grid">
+
+      <div class="info-item">
+        <span class="info-item__label">
+          <app-draw-icon icon="pi pi-building"></app-draw-icon> Sub-Division
+        </span>
+        <span class="info-item__value">{{ plan.department }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="info-item__label">
+          <app-draw-icon icon="pi pi-calendar-clock"></app-draw-icon> Duration
+        </span>
+        <span class="info-item__value">{{ durationDays }} days</span>
+      </div>
+
+      <div class="info-item">
+        <span class="info-item__label">
+          <app-draw-icon icon="pi pi-calendar-plus"></app-draw-icon> Start Date
+        </span>
+        <span class="info-item__value">{{ plan.startDate | date:'MMM d, y' }}</span>
+      </div>
+
+      <div class="info-item">
+        <span class="info-item__label">
+          <app-draw-icon icon="pi pi-calendar-minus"></app-draw-icon> End Date
+        </span>
+        <span class="info-item__value">{{ plan.endDate | date:'MMM d, y' }}</span>
+      </div>
+
+    </div>
+
+    <!-- ---- Description ---- -->
+    <div class="section" *ngIf="plan.description">
+      <h4 class="section__title">
+        <app-draw-icon icon="pi pi-align-left"></app-draw-icon> Description
+      </h4>
+      <p class="section__body">{{ plan.description }}</p>
+    </div>
+
+    <!-- ---- Linked Finding ---- -->
+    <div class="section" *ngIf="plan.id">
+      <h4 class="section__title">
+        <app-draw-icon icon="pi pi-link"></app-draw-icon> Linked Finding
+      </h4>
+      <div class="finding-chip">
+        <app-draw-icon icon="pi pi-file-edit"></app-draw-icon>
+        <span>{{ plan.id }}</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>

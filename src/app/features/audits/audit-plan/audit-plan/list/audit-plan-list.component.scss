@@ -1,0 +1,924 @@
+.ap-page {
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  padding: 1.5rem 2rem;
+  min-height: 100%;
+}
+
+/* ── Back button ─────────────────────────────────────────────── */
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { background: var(--surface-hover); color: var(--p-indigo-800); border-color: var(--p-indigo-800); }
+  &:dir(rtl) { app-draw-icon { transform: scaleX(-1); } }
+}
+
+/* ── Page header ─────────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  &__lead {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-color);
+  }
+
+  &__subtitle {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Filter bar ──────────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-top: 5px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+
+  &__search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    padding: 0 0.75rem;
+    height: 38px;
+    width: 30%;
+    flex-shrink: 0;
+    margin-left: auto;
+
+    .pi { color: var(--text-color-secondary); font-size: 0.85rem; }
+
+    input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.88rem;
+      color: var(--text-color);
+      width: 100%;
+      &::placeholder { color: var(--text-color-secondary); }
+    }
+  }
+
+  &__trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: 38px;
+    padding: 0 1rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+
+    .pi { font-size: 0.85rem; color: var(--text-color-secondary); }
+
+    &:hover {
+      border-color: var(--primary-color);
+      color: var(--primary-color);
+      .pi { color: var(--primary-color); }
+    }
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: var(--primary-color);
+    color: #fff;
+    border-radius: 9px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  &__chips {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  &__clear {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 38px;
+    padding: 0 0.75rem;
+    border: 1px solid var(--p-red-300);
+    border-radius: 8px;
+    background: var(--p-red-50);
+    color: var(--p-red-600);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+    &:hover { background: var(--p-red-50); }
+
+    :host-context(.app-dark) & { background: rgba(220, 38, 38, 0.16); &:hover { background: rgba(220, 38, 38, 0.24); } }
+  }
+}
+
+/* Active filter chip */
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 26px;
+  padding: 0 0.5rem 0 0.65rem;
+  background: var(--surface-hover);
+  border: 1px solid var(--p-indigo-200);
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--primary-color);
+
+  button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 0;
+    color: var(--p-indigo-400);
+    .pi { font-size: 0.62rem; }
+    &:hover { color: var(--primary-color); }
+  }
+}
+
+/* ── Filter overlay panel ────────────────────────────────────── */
+:host ::ng-deep .ap-filter-panel {
+  .p-popover-content { padding: 0; }
+
+  &.p-popover {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+    border: 1px solid var(--surface-border);
+    width: 560px;
+    max-width: 95vw;
+  }
+
+  &::before, &::after { display: none; }
+}
+
+.fp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--surface-border);
+}
+
+.fp-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  .pi { color: var(--primary-color); font-size: 0.9rem; }
+}
+
+.fp-clear-link {
+  background: none;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--p-red-600);
+  cursor: pointer;
+  padding: 0;
+  &:hover { text-decoration: underline; }
+}
+
+.fp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+/* min-width: 0 is required here — without it, a long selected-value label
+ * (real org names from company-org-data.ts, e.g. "Al Waha Construction &
+ * Contracting") sets this grid item's intrinsic minimum content width,
+ * which overrides the `1fr` track sizing and pushes the column (and the
+ * popover) wider than intended. Same bug/fix applied to the Regulation
+ * Library and User Management filter grids this session — applies to
+ * PrimeNG p-multiselect just as much as a native <select>. */
+.fp-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+
+  &--full { grid-column: 1 / -1; }
+}
+
+.fp-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+:host ::ng-deep {
+  .fp-select .p-multiselect {
+    width: 100%;
+    min-width: 0;
+    border-radius: 8px;
+    border-color: var(--surface-border);
+    font-size: 0.88rem;
+    height: 38px;
+
+    .p-multiselect-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+  }
+}
+
+.fp-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem 1rem;
+  border-top: 1px solid var(--surface-border);
+}
+
+.fp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  height: 36px;
+  padding: 0 1.1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+
+  &--ghost {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
+    &:hover { background: var(--surface-hover); border-color: var(--surface-border); }
+  }
+
+  &--primary {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: #fff;
+    &:hover { background: var(--primary-color); }
+  }
+}
+
+/* ── View toggle ─────────────────────────────────────────────── */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  overflow: hidden;
+
+  &__btn {
+    background: var(--surface-card);
+    border: none;
+    padding: 0.6rem 0.85rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+    &:hover { background: var(--surface-hover); }
+    &.is-active { background: var(--primary-color); color: #fff; }
+    & + .view-toggle__btn { border-left: 1px solid var(--surface-border); height: 38px; }
+    &.is-active + .view-toggle__btn,
+    & + .view-toggle__btn.is-active { border-left-color: var(--primary-color); height: 38px; }
+  }
+}
+
+/* ── List view (row cards, mirrors Companies / Branches / Departments) ──
+ * 7 tracks — one per column actually rendered below (ID, Plan Title,
+ * Organization, Branch, Period, Departments, Actions). This used to be 10
+ * tracks sized for a richer row that was never built, so Actions landed on
+ * track 7 instead of the grid's last track and left 3 empty tracks of dead
+ * space at the right edge of every row. */
+$ap-list-cols: 0.6fr 1.6fr 1.1fr 1.1fr 1.2fr 1.6fr 0.9fr;
+
+.ap-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: $ap-list-cols;
+  padding: 0 1.25rem;
+
+  &__cell {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-color-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    user-select: none;
+
+    &.sortable {
+      cursor: pointer;
+      &:hover { color: var(--primary-color); }
+      &.is-sorted { color: var(--primary-color); }
+    }
+  }
+
+  .sortable__arrow { font-size: 0.7rem; margin-left: 3px; }
+
+  .col-actions { text-align: right; }
+}
+
+.ap-row {
+  display: grid;
+  grid-template-columns: $ap-list-cols;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .col-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+/* ── Cells ───────────────────────────────────────────────────── */
+.ap-id {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: var(--surface-hover);
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  white-space: nowrap;
+}
+
+.ap-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ap-org { font-weight: 600; color: var(--text-color); }
+
+.period-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: var(--surface-hover); color: var(--p-sky-700); border-radius: 6px;
+  padding: 0.2rem 0.55rem; font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+  .pi { font-size: 0.75rem; color: var(--p-blue-400); }
+  &--sm { font-size: 0.75rem; }
+}
+
+.branch-chip {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: var(--surface-hover); color: var(--text-color-secondary); border-radius: 6px;
+  padding: 0.2rem 0.55rem; font-size: 0.78rem; font-weight: 600; white-space: nowrap;
+  .pi { font-size: 0.75rem; color: var(--text-color-secondary); }
+  &--sm { font-size: 0.75rem; }
+}
+
+.scope-badge {
+  display: inline-block; font-size: 0.78rem; font-weight: 600;
+  color: var(--p-purple-700); background: var(--surface-card); border-radius: 5px;
+  padding: 0.18rem 0.5rem; white-space: nowrap;
+}
+
+.scope-objective {
+  display: block; font-size: 0.72rem; color: var(--text-color-secondary); margin-top: 3px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px;
+}
+
+/* ── Scope type badges ───────────────────────────────────────── */
+.type-badge {
+  display: inline-block; margin-top: 3px; margin-left: 4px;
+  font-size: 0.68rem; font-weight: 700; border-radius: 5px;
+  padding: 0.14rem 0.45rem; white-space: nowrap;
+  text-transform: uppercase; letter-spacing: 0.03em;
+
+  &--financial   { background: var(--p-teal-600); color: var(--p-pink-600); }
+  &--operational { background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-color); }
+  &--compliance  { background: var(--p-red-50); color: var(--p-red-600); }
+  &--it          { background: var(--surface-hover); color: var(--p-sky-700); }
+  &--strategic   { background: var(--surface-card); color: var(--p-pink-700); }
+
+  :host-context(.app-dark) & {
+    &--compliance { background: rgba(220, 38, 38, 0.16); }
+    &--strategic  { background: rgba(162, 28, 175, 0.18); }
+  }
+}
+
+.freq-badge {
+  display: inline-flex; align-items: center;
+  background: var(--p-amber-50); color: var(--p-orange-400); border-radius: 6px;
+  padding: 0.2rem 0.55rem; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+
+  :host-context(.app-dark) & { background: rgba(202, 138, 4, 0.18); }
+}
+
+.mode-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  background: var(--surface-card); color: var(--p-teal-600); border-radius: 6px;
+  padding: 0.2rem 0.55rem; font-size: 0.75rem; font-weight: 600; white-space: nowrap;
+  .pi { font-size: 0.72rem; }
+
+  :host-context(.app-dark) & { background: rgba(15, 118, 110, 0.18); }
+}
+
+/* ── Department pills ────────────────────────────────────────── */
+.dept-pills { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+.dept-pill {
+  display: inline-flex; align-items: center;
+  background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-color); border-radius: 999px;
+  padding: 0.3rem 0.65rem; font-size: 0.75rem; font-weight: 500; white-space: nowrap;
+
+  &--more {
+    background: var(--surface-hover); color: var(--primary-color); cursor: pointer;
+    transition: background 0.15s;
+    &:hover { background: var(--p-blue-200); }
+
+    :host-context(.app-dark) & {
+      background: rgba(79, 70, 229, 0.18);
+      &:hover { background: rgba(79, 70, 229, 0.28); }
+    }
+  }
+}
+
+/* ── Status badges ───────────────────────────────────────────── */
+.status-badge {
+  display: inline-flex; align-items: center;
+  border-radius: 20px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.74rem; font-weight: 700; white-space: nowrap;
+  text-transform: capitalize;
+
+  &--draft       { background: var(--surface-hover); color: var(--text-color-secondary); }
+  &--planned     { background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-color); }
+  &--in-progress { background: var(--p-orange-50); color: var(--p-orange-600); }
+  &--overdue     { background: var(--p-red-50); color: var(--p-red-600); }
+  &--completed   { background: var(--p-teal-50); color: var(--p-teal-700); }
+  &--on-hold     { background: var(--surface-card); color: var(--p-orange-600); }
+  &--cancelled   { background: var(--surface-hover); color: var(--text-color-secondary); }
+
+  :host-context(.app-dark) & {
+    &--in-progress { background: rgba(180, 83, 9, 0.18); }
+    &--overdue     { background: rgba(185, 28, 28, 0.16); color: var(--p-red-400); }
+    &--on-hold     { background: rgba(234, 88, 12, 0.18); }
+  }
+}
+
+/* ── Auditor avatars ─────────────────────────────────────────── */
+.auditor-avatars { display: flex; align-items: center; }
+
+.auditor-avatar {
+  width: 30px; height: 30px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 0.7rem; font-weight: 700;
+  border: 2px solid #fff;
+  margin-left: -8px;
+  flex-shrink: 0;
+
+  &:first-child { margin-left: 0; }
+
+  &--more {
+    background: var(--surface-hover);
+    color: var(--primary-color);
+    cursor: pointer;
+    transition: background 0.15s;
+    &:hover { background: var(--p-blue-200); }
+  }
+
+  &--sm { width: 26px; height: 26px; font-size: 0.66rem; margin-left: 0; border: none; }
+}
+
+/* ── Row actions ─────────────────────────────────────────────── */
+.row-actions { display: flex; gap: 0.25rem; }
+
+:host ::ng-deep .btn-add.p-button {
+  background: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: 8px;
+  height: 38px;
+  &:hover { background: var(--primary-color); color: #fff; }
+}
+
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: var(--surface-hover); color: var(--text-color); }
+
+  &--edit:hover { color: var(--primary-color); }
+
+  &--activate   { color: var(--p-green-500) !important; }
+  &--deactivate { color: var(--p-orange-600) !important; }
+  &--activate:hover   { background: color-mix(in srgb, var(--p-green-500) 8%, transparent) !important; color: var(--p-green-500) !important; }
+  &--deactivate:hover { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent) !important; color: var(--p-orange-600) !important; }
+
+  :host-context(.app-dark) & {
+    &--deactivate:hover { background: rgba(234, 88, 12, 0.15) !important; }
+  }
+}
+
+/* ── Inactive row / card — dimmed, only the actions stay clickable
+ *    (same treatment as the division / sub-division lists) ── */
+.ap-row--inactive,
+.ap-card-item--inactive {
+  opacity: 0.5;
+  pointer-events: none;
+
+  .row-actions {
+    pointer-events: all;
+    .icon-btn { opacity: 0.6; }
+    .icon-btn--activate { opacity: 1; }
+  }
+}
+
+/* ── Empty state ─────────────────────────────────────────────── */
+.ap-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+
+  .pi { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+  span { display: block; font-size: 0.92rem; }
+
+  &__btn {
+    margin-top: 0.75rem;
+    background: none; border: 1px solid var(--surface-border); border-radius: 6px;
+    padding: 0.35rem 0.9rem; font-size: 0.82rem; color: var(--primary-color); cursor: pointer;
+    &:hover { background: var(--surface-hover); }
+  }
+
+  &--standalone {
+    background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px;
+  }
+}
+
+/* ── Grid view ───────────────────────────────────────────────── */
+.ap-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+
+.ap-card-item {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s, transform 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &:hover { box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08); transform: translateY(-1px); }
+
+  &__title {
+    margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-color); line-height: 1.3;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  &__org {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    .pi { font-size: 12px; }
+  }
+
+  &__objective {
+    margin: 0;
+    font-size: 0.8rem; color: var(--text-color-secondary); line-height: 1.5;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+}
+
+/* ── Card header ─────────────────────────── */
+.ap-card-item .card-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.ap-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.9rem;
+}
+
+.ap-badge {
+  position: relative;
+  z-index: 1;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--primary-color); color: #fff;
+  font-size: 1.1rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+
+.ap-avatar-ring {
+  position: absolute;
+  top: -4px; left: -4px;
+  pointer-events: none;
+  transform: scaleX(-1);
+  transform-origin: 26px 26px;
+
+  circle {
+    stroke: var(--primary-color);
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 0.45s ease;
+  }
+}
+
+.ap-card-item:hover .ap-avatar-ring circle {
+  stroke-dashoffset: 0;
+}
+
+.status-tag--corner {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+/* ── Info grid ───────────────────────────── */
+.ap-card-item .info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px 16px;
+  margin-top: 30px;
+}
+
+.ap-card-item .info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ap-card-item .info-icon {
+  width: auto; height: auto; background: transparent; color: var(--text-color-secondary);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+
+  .pi { font-size: 12px; }
+}
+
+.ap-card-item .info-content { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+
+.ap-card-item .info-value {
+  font-size: 0.8rem;
+  line-height: 1.25;
+  color: var(--text-color);
+  font-weight: 400;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Tags row ────────────────────────────── */
+.ap-card-item .tags-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+/* ── Footer ──────────────────────────────── */
+.ap-card-item .card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--surface-border);
+}
+
+/* Pill "View" button — matches company-card reference */
+.ap-card-item .btn-view {
+  border: 1.5px solid var(--primary-color);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--primary-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: var(--primary-color); color: #fff; }
+}
+
+/* ── Pagination ──────────────────────────────────────────────── */
+.ap-pagination {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 0.5rem;
+
+  &__label { font-size: 0.82rem; color: var(--text-color-secondary); }
+}
+
+:host ::ng-deep .ap-paginator {
+  background: transparent; border: none; padding: 0;
+  .p-paginator-page.p-highlight {
+    background: var(--primary-color); color: #fff; border-radius: 6px;
+  }
+}
+
+.p-inputtext { box-shadow: none; height: 38px; font-size: .88rem !important; }
+.p-multiselect { padding: 5px; height: 38px; font-size: .88rem !important; }
+
+/* ── Auditors popover ────────────────────────────────────────── */
+:host ::ng-deep .ap-auditors-popover {
+  .p-popover-content { padding: 0; }
+
+  &.p-popover {
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+    border: 1px solid var(--surface-border);
+    min-width: 260px;
+    max-width: 340px;
+  }
+
+  &::before, &::after { display: none; }
+}
+
+.fp-auditors {
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem 0.65rem;
+    border-bottom: 1px solid var(--surface-border);
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-color);
+
+    .pi { color: var(--primary-color); font-size: 0.9rem; }
+  }
+
+  &__count {
+    margin-left: auto;
+    background: var(--surface-hover);
+    color: var(--primary-color);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 10px;
+  }
+
+  &__list {
+    padding: 0.4rem 0;
+    max-height: 260px;
+    overflow-y: auto;
+  }
+}
+
+.fp-auditor-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.5rem 1rem;
+
+  &__name {
+    flex: 1;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    font-weight: 500;
+  }
+}
+
+@media (max-width: 640px) {
+  .list-header {
+    display: none;
+  }
+
+  .ap-row {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+
+    .col-actions {
+      justify-content: flex-start;
+    }
+  }
+}
+
+/* ── Dark mode: swap flat pale-pastel badges/chips for translucent tints ── */
+:host-context(.app-dark) {
+  .filter-bar__clear { background: rgba(220, 38, 38, 0.12); &:hover { background: rgba(220, 38, 38, 0.2); } }
+  .filter-chip { border-color: rgba(99, 102, 241, 0.35); color: var(--p-indigo-200); button { color: var(--p-blue-300); &:hover { color: var(--p-indigo-200); } } }
+  .scope-badge { background: rgba(124, 58, 237, 0.18); color: var(--p-indigo-200); }
+  .type-badge--compliance { background: rgba(220, 38, 38, 0.15); color: var(--p-red-300); }
+  .type-badge--strategic  { background: rgba(162, 28, 175, 0.18); color: var(--p-fuchsia-300); }
+  .freq-badge { background: rgba(202, 138, 4, 0.15); color: var(--p-yellow-300); }
+  .mode-badge { background: rgba(15, 118, 110, 0.18); color: var(--p-teal-300); }
+  .dept-pill { color: var(--p-indigo-200); &--more { background: rgba(99, 102, 241, 0.2); &:hover { background: rgba(99, 102, 241, 0.3); } } }
+  .status-badge {
+    &--in-progress { background: rgba(180, 83, 9, 0.18); color: var(--p-amber-400); }
+    &--overdue     { background: rgba(185, 28, 28, 0.15); color: var(--p-red-300); }
+    &--on-hold     { background: rgba(234, 88, 12, 0.15); color: var(--p-orange-300); }
+  }
+  .auditor-avatar {
+    border-color: var(--surface-card);
+    &--more:hover { background: rgba(99, 102, 241, 0.3); }
+  }
+  .ap-card-item:hover { border-color: rgba(99, 102, 241, 0.4); }
+}

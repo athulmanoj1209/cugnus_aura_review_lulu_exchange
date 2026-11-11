@@ -1,0 +1,364 @@
+<div class="drawer-inner" *ngIf="job" [attr.data-status]="job.status">
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-list-check"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ job.title }}</h2>
+        <p class="drawer-subtitle">{{ job.scopeId }} · {{ job.scopeName }} · {{ job.subDivision }}</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="drawer-body">
+
+    <!-- ── stat cards (overlap the hero) ── -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--mint"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ durationDays }} <small>days</small></span>
+          <span class="stat-lbl">{{ job.periodLabel }}</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-list-check"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ tasks.length }}</span>
+          <span class="stat-lbl">Associated Tasks</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--amber"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ taskCompletionPct }}%</span>
+          <span class="stat-lbl">Tasks Completed</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--violet"><app-draw-icon icon="pi pi-users"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ teamSize }}</span>
+          <span class="stat-lbl">Team Members</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── progress banner for in-progress jobs ── -->
+    <div class="period-banner" *ngIf="job.status === ScopeJobStatuses.InProgress">
+      <app-draw-icon icon="pi pi-spin pi-spinner"></app-draw-icon>
+      <span>{{ progressPct }}% through the period</span>
+      <div class="period-banner__bar"><div class="period-banner__fill" [style.width.%]="progressPct"></div></div>
+    </div>
+
+    <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3>Basic Information</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k">Job ID</span>
+          <span class="kv__v"><strong>{{ job.id }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Scope ID</span>
+          <span class="kv__v"><strong>{{ job.scopeId }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Scope Name</span>
+          <span class="kv__v">{{ job.scopeName }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Sub-Division</span>
+          <span class="kv__v">{{ job.subDivision }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Audit Frequency</span>
+          <span class="kv__v">
+            <span class="freq-chip freq-chip--{{ job.auditFrequency }}"><app-draw-icon icon="pi pi-refresh"></app-draw-icon>{{ frequencyLabel }}</span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Mode of Audit</span>
+          <span class="kv__v"><span class="mode-badge"><app-draw-icon icon="pi pi-eye"></app-draw-icon>&nbsp;{{ modeLabel }}</span></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Start Date</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-calendar-plus" class="kv-ic"></app-draw-icon>{{ job.periodStart | date:'dd MMM yyyy' }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">End Date</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-calendar-minus" class="kv-ic"></app-draw-icon>{{ job.periodEnd | date:'dd MMM yyyy' }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Company</span>
+          <span class="kv__v">
+            <span class="org-avatar">{{ job.company.slice(0, 2).toUpperCase() }}</span>{{ job.company }}
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Division</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-map-marker" class="kv-ic"></app-draw-icon>{{ job.division }}</span>
+        </div>
+      </div>
+
+      <div class="notes" *ngIf="job.objective">
+        <span class="notes__k">Objective</span>
+        <p class="notes__v">{{ job.objective }}</p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SUB-SCOPES ═══════════════ -->
+    <div class="sec-card" *ngIf="job.subscopes?.length">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></span>
+        <h3>Sub-Scopes</h3>
+        <span class="sec-count">{{ job.subscopes?.length }}</span>
+      </div>
+
+      <div class="subscope-search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input type="text" placeholder="Search sub-scopes..."
+               [value]="subscopeQuery" (input)="onSubscopeSearch($event)" />
+      </div>
+
+      <div class="subscope-rows">
+        <div *ngFor="let ss of filteredSubscopes" class="subscope-row">
+          <div class="subscope-row__icon"><app-draw-icon icon="pi pi-file"></app-draw-icon></div>
+          <div class="subscope-row__text">
+            <span class="subscope-row__title">{{ ss.name }}</span>
+            <span class="subscope-row__sub">{{ ss.category }} · {{ frequencyLabel }}</span>
+          </div>
+          <span class="risk-badge risk-badge--{{ ss.risk }}">{{ riskLabel(ss.risk) }}</span>
+        </div>
+        <div class="subscope-empty" *ngIf="!filteredSubscopes.length">
+          <app-draw-icon icon="pi pi-search"></app-draw-icon>
+          <span>No sub-scopes match "{{ subscopeQuery }}"</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ASSOCIATED TASKS ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--indigo"><app-draw-icon icon="pi pi-list-check"></app-draw-icon></span>
+        <h3>Associated Tasks</h3>
+        <span class="sec-count">{{ tasks.length }}</span>
+      </div>
+   
+      <div class="task-summary">
+        <div class="ts-stat ts-stat--completed"><span class="ts-stat__num">{{ taskCounts.completed }}</span><span class="ts-stat__lbl">Completed</span></div>
+        <div class="ts-stat ts-stat--progress"><span class="ts-stat__num">{{ taskCounts.inProgress }}</span><span class="ts-stat__lbl">In Progress</span></div>
+        <div class="ts-stat ts-stat--open"><span class="ts-stat__num">{{ taskCounts.open }}</span><span class="ts-stat__lbl">Open</span></div>
+        <div class="ts-stat ts-stat--overdue"><span class="ts-stat__num">{{ taskCounts.overdue }}</span><span class="ts-stat__lbl">Overdue</span></div>
+        <div class="ts-progress">
+          <div class="ts-progress__bar"><div class="ts-progress__fill" [style.width.%]="taskCompletionPct"></div></div>
+          <span class="ts-progress__label">{{ taskCompletionPct }}% done</span>
+        </div>
+      </div>
+
+      <div class="task-list">
+        <div *ngFor="let task of pagedTasks" class="task-item"
+             [attr.data-status]="task.status" [attr.data-priority]="task.priority">
+          <div class="task-item__priority-bar"></div>
+          <div class="task-item__body">
+            <div class="task-item__top">
+              <div class="task-item__title-row">
+                <i class="pi task-status-icon" [ngClass]="taskStatusIcon(task.status)"></i>
+                <span class="task-item__title">{{ task.title }}</span>
+              </div>
+              <span class="task-status-pill task-status-pill--{{ task.status }}">{{ taskStatusLabel(task.status) }}</span>
+            </div>
+            <p class="task-item__desc">{{ task.description }}</p>
+            <div class="task-item__meta">
+              <span class="task-assignee" [pTooltip]="auditorName(task.assignedTo)" tooltipPosition="top">
+                <span class="task-assignee__avatar">{{ auditorInitials(task.assignedTo) }}</span>
+                <span class="task-assignee__name">{{ auditorName(task.assignedTo) }}</span>
+              </span>
+              <span class="task-due" [class.task-due--overdue]="task.status === ScopeTaskStatuses.Overdue">
+                <app-draw-icon icon="pi pi-calendar"></app-draw-icon>{{ task.dueDate | date:'dd MMM yyyy' }}
+              </span>
+              <span class="task-priority-chip task-priority-chip--{{ task.priority }}">{{ taskPriorityLabel(task.priority) }}</span>
+              <span class="task-id">{{ task.id }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="task-pagination" *ngIf="taskPageCount > 1">
+        <span class="tp-info">{{ taskPageRange }} of {{ tasks.length }} tasks</span>
+        <div class="tp-controls">
+          <button type="button" class="tp-nav-btn" (click)="prevTaskPage()" [disabled]="taskPage === 0">
+            <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon> Prev
+          </button>
+          <ng-container *ngFor="let p of visiblePages">
+            <span *ngIf="p === -1" class="tp-ellipsis">…</span>
+            <button *ngIf="p !== -1" type="button" class="tp-page-btn"
+                    [class.tp-page-btn--active]="taskPage === p" (click)="goToTaskPage(p)">{{ p + 1 }}</button>
+          </ng-container>
+          <button type="button" class="tp-nav-btn" (click)="nextTaskPage()" [disabled]="taskPage >= taskPageCount - 1">
+            Next <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ AUDIT TEAM (original collapsible sections) ═══════════════ -->
+    <div class="sec-card pers-card"
+         *ngIf="job.assignedAuditors?.length || job.assignedReviewers?.length">
+
+      <!-- ── Preparers (Auditors) ── -->
+      <div class="pers-section" *ngIf="job.assignedAuditors?.length">
+        <button type="button" class="pers-section__head pers-section__head--clickable"
+                (click)="$event.stopPropagation(); toggleAuditors()">
+          <div class="pers-section__icon pers-section__icon--auditor">
+            <app-draw-icon icon="pi pi-shield"></app-draw-icon>
+          </div>
+          <div class="pers-section__text">
+            <p class="pers-section__title">Preparers</p>
+            <p class="pers-section__sub">Auditors responsible for this job</p>
+          </div>
+          <span class="pers-count-badge">{{ job.assignedAuditors.length }}</span>
+          <app-draw-icon icon="pi pi-chevron-down" class="pers-section__chevron" [class.pers-section__chevron--open]="auditorsExpanded"></app-draw-icon>
+        </button>
+        <ng-container *ngIf="auditorsExpanded">
+        <div class="person-list">
+          <div *ngFor="let id of pagedAuditors" class="person-card">
+            <div class="person-card__head">
+              <div class="person-avatar person-avatar--auditor">{{ auditorInitials(id) }}</div>
+              <div class="person-card__identity">
+                <span class="person-card__name">{{ auditorName(id) }}</span>
+                <span class="person-card__role">
+                  <app-draw-icon icon="pi pi-shield"></app-draw-icon> {{ auditorProfile(id)?.role ?? defaultRoles.Auditor }}
+                </span>
+              </div>
+              <span class="person-card__exp-badge person-card__exp-badge--auditor"
+                    *ngIf="auditorProfile(id)?.experienceYears as years">
+                {{ years }}y exp
+              </span>
+            </div>
+            <!-- capture the profile ONCE — inner bindings can never hit undefined -->
+            <ng-container *ngIf="auditorProfile(id) as prof">
+              <div class="person-card__tags" *ngIf="prof.expertise?.length">
+                <span *ngFor="let tag of prof.expertise"
+                      class="person-tag person-tag--auditor">{{ tag }}</span>
+              </div>
+              <div class="person-card__workload" *ngIf="prof.workloadPct !== undefined">
+                <span class="workload-label">Workload</span>
+                <div class="workload-bar">
+                  <div class="workload-bar__fill"
+                       [style.width.%]="prof.workloadPct"
+                       [class.workload-bar__fill--high]="prof.workloadPct >= 75"></div>
+                </div>
+                <span class="workload-pct">{{ prof.workloadPct }}%</span>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Preparers pagination -->
+        <div class="task-pagination pers-pagination" *ngIf="auditorPageCount > 1">
+          <span class="tp-info">{{ auditorPageRange }} of {{ job.assignedAuditors.length }} preparers</span>
+          <div class="tp-controls">
+            <button type="button" class="tp-nav-btn"
+                    (click)="prevAuditorPage()" [disabled]="auditorPage === 0">
+              <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon> Prev
+            </button>
+            <button *ngFor="let p of auditorPages"
+                    type="button" class="tp-page-btn"
+                    [class.tp-page-btn--active]="auditorPage === p"
+                    (click)="goToAuditorPage(p)">
+              {{ p + 1 }}
+            </button>
+            <button type="button" class="tp-nav-btn"
+                    (click)="nextAuditorPage()" [disabled]="auditorPage >= auditorPageCount - 1">
+              Next <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+        </ng-container>
+      </div>
+
+      <!-- ── Reviewers ── -->
+      <div class="pers-section pers-section--bordered" *ngIf="job.assignedReviewers?.length">
+        <button type="button" class="pers-section__head pers-section__head--clickable"
+                (click)="$event.stopPropagation(); toggleReviewers()">
+          <div class="pers-section__icon pers-section__icon--reviewer">
+            <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          </div>
+          <div class="pers-section__text">
+            <p class="pers-section__title">Reviewers</p>
+            <p class="pers-section__sub">Assigned reviewers for this job</p>
+          </div>
+          <span class="pers-count-badge pers-count-badge--blue">{{ job.assignedReviewers.length }}</span>
+          <app-draw-icon icon="pi pi-chevron-down" class="pers-section__chevron" [class.pers-section__chevron--open]="reviewersExpanded"></app-draw-icon>
+        </button>
+        <ng-container *ngIf="reviewersExpanded">
+        <div class="person-list person-list--reviewer">
+          <div *ngFor="let id of pagedReviewers" class="person-card person-card--reviewer">
+            <div class="person-card__head">
+              <div class="person-avatar person-avatar--reviewer">{{ auditorInitials(id) }}</div>
+              <div class="person-card__identity">
+                <span class="person-card__name">{{ auditorName(id) }}</span>
+                <span class="person-card__role">
+                  <app-draw-icon icon="pi pi-eye"></app-draw-icon> {{ reviewerProfile(id)?.role ?? defaultRoles.Reviewer }}
+                </span>
+              </div>
+              <span class="person-card__exp-badge person-card__exp-badge--reviewer"
+                    *ngIf="reviewerProfile(id)?.experienceYears as years">
+                {{ years }}y exp
+              </span>
+            </div>
+            <!-- capture the profile ONCE — inner bindings can never hit undefined -->
+            <div class="person-card__review-stats" *ngIf="reviewerProfile(id) as rprof">
+              <span class="review-stat review-stat--done"
+                    pTooltip="Reviews completed" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-check-circle"></app-draw-icon>
+                {{ rprof.reviewsCompleted }} completed
+              </span>
+              <span class="review-stat review-stat--pending"
+                    pTooltip="Reviews pending" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-clock"></app-draw-icon>
+                {{ rprof.reviewsPending }} pending
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reviewers pagination -->
+        <div class="task-pagination pers-pagination" *ngIf="reviewerPageCount > 1">
+          <span class="tp-info">{{ reviewerPageRange }} of {{ job.assignedReviewers.length }} reviewers</span>
+          <div class="tp-controls">
+            <button type="button" class="tp-nav-btn"
+                    (click)="prevReviewerPage()" [disabled]="reviewerPage === 0">
+              <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon> Prev
+            </button>
+            <button *ngFor="let p of reviewerPages"
+                    type="button" class="tp-page-btn"
+                    [class.tp-page-btn--active]="reviewerPage === p"
+                    (click)="goToReviewerPage(p)">
+              {{ p + 1 }}
+            </button>
+            <button type="button" class="tp-nav-btn"
+                    (click)="nextReviewerPage()" [disabled]="reviewerPage >= reviewerPageCount - 1">
+              Next <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+        </ng-container>
+      </div>
+
+    </div>
+
+  </div>
+</div>

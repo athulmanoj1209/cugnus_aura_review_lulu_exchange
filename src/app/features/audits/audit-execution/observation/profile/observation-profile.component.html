@@ -1,0 +1,143 @@
+<div class="drawer-inner">
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ obs.title }}</h2>
+        <p class="drawer-subtitle">{{ obs.id }} · {{ obs.scope }}</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="obs-detail__body">
+
+    <!-- ── stat cards (overlap the hero) ── -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-ic" [ngClass]="'stat-ic--' + obs.riskRating"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num" [ngClass]="'stat-num--' + obs.riskRating">{{ riskLabel(obs.riskRating) }}</span>
+          <span class="stat-lbl" i18n="@@audit.observations.riskRating">Risk Rating</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-flag"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ statusLabel(obs.status) }}</span>
+          <span class="stat-lbl" i18n="@@common.status">Status</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--teal"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ obs.evidenceIds.length }}</span>
+          <span class="stat-lbl" i18n="@@audit.observations.linkedEvidence">Linked Evidence</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--violet"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ obs.auditor }}</span>
+          <span class="stat-lbl" i18n="@@audit.observations.auditor">Auditor</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3 i18n="@@audit.observations.basicInformation">Basic Information</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.observations.observationId">Observation ID</span>
+          <span class="kv__v"><strong>{{ obs.id }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.observations.riskRating">Risk Rating</span>
+          <span class="kv__v">
+            <span class="risk-badge" [ngClass]="'risk--' + obs.riskRating">
+              <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon> {{ riskLabel(obs.riskRating) }}
+            </span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.status">Status</span>
+          <span class="kv__v">
+            <span class="status-chip" [ngClass]="'obs-status--' + obs.status">{{ statusLabel(obs.status) }}</span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.findings.task">Task</span>
+          <span class="kv__v"><span class="task-chip">{{ obs.taskId }}</span></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.scope">Scope</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-sitemap" class="kv-ic"></app-draw-icon>{{ obs.scope }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.subScope">Sub-Scope</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-tag" class="kv-ic"></app-draw-icon>{{ obs.subscope }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.observations.auditor">Auditor</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-user" class="kv-ic"></app-draw-icon>{{ obs.auditor }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@audit.observations.created">Created</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-calendar" class="kv-ic"></app-draw-icon>{{ obs.createdDate | date:'MMM d, y' }}</span>
+        </div>
+      </div>
+
+      <div class="notes">
+        <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <span i18n="@@audit.observations.observationNotes">Observation Notes</span></span>
+        <p class="notes__v">{{ obs.description }}</p>
+      </div>
+    </div>
+
+    <!-- Linked Finding (kept disabled, as in the original)
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--indigo"><app-draw-icon icon="pi pi-link"></app-draw-icon></span>
+        <h3>Linked Finding</h3>
+      </div>
+      <div class="linked-rows">
+        <div class="linked-row">
+          <span class="linked-row__type">{{ obs.findingId }}</span>
+          <span class="linked-row__name">{{ obs.findingTitle }}</span>
+        </div>
+      </div>
+    </div> -->
+
+    <!-- ═══════════════ LINKED EVIDENCE ═══════════════ -->
+    <div class="sec-card" *ngIf="obs.evidenceIds.length">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon></span>
+        <h3 i18n="@@audit.observations.linkedEvidence">Linked Evidence</h3>
+        <span class="sec-count">{{ obs.evidenceIds.length }}</span>
+      </div>
+
+      <div class="chip-wrap">
+        <span *ngFor="let ev of obs.evidenceIds" class="ev-chip">
+          <app-draw-icon icon="pi pi-folder-open"></app-draw-icon> {{ ev }}
+        </span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="drawer-footer">
+    <p-button label="Close" i18n-label="@@common.close" styleClass="cancel-btn" (onClick)="onClose()" type="button"></p-button>
+  </div>
+</div>

@@ -1,0 +1,48 @@
+$primary: var(--primary-color);
+$primary-light: color-mix(in srgb, var(--primary-color) 16%, transparent);
+$border: var(--surface-border);
+$muted: var(--text-color-secondary);
+$success: var(--p-green-500);
+$success-light: color-mix(in srgb, var(--p-green-500) 16%, transparent);
+
+:host { display: block; }
+
+.add-dialog-root { display: flex; flex-direction: column; background: var(--surface-card); border-radius: 16px; overflow: hidden; }
+
+.add-dh {
+  display: flex; align-items: flex-start; gap: 12px; padding: 20px 20px 16px; border-bottom: 1px solid $border;
+  &__icon { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; min-width: 44px; background: $primary-light; border-radius: 10px; .pi { font-size: 20px; color: $primary; } }
+  &__text { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  &__title { font-size: 16px; font-weight: 700; color: var(--text-color); }
+  &__subtitle { font-size: 12px; color: $muted; }
+  &__close { display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; border: none; background: transparent; border-radius: 6px; cursor: pointer; color: $muted; font-size: 14px; transition: background 0.15s; flex-shrink: 0; &:hover { background: var(--surface-hover); color: var(--text-color); } }
+}
+
+.add-db { padding: 20px; max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.form-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.field-label { font-size: 13px; font-weight: 600; color: var(--text-color); }
+.req-star { color: var(--p-red-500); margin-inline-start: 2px; }
+.optional-tag { font-size: 11px; color: $muted; font-weight: 400; margin-inline-start: 4px; }
+.field-input { width: 100%; height: 42px; border-radius: 8px; border: 1px solid var(--surface-border); padding-inline: 12px; font-size: 13px; color: var(--text-color); transition: border-color 0.15s, box-shadow 0.15s; &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba(16,46,112,0.1); } &.input-error { border-color: var(--p-red-500); } &::placeholder { color: var(--text-color-secondary); } }
+.field-textarea { width: 100%; border-radius: 8px; border: 1px solid var(--surface-border); padding-inline: 12px; padding-block: 10px; font-size: 13px; color: var(--text-color); resize: vertical; transition: border-color 0.15s; &:focus { outline: none; border-color: $primary; box-shadow: 0 0 0 3px rgba(16,46,112,0.1); } &::placeholder { color: var(--text-color-secondary); } }
+.field-meta { display: flex; justify-content: space-between; align-items: center; min-height: 16px; }
+.field-error { color: var(--p-red-500); font-size: 11px; }
+.char-count { font-size: 11px; color: $muted; text-align: end; }
+
+.status-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border: 1px solid $border; border-radius: 10px; background: var(--surface-hover); margin-bottom: 8px; &__text { display: flex; flex-direction: column; gap: 2px; } &__label { font-size: 13px; font-weight: 600; color: var(--text-color); } &__hint { font-size: 11px; color: $muted; } }
+.add-btn-row { display: flex; justify-content: end; margin-top: 4px; margin-bottom: 4px; }
+
+::ng-deep .btn-add-list.p-button { background-color: $primary-light !important; border: 1px solid $primary-light !important; color: $primary !important; border-radius: 8px !important; height: 36px; font-size: 12px; font-weight: 600; padding: 0 14px; .p-button-label { color: $primary !important; } .p-button-icon { color: $primary !important; } &:hover { background-color: $primary !important; border-color: $primary !important; .p-button-label, .p-button-icon { color: #fff !important; } } }
+
+::ng-deep .preview-divider { margin: 8px 0 !important; }
+.preview-section { display: flex; flex-direction: column; gap: 8px; }
+.preview-heading { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: $muted; margin: 0; .pi { color: $primary; font-size: 13px; } }
+.preview-count { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: $primary; color: #fff; font-size: 11px; font-weight: 700; }
+.preview-list { display: flex; flex-direction: column; gap: 6px; }
+.preview-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--surface-hover); border: 1px solid $border; border-radius: 8px; &__idx { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; min-width: 22px; border-radius: 50%; background: $primary-light; color: $primary; font-size: 11px; font-weight: 700; } &__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } &__name { font-size: 13px; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } &__desc { font-size: 11px; color: $muted; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }
+.preview-status-pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: color-mix(in srgb, var(--p-red-500) 10%, transparent); color: var(--p-red-500); &.active { background: $success-light; color: $success; } }
+.btn-remove { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: none; border-radius: 4px; background: transparent; cursor: pointer; color: var(--text-color-secondary); font-size: 11px; transition: background 0.15s, color 0.15s; flex-shrink: 0; &:hover { background: color-mix(in srgb, var(--p-red-500) 10%, transparent); color: var(--p-red-500); } }
+
+.add-df { display: flex; align-items: center; justify-content: end; gap: 10px; padding: 14px 20px; border-top: 1px solid $border; background: var(--surface-hover); }
+
+::ng-deep .btn-submit.p-button { background-color: $primary !important; border-color: $primary !important; border-radius: 8px !important; height: 38px; font-size: 13px; font-weight: 600; padding: 0 20px; .p-button-label { color: #fff !important; } .p-button-icon { color: #fff !important; } &:hover { background-color: var(--primary-color) !important; border-color: var(--primary-color) !important; } &:disabled { opacity: 0.5 !important; cursor: not-allowed !important; } }

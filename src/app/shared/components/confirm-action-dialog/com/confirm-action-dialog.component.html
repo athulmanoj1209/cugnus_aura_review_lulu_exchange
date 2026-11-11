@@ -1,0 +1,48 @@
+<p-dialog
+  [header]="view()?.title ?? ''"
+  [visible]="!!view()"
+  (visibleChange)="!$event && respond(false)"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [style]="{ width: '420px' }"
+  [styleClass]="'app-confirm-dialog app-confirm-dialog--' + (view()?.action ?? '')"
+>
+  @if (view(); as cfg) {
+    <div class="confirm-body">
+      <div class="confirm-body__icon-wrap" [ngClass]="'icon-wrap--' + cfg.action">
+        <i class="pi" [ngClass]="cfg.icon"></i>
+      </div>
+
+      <p class="confirm-body__text">
+        @if (cfg.verb) {
+          Are you sure you want to <strong>{{ cfg.verb }}</strong>
+          @if (cfg.itemName) {&nbsp;<strong>{{ cfg.itemName }}</strong>}?
+        } @else {
+          {{ cfg.message }}
+        }
+      </p>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    @if (view(); as cfg) {
+      <p-button
+        [label]="cfg.cancelLabel"
+        icon="pi pi-times"
+        [text]="true"
+        severity="secondary"
+        (onClick)="respond(false)"
+      />
+      <p-button
+        [label]="cfg.confirmLabel"
+        [icon]="cfg.confirmIcon"
+        [severity]="cfg.severity"
+        [outlined]="true"
+        autofocus
+        (onClick)="respond(true)"
+      />
+    }
+  </ng-template>
+</p-dialog>

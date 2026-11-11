@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "dist/apollo-ng/browser",
+  "rewrites": [
+    { "source": "/:lang(en|es|de|fr|ar)/:path*", "destination": "/:lang/index.html" }
+  ],
+  "redirects": [
+    { "source": "/", "destination": "/en/", "permanent": false }
+  ]
+}

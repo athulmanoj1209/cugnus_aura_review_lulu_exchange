@@ -1,0 +1,46 @@
+<button class="back" (click)="store.view.set(PlanViews.Annual)">← Back to Annual Overview</button>
+
+<section class="panel">
+  <header class="panel-head">
+    <div>
+      <h2>Month Calendar</h2>
+      <p class="sub">Scope jobs on their planned start day — weekly repeats every 7 days, bi-weekly every 14. Hover a chip for subDivision, scope &amp; status; click to open the job record.</p>
+    </div>
+    <div class="nav">
+      <button pButton text icon="pi pi-chevron-left" (click)="shift(-1)"></button>
+      <span class="title">{{ months[store.currentMonth()] }} {{ store.year() }}</span>
+      <button pButton text icon="pi pi-chevron-right" (click)="shift(1)"></button>
+    </div>
+  </header>
+
+  <div class="grid dow-row">
+    @for (d of dow; track d) { <div class="dow">{{ d }}</div> }
+  </div>
+  <div class="grid">
+    @for (cell of store.calendarDays(); track $index; let idx = $index) {
+      <div class="day" [class.empty]="cell.day === null" [class.today]="cell.isToday"
+           [class.weekend]="idx % 7 === 0 || idx % 7 === 6">
+        @if (cell.day !== null) {
+          <span class="daynum">{{ cell.day }}</span>
+          @for (chip of visibleChips(cell); track chip.scope.id + '-' + chip.job.id + '-' + (chip.run ?? 0)) {
+            <button class="chip st-{{ chip.status }}"
+                    [style.border-left-color]="freqColor[chip.scope.freq]"
+                    [pTooltip]="tooltipOf(chip)" tooltipPosition="top"
+                    (click)="openChip(chip)">
+              <span class="mark">{{ meta[chip.status].mark || markFallback }}</span>
+              <span class="job-name">{{ chip.job.name }}</span>
+              @if (chip.run !== null) {
+                <span class="run">{{ runBadgeLabel(chip.scope.freq) }}{{ chip.run }}</span>
+              }
+            </button>
+          }
+          @if (cell.chips.length > maxChips) {
+            <button class="more" (click)="toggleDay(cell.day)">
+              {{ expandedDays().has(cell.day) ? showLessLabel : moreLabel(cell.chips.length - maxChips) }}
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+</section>

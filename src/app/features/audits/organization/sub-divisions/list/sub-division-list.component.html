@@ -1,0 +1,297 @@
+<div class="sub-divisions-page">
+    <!-- Page Header -->
+    <div class="page-header">
+        <!-- Row 1: title + action button -->
+        <div class="page-header__top">
+            <div class="page-header__title-group">
+                <app-back-button></app-back-button>
+                <div class="page-title-block">
+                    <h2 class="page-title">Sub-Division Management</h2>
+                    <p class="page-subtitle">Define, manage, and monitor sub-divisions across all divisions</p>
+                </div>
+            </div>
+            <div class="page-header__actions">
+                <p-button label="+ New Sub-Division" styleClass="sub-division-btn" (onClick)="addNewSubDivision()"> </p-button>
+
+                <!-- View toggle -->
+                <div class="view-toggle" role="group" aria-label="View mode">
+                    <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === SubDivisionViewModes.List" (click)="setViewMode(SubDivisionViewModes.List)" aria-label="List view">
+                        <app-draw-icon icon="pi pi-list"></app-draw-icon>
+                    </button>
+                    <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === SubDivisionViewModes.Grid" (click)="setViewMode(SubDivisionViewModes.Grid)" aria-label="Grid view">
+                        <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: filters + search -->
+        <div class="page-header__filters">
+            <div class="page-header__selects">
+                <p-multiselect
+                    [options]="companyFilterOptions"
+                    [(ngModel)]="selectedCompanies"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="All Companies"
+                    [showClear]="true"
+                    [showToggleAll]="true"
+                    class="filter-multiselect"
+                    (onChange)="onCompanyFilter()"
+                    [maxSelectedLabels]="2"
+                    selectedItemsLabel="{0} companies"
+                >
+                    <ng-template pTemplate="item" let-item>
+                        <div class="filter-option">
+                            <span class="filter-dot" [style.background]="getCompanyColor(item.value)"></span>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </ng-template>
+                </p-multiselect>
+
+                <p-multiselect
+                    [options]="divisionFilterOptions"
+                    [(ngModel)]="selectedDivisionCodes"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="All Divisions"
+                    [showClear]="true"
+                    [showToggleAll]="true"
+                    class="filter-multiselect"
+                    (onChange)="onDivisionFilter()"
+                    [maxSelectedLabels]="2"
+                    selectedItemsLabel="{0} divisions"
+                    [filter]="true"
+                    filterPlaceholder="Search division…"
+                >
+                    <ng-template pTemplate="item" let-item>
+                        <div class="filter-option">
+                            <app-draw-icon icon="pi pi-building" [size]="12" style="color: var(--text-color-secondary)"></app-draw-icon>
+                            <span>{{ item.label }}</span>
+                        </div>
+                    </ng-template>
+                </p-multiselect>
+            </div>
+
+            <span class="p-input-icon-left search-wrapper page-header__search relative">
+                <app-draw-icon icon="pi pi-search" class="left-3 top-[15.1px] absolute"></app-draw-icon>
+                <input pInputText type="text" placeholder="Search sub-divisions…" class="search-input" [(ngModel)]="searchQuery" (input)="onSearch()" />
+            </span>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════ GRID VIEW ═══════════════════════ -->
+    @if (viewMode === SubDivisionViewModes.Grid) { @if (pagedSubDivisions.length > 0) {
+    <div class="sub-divisions-grid">
+        @for (subDivision of pagedSubDivisions; track subDivision.subDivisionName + subDivision.divisionCode) {
+          <div class="sub-division-card" [class.sub-division-card--inactive]="isBlocked(subDivision.status)">
+
+            <!-- Card Header -->
+            <p-tag
+                [value]="cardStatusLabel(subDivision.status)"
+                [severity]="subDivision.status === SubDivisionStatuses.Active ? 'success' : 'secondary'"
+                class="status-tag status-tag--corner"
+            >
+            </p-tag>
+            <div class="card-header">
+                <div class="sub-division-avatar-wrap">
+                    <div class="company-badge" [style.background]="getCompanyColor(subDivision.company)">{{ getCompanyTag(subDivision.company) }}</div>
+                    <svg class="sub-division-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+                        <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+                    </svg>
+                </div>
+                <h3 class="sub-division-name">{{ subDivision.subDivisionName }}</h3>
+                <span class="sub-division-division">
+                    <app-draw-icon icon="pi pi-building"></app-draw-icon>
+                    {{ subDivision.divisionName }}
+                </span>
+            </div>
+            
+            <!-- Key Info Grid -->
+            <div class="info-grid">
+                <div class="info-item" pTooltip="Sub-Division Code" tooltipPosition="top">
+                    <span class="info-icon"><app-draw-icon icon="pi pi-id-card"></app-draw-icon></span>
+                    <div class="info-content">
+                        <span class="info-value sub-division-id-badge">{{ subDivision.subDivisionCode }}</span>
+                    </div>
+                </div>
+                <div class="info-item" pTooltip="Employees" tooltipPosition="top">
+                    <span class="info-icon"><app-draw-icon icon="pi pi-users"></app-draw-icon></span>
+                    <div class="info-content">
+                        <span class="info-value">{{ subDivision.numberOfEmployees ?? '—' }}</span>
+                    </div>
+                </div>
+                <div class="info-item" pTooltip="Email" tooltipPosition="top">
+                    <span class="info-icon"><app-draw-icon icon="pi pi-envelope"></app-draw-icon></span>
+                    <div class="info-content">
+                        <span class="info-value email-val">{{ subDivision.contactEmail }}</span>
+                    </div>
+                </div>
+                @if (subDivision.subDivisionHead) {
+                <div class="info-item" pTooltip="Sub-Division Head" tooltipPosition="top">
+                    <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+                    <div class="info-content">
+                        <span class="info-value">{{ getUserLabel(subDivision.subDivisionHead) }}</span>
+                    </div>
+                </div>
+                } @if (subDivision.scopes?.length) {
+                <div class="info-item" pTooltip="Audit Scopes" tooltipPosition="top">
+                    <span class="info-icon"><app-draw-icon icon="pi pi-file-check"></app-draw-icon></span>
+                    <div class="info-content">
+                        <span class="info-value">{{ subDivision.scopes!.length }} scope{{ subDivision.scopes!.length !== 1 ? 's' : '' }}</span>
+                    </div>
+                </div>
+                }
+            </div>
+
+            <!-- Description -->
+            @if (subDivision.description) {
+            <div class="sub-division-description">
+                <p>{{ subDivision.description }}</p>
+            </div>
+            }
+
+            <!-- Risk & Status Tags -->
+            <div class="tags-row">
+                <p-tag [value]="'Risk: ' + riskLabel(subDivision.riskRating)" [severity]="riskRatingSeverity[subDivision.riskRating]" class="meta-tag"> </p-tag>
+                <p-tag [value]="riskStatusLabel[subDivision.riskStatus]" [severity]="riskStatusSeverity[subDivision.riskStatus]" class="meta-tag"> </p-tag>
+                @if (subDivision.scopes?.length) {
+                <p-tag [value]="subDivision.scopes!.length + ' Scope' + (subDivision.scopes!.length !== 1 ? 's' : '')" severity="info" class="meta-tag"> </p-tag>
+                }
+            </div>
+
+            <!-- Card Footer -->
+            <div class="card-footer">
+                <span class="company-label">
+                    <app-draw-icon icon="pi pi-building"></app-draw-icon>
+                    {{ getCompanyLabel(subDivision.company) }}
+                </span>
+                <div class="card-actions">
+                    <button type="button" class="icon-btn" (click)="viewSubDivision(subDivision)" pTooltip="View" tooltipPosition="top">
+                        <app-draw-icon icon="pi pi-eye" style="color: rgb(4, 4, 62)"></app-draw-icon>
+                    </button>
+                    <button type="button" class="icon-btn" (click)="editSubDivision(subDivision)" pTooltip="Edit" tooltipPosition="top">
+                        <app-draw-icon icon="pi pi-pencil" style="color: #f59e0b"></app-draw-icon>
+                    </button>
+                    <button type="button" class="icon-btn" [class.icon-btn--activate]="subDivision.status !== SubDivisionStatuses.Active"
+                        [class.icon-btn--deactivate]="subDivision.status === SubDivisionStatuses.Active"
+                        [pTooltip]="subDivision.status === SubDivisionStatuses.Active ? 'Deactivate' : 'Activate'" tooltipPosition="top"
+                        (click)="openConfirm(subDivision)">
+                        <app-draw-icon [icon]="subDivision.status === SubDivisionStatuses.Active ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+    } @else {
+    <div class="empty-state">
+        <app-draw-icon icon="pi pi-sitemap" class="empty-icon"></app-draw-icon>
+        <h3>No sub-divisions found</h3>
+        <p>Try adjusting your search or filter criteria.</p>
+    </div>
+    } }
+
+    <!-- ═══════════════════════ LIST VIEW ═══════════════════════ -->
+    @if (viewMode === SubDivisionViewModes.List) { @if (pagedSubDivisions.length > 0) {
+    <div class="sub-divisions sub-divisions--list">
+        <div class="list-header">
+            <span class="list-header__cell col-name">Sub-Division Name</span>
+            <span class="list-header__cell col-division">Division</span>
+            <span class="list-header__cell col-status">Status</span>
+            <span class="list-header__cell col-employees">Employees</span>
+            <span class="list-header__cell col-risk">Risk</span>
+            <span class="list-header__cell col-head">Sub-Division. Head</span>
+            <span class="list-header__cell col-actions">Actions</span>
+        </div>
+
+        @for (subDivision of pagedSubDivisions; track subDivision.subDivisionName + subDivision.divisionCode) {
+        <article class="sub-division-row" [class.sub-division-row--inactive]="isBlocked(subDivision.status)">
+            <div class="col-name">
+                <div class="cell-name">
+                    <div class="cell-badge" [style.background]="getCompanyColor(subDivision.company)">{{ getCompanyTag(subDivision.company) }}</div>
+                    <div class="cell-name__block">
+                        <span class="cell-name__text">{{ subDivision.subDivisionName }}</span>
+                        <span class="cell-name__type">{{ subDivision.subDivisionCode }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-division">
+                <div class="cell-division">
+                    <app-draw-icon icon="pi pi-building"></app-draw-icon>
+                    <span>{{ subDivision.divisionName }}</span>
+                </div>
+            </div>
+
+                <td class="col-status">
+                  <p-tag
+                    [value]="subDivisionStatusLabel[subDivision.status]"
+                    [severity]="subDivisionStatusSeverity[subDivision.status]"
+                    class="status-tag">
+                  </p-tag>
+                </td>
+
+            <div class="col-employees">
+                <span class="cell-employees">{{ subDivision.numberOfEmployees ?? '—' }}</span>
+            </div>
+
+            <div class="col-risk">
+                <div class="cell-tags">
+                    <p-tag [value]="riskLabel(subDivision.riskRating)" [severity]="riskRatingSeverity[subDivision.riskRating]" class="meta-tag"> </p-tag>
+                    <p-tag [value]="riskStatusLabel[subDivision.riskStatus]" [severity]="riskStatusSeverity[subDivision.riskStatus]" class="meta-tag"> </p-tag>
+                </div>
+            </div>
+
+            <div class="col-head">
+                @if (subDivision.subDivisionHead) {
+                <span class="cell-head">{{ getUserLabel(subDivision.subDivisionHead) }}</span>
+                } @else {
+                <span class="cell-empty">—</span>
+                }
+            </div>
+
+            <div class="col-actions">
+                <div class="row-actions">
+                    <button type="button" class="icon-btn" (click)="viewSubDivision(subDivision)" pTooltip="View" tooltipPosition="top">
+                        <app-draw-icon icon="pi pi-eye" style="color: rgb(4, 4, 62)"></app-draw-icon>
+                    </button>
+                    <button type="button" class="icon-btn" (click)="editSubDivision(subDivision)" pTooltip="Edit" tooltipPosition="top">
+                        <app-draw-icon icon="pi pi-pencil" style="color: #f59e0b"></app-draw-icon>
+                    </button>
+                    <button type="button" class="icon-btn" [class.icon-btn--activate]="subDivision.status !== SubDivisionStatuses.Active"
+                        [class.icon-btn--deactivate]="subDivision.status === SubDivisionStatuses.Active"
+                        [pTooltip]="subDivision.status === SubDivisionStatuses.Active ? 'Deactivate' : 'Activate'" tooltipPosition="top"
+                        (click)="openConfirm(subDivision)">
+                        <app-draw-icon [icon]="subDivision.status === SubDivisionStatuses.Active ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+                    </button>
+                </div>
+            </div>
+        </article>
+        }
+    </div>
+    } @else {
+    <div class="empty-state">
+        <app-draw-icon icon="pi pi-sitemap" class="empty-icon"></app-draw-icon>
+        <h3>No sub-divisions found</h3>
+        <p>Try adjusting your search or filter criteria.</p>
+    </div>
+    } }
+
+    <!-- Paginator -->
+    @if (filteredSubDivisions.length > 0) {
+    <app-pagination-bar
+        [pageSize]="PAGE_SIZE"
+        [totalRecords]="filteredSubDivisions.length"
+        [currentPage]="currentPage"
+        entityLabel="sub-divisions"
+        [rowsPerPageOptions]="[6, 12, 18, 24, 40, 56]"
+        (pageChange)="onPageChange($event)"
+        (rowsChange)="onRowsChange($event)"
+    >
+    </app-pagination-bar>
+    }
+</div>
+
+<app-confirm-action-dialog [visible]="showConfirmDialog" [action]="isBlocked(confirmTarget?.status ?? '') ? 'Activate' : 'Deactivate'" [itemName]="confirmTarget?.subDivisionName ?? ''" (confirmed)="confirmToggle()" (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>

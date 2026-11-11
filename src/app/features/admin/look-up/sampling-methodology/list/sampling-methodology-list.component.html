@@ -1,0 +1,130 @@
+<div class="sampling-methodology-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title" i18n="@@admin.samplingMethodology.title">Sampling Methodologies</h2>
+          <p class="page-subtitle" i18n="@@admin.samplingMethodology.subtitle">Define and manage sampling methodologies used in audit evidence gathering</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+        <p-button label="+ New Sampling Methodology" i18n-label="@@admin.samplingMethodology.newSamplingMethodology" styleClass="sampling-methodology-btn" (onClick)="openAddDialog()"></p-button>
+      </div>
+    </div>
+    <div class="page-header__filters">
+      <span class="p-input-icon-left search-wrapper page-header__search relative">
+        <app-draw-icon icon="pi pi-search" class="start-3 top-[15.1px] absolute"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search by Sampling Methodology" [(ngModel)]="searchQuery"
+          (input)="onSearch()" class="search-input" i18n-placeholder="@@admin.samplingMethodology.searchPlaceholder" />
+      </span>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  @if (filteredMethodologies.length === 0) {
+    <div class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-chart-bar"></app-draw-icon>
+      <span i18n="@@admin.samplingMethodology.empty">No sampling methodologies found.</span>
+      <button class="ev-empty__btn" (click)="openAddDialog()"><span i18n="@@admin.samplingMethodology.addSamplingMethodologyButton">+ Add Sampling Methodology</span></button>
+    </div>
+  }
+
+  <!-- List -->
+  @if (filteredMethodologies.length > 0) {
+    <div class="it-list">
+      <div class="list-header">
+        <span class="list-header__cell col-index" i18n="@@common.number">#</span>
+        <span class="list-header__cell col-name sortable" i18n="@@admin.samplingMethodology.columnName" (click)="toggleSort('name')">SAMPLING METHODOLOGY <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'name'" [class.pi-sort-amount-up-alt]="sortField === 'name' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'name' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-status" i18n="@@common.statusUppercase">STATUS</span>
+        <span class="list-header__cell col-date sortable" (click)="toggleSort('createdOn')"><span i18n="@@common.createdOn">CREATED ON</span> <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'createdOn'" [class.pi-sort-amount-up-alt]="sortField === 'createdOn' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'createdOn' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-actions" i18n="@@common.actionsUppercase">ACTIONS</span>
+      </div>
+
+      @for (methodology of pagedMethodologies; track methodology.id; let i = $index) {
+        <article class="it-row" [class.it-row--inactive]="methodology.status === 'inactive'">
+          <div class="col-index">
+            <span class="ev-id">{{ (currentPage * pageSize + i + 1).toString().padStart(2, '0') }}</span>
+          </div>
+          <div class="col-name">
+            <span class="ev-title">{{ methodology.name }}</span>
+            <span class="ev-uploader">{{ truncate(methodology.description, 100) }}</span>
+          </div>
+          <div class="col-status">
+            <span class="status-badge" [class.status-badge--active]="methodology.status === 'active'" [class.status-badge--inactive]="methodology.status !== 'active'">
+              {{ statusLabel(methodology.status) }}
+            </span>
+          </div>
+          <div class="col-date">{{ methodology.createdOn }}</div>
+          <div class="col-actions">
+            <div class="row-actions">
+              <button type="button" class="icon-btn" (click)="viewMethodology(methodology)" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn" (click)="editMethodology(methodology)" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn" [class.icon-btn--activate]="methodology.status === 'inactive'" [class.icon-btn--deactivate]="methodology.status === 'active'"
+                (click)="openConfirm(methodology)"
+                [pTooltip]="methodology.status === 'inactive' ? activateLabel : deactivateLabel" tooltipPosition="top">
+                <app-draw-icon [icon]="methodology.status === 'inactive' ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (filteredMethodologies.length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize"
+      [totalRecords]="filteredMethodologies.length"
+      [currentPage]="currentPage"
+      entityLabel="sampling methodologies"
+      i18n-entityLabel="@@admin.samplingMethodology.entityLabel"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onRowsChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>
+
+<!-- Add / Edit Dialog -->
+<p-dialog
+  [(visible)]="showAddDialog"
+  [modal]="true" [draggable]="false" [resizable]="false" [closable]="false" [showHeader]="false"
+  [style]="{ width: '560px', padding: '0' }" styleClass="no-pad-dialog">
+  <app-sampling-methodology
+    [mode]="dialogMode"
+    [editItem]="editingItem"
+    (submitted)="onMethodologiesSubmitted($event)"
+    (cancelled)="onDialogCancelled()">
+  </app-sampling-methodology>
+</p-dialog>
+
+<!-- View Dialog -->
+@if (viewingItem) {
+  <app-lookup-view-dialog
+    [(visible)]="showViewDialog"
+    icon="pi pi-chart-bar"
+    [title]="viewingItem.name"
+    subtitle="Sampling Methodology Details"
+    i18n-subtitle="@@admin.samplingMethodology.details"
+    [active]="viewingItem.status === 'active'"
+    [description]="viewingItem.description"
+    [createdOn]="viewingItem.createdOn">
+  </app-lookup-view-dialog>
+}
+
+<!-- Confirm Dialog -->
+<app-confirm-action-dialog
+  [visible]="showConfirmDialog"
+  [action]="confirmTarget && isBlocked(confirmTarget.id) ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()"
+  (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>

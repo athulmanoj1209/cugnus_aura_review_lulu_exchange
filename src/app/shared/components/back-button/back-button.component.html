@@ -1,0 +1,11 @@
+<button type="button"
+        class="back-btn"
+        btn-back
+        [backTo]="to"
+        [backFallback]="fallback"
+        [class.back-btn--on-dark]="variant === 'on-dark'"
+        [attr.aria-label]="label"
+        [pTooltip]="tooltip ? label : ''"
+        tooltipPosition="bottom">
+  <app-draw-icon icon="pi pi-arrow-left"></app-draw-icon>
+</button>

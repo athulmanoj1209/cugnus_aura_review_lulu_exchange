@@ -1,0 +1,154 @@
+<div class="profile-inner">
+
+  @if (rfiItem) {
+
+    <!-- ═══════════════ HERO HEADER (gradient) ═══════════════ -->
+    <header class="hero">
+      <div class="hero__avatar"><app-draw-icon icon="pi pi-envelope"></app-draw-icon></div>
+      <div class="hero__text">
+        <h2 class="hero__title">{{ rfiItem.title }}</h2>
+        <p class="hero__sub">{{ rfiItem.id }} · {{ rfiItem.category }}</p>
+      </div>
+      <span class="hero-badge" [class]="'hsev--' + getPrioritySeverity(rfiItem.priority)">
+        {{ rfiItem.priority | titlecase }} Priority
+      </span>
+      <button type="button" class="hero__close" (click)="onClose()" aria-label="Close">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+      </button>
+    </header>
+
+    <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+    <div class="profile-body">
+
+      <!-- ── stat cards (overlap the hero) ── -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-ic" [class]="'stat-ic--' + getPrioritySeverity(rfiItem.priority)">
+            <app-draw-icon icon="pi pi-flag"></app-draw-icon>
+          </span>
+          <div class="stat-txt">
+            <span class="stat-num" [class]="'stat-num--' + getPrioritySeverity(rfiItem.priority)">
+              {{ rfiItem.priority | titlecase }}
+            </span>
+            <span class="stat-lbl">Priority</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-ic stat-ic--indigo"><app-draw-icon icon="pi pi-tag"></app-draw-icon></span>
+          <div class="stat-txt">
+            <span class="stat-num">{{ rfiItem.category }}</span>
+            <span class="stat-lbl">Category</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-question-circle"></app-draw-icon></span>
+          <div class="stat-txt">
+            <span class="stat-num">{{ rfiItem.questions?.length || 0 }}</span>
+            <span class="stat-lbl">Questions</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-ic stat-ic--mint"><app-draw-icon icon="pi pi-bookmark"></app-draw-icon></span>
+          <div class="stat-txt">
+            <span class="stat-num">{{ rfiItem.tags.length }}</span>
+            <span class="stat-lbl">Tags</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+      <div class="sec-card">
+        <div class="sec-head">
+          <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+          <h3>Basic Information</h3>
+        </div>
+
+        <div class="kv-grid">
+          <div class="kv">
+            <span class="kv__k">RFI ID</span>
+            <span class="kv__v kv__v--mono"><strong>{{ rfiItem.id }}</strong></span>
+          </div>
+          <div class="kv">
+            <span class="kv__k">Priority</span>
+            <span class="kv__v">
+              <p-tag
+                [value]="rfiItem.priority | titlecase"
+                [severity]="getPrioritySeverity(rfiItem.priority)"
+                class="priority-tag">
+              </p-tag>
+            </span>
+          </div>
+          <div class="kv" [class.kv--full]="!rfiItem.scopeTitle && !rfiItem.subScopeTitle">
+            <span class="kv__k">Category</span>
+            <span class="kv__v"><app-draw-icon icon="pi pi-tag" class="kv-ic"></app-draw-icon>{{ rfiItem.category }}</span>
+          </div>
+          @if (rfiItem.scopeTitle) {
+            <div class="kv" [class.kv--full]="!rfiItem.subScopeTitle">
+              <span class="kv__k">Scope</span>
+              <span class="kv__v"><app-draw-icon icon="pi pi-folder" class="kv-ic"></app-draw-icon>{{ rfiItem.scopeTitle }}</span>
+            </div>
+          }
+          @if (rfiItem.subScopeTitle) {
+            <div class="kv">
+              <span class="kv__k">Sub-Scope</span>
+              <span class="kv__v"><app-draw-icon icon="pi pi-file-check" class="kv-ic"></app-draw-icon>{{ rfiItem.subScopeTitle }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="notes">
+          <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> Description / Objective</span>
+          <p class="notes__v">{{ rfiItem.description }}</p>
+        </div>
+      </div>
+
+      <!-- ═══════════════ TAGS ═══════════════ -->
+      @if (rfiItem.tags.length) {
+        <div class="sec-card">
+          <div class="sec-head">
+            <span class="sec-ic sec-ic--mint"><app-draw-icon icon="pi pi-bookmark"></app-draw-icon></span>
+            <h3>Tags</h3>
+            <span class="sec-count">{{ rfiItem.tags.length }}</span>
+          </div>
+          <div class="chip-wrap">
+            @for (tag of rfiItem.tags; track tag) {
+              <span class="tag-chip"><app-draw-icon icon="pi pi-bookmark"></app-draw-icon>{{ tag }}</span>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════ QUESTIONS ═══════════════ -->
+      @if (rfiItem.questions && rfiItem.questions.length) {
+        <div class="sec-card">
+          <div class="sec-head">
+            <span class="sec-ic sec-ic--indigo"><app-draw-icon icon="pi pi-question-circle"></app-draw-icon></span>
+            <h3>Questions</h3>
+            <span class="sec-count">{{ rfiItem.questions.length }}</span>
+          </div>
+          <div class="question-rows">
+            @for (question of rfiItem.questions; track $index; let i = $index) {
+              <div class="question-row">
+                <span class="question-row__num">{{ i + 1 }}</span>
+                <span class="question-row__text">{{ question }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- ══════════════════════ FOOTER ══════════════════════ -->
+    <div class="profile-footer">
+      <button type="button" class="btn-close" (click)="onClose()">Close</button>
+    </div>
+
+  } @else {
+    <div class="profile-empty">
+      <app-draw-icon icon="pi pi-envelope"></app-draw-icon>
+      <p>No RFI library item selected.</p>
+    </div>
+  }
+
+</div>

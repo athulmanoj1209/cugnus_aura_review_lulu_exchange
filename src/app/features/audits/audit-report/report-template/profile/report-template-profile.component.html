@@ -1,0 +1,196 @@
+<div class="tp-wrap" *ngIf="t() as tpl; else emptyState">
+
+  <!-- ═══════════════ HERO ═══════════════ -->
+  <header class="tp-hero">
+    <div class="tp-hero__bg"></div>
+    <button type="button" class="tp-hero__close" (click)="onHide()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+
+    <div class="tp-hero__main">
+      <div class="tp-hero__avatar">
+        <app-draw-icon icon="pi pi-file-word"></app-draw-icon>
+      </div>
+
+      <div class="tp-hero__identity">
+        <div class="tp-hero__badges">
+          <span class="level-badge" i18n="@@audit.reportTemplate.reportTemplate">Report Template</span>
+          <span class="type-badge">{{ industryLabel(tpl.industryType) }}</span>
+        </div>
+        <h1 class="tp-hero__name" [pTooltip]="tpl.templateName" tooltipPosition="top">{{ tpl.templateName }}</h1>
+        <p class="tp-hero__code">{{ tpl.id }}</p>
+
+        <div class="tp-hero__meta">
+          <span class="meta-chip">
+            <span class="meta-dot" [style.background]="getCompanyColor(tpl.companyId)"></span>
+            {{ getCompanyLabel(tpl.companyId) }}
+          </span>
+          <span class="meta-chip">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon>{{ tpl.divisionName }}
+          </span>
+          <span class="meta-chip meta-chip--status" [ngClass]="'status-' + tpl.status">
+            <app-draw-icon icon="pi pi-circle-fill"></app-draw-icon>{{ TEMPLATE_STATUS_LABELS[tpl.status] }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════════ STATS ═══════════════ -->
+  <section class="tp-stats">
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--reports"><app-draw-icon icon="pi pi-file-check"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ linkedReports().length }}</span>
+        <span class="stat-card__label" i18n="@@audit.reportTemplate.reportsGenerated">Reports Generated</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--submitter"><app-draw-icon icon="pi pi-user"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value" [pTooltip]="tpl.submittedByName" tooltipPosition="top">{{ tpl.submittedByName }}</span>
+        <span class="stat-card__label" i18n="@@audit.reportTemplate.submittedBy">Submitted By</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--usage">
+        <i class="pi" [ngClass]="tpl.isUsed ? 'pi-lock' : 'pi-lock-open'"></i>
+      </div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ tpl.isUsed ? inUseLabel : availableLabel }}</span>
+        <span class="stat-card__label" i18n="@@audit.reportTemplate.fileStatus">File Status</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--status"><app-draw-icon icon="pi pi-verified"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <p-tag [value]="TEMPLATE_STATUS_LABELS[tpl.status]"
+               [severity]="TEMPLATE_STATUS_SEVERITY[tpl.status]"
+               styleClass="tag-xs"></p-tag>
+        <span class="stat-card__label" i18n="@@common.status">Status</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ BODY ═══════════════ -->
+  <div class="tp-body">
+
+    <!-- LEFT COLUMN ------------------------------------------ -->
+    <div class="tp-col tp-col--main">
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-info-circle" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.reportTemplate.templateInformation">Template Information</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.reportTemplate.templateId">Template ID</span>
+            <span class="info-row__value info-row__value--mono">{{ tpl.id }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.reportTemplate.companyId">Company ID</span>
+            <span class="info-row__value">{{ getCompanyLabel(tpl.companyId) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.division">Division</span>
+            <span class="info-row__value">{{ tpl.divisionName }} <small>({{ tpl.divisionCode }})</small></span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.reportTemplate.industryType">Industry Type</span>
+            <span class="info-row__value">{{ industryLabel(tpl.industryType) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@audit.reportTemplate.templateName">Template Name</span>
+            <span class="info-row__value info-row__value--link" role="button" tabindex="0"
+              pTooltip="Click to download" i18n-pTooltip="@@audit.reportTemplate.clickToDownload" tooltipPosition="top"
+              (click)="downloadTemplateFile()" (keydown.enter)="downloadTemplateFile()">
+              <app-draw-icon icon="pi pi-file-pdf"></app-draw-icon><span>{{ tpl.templateName }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="notes" *ngIf="tpl.templateDescription">
+          <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <span i18n="@@common.description">Description</span></span>
+          <p class="notes__v">{{ tpl.templateDescription }}</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- RIGHT COLUMN ----------------------------------------- -->
+    <div class="tp-col tp-col--side">
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-user" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title" i18n="@@audit.reportTemplate.submittedBy">Submitted By</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.name">Name</span>
+            <span class="info-row__value">{{ tpl.submittedByName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label" i18n="@@common.role">Role</span>
+            <span class="info-row__value">{{ tpl.submittedByRole }}</span>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ═══════════════ LINKED REPORTS ═══════════════ -->
+  <section class="tp-reports">
+    <header class="tp-reports__head">
+      <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+      <h2 i18n="@@audit.reportTemplate.reportsGeneratedFromTemplate">Reports Generated From This Template</h2>
+      <span class="count-badge">{{ filteredReports().length }}</span>
+    </header>
+
+    <div class="tp-reports__search">
+      <p-iconfield class="w-full">
+        <p-inputicon><app-draw-icon icon="pi pi-search"></app-draw-icon></p-inputicon>
+        <input pInputText type="text" placeholder="Search reports by name…" i18n-placeholder="@@audit.reportTemplate.searchReportsByName"
+               [value]="getReportSearch()" (input)="setReportSearch($any($event.target).value)"
+               class="w-full" />
+      </p-iconfield>
+    </div>
+
+    <ng-container *ngIf="pagedReports().length > 0; else noReports">
+      <div class="report-rows">
+        <div class="report-row" *ngFor="let rep of pagedReports()">
+          <div class="report-row__icon"><app-draw-icon icon="pi pi-file-check"></app-draw-icon></div>
+          <div class="report-row__info">
+            <span class="report-row__name">{{ rep.reportTitle }}</span>
+            <span class="report-row__sub">{{ rep.id }} &middot; {{ rep.divisionName }} &middot; {{ rep.leadAuditor }}</span>
+          </div>
+          <p-tag [value]="statusLabel(rep.status)" [severity]="statusSeverity(rep.status)" styleClass="tag-xs"></p-tag>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #noReports>
+      <div class="tp-reports__empty">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <span>{{ linkedReports().length === 0 ? noGeneratedReportsLabel : noReportsMatchSearchLabel }}</span>
+      </div>
+    </ng-template>
+
+    <p-paginator
+      *ngIf="filteredReports().length > REPORTS_PAGE_SIZE"
+      [rows]="REPORTS_PAGE_SIZE"
+      [totalRecords]="filteredReports().length"
+      [first]="getReportsFirst()"
+      (onPageChange)="onReportsPageChange($event)"
+      styleClass="tp-paginator">
+    </p-paginator>
+  </section>
+
+</div>
+
+<ng-template #emptyState>
+  <div class="tp-empty">
+    <app-draw-icon icon="pi pi-file-word"></app-draw-icon>
+    <p i18n="@@audit.reportTemplate.noTemplateSelected">No template selected.</p>
+  </div>
+</ng-template>

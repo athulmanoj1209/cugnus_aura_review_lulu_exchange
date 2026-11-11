@@ -1,0 +1,597 @@
+// =============================================================================
+// _drawer-modal.scss
+// Shared partial for all drawer/modal components (company, regulation, etc.)
+// Place in:  src/styles/_drawer-modal.scss
+// Usage:     @use 'src/styles/drawer-modal' as *;   (in each component SCSS)
+// =============================================================================
+
+// ── Design tokens ──────────────────────────────────────────────────────────────
+$primary:      var(--primary-color) !default;
+$accent:       var(--primary-color) !default;
+$border:       var(--surface-border) !default;
+$muted:        var(--text-color-secondary) !default;
+$bg-page:      var(--surface-ground) !default;
+$input-border: var(--surface-border) !default;
+$error:        var(--p-red-500) !default;
+
+// ── Host ───────────────────────────────────────────────────────────────────────
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+// ── Root content wrapper ───────────────────────────────────────────────────────
+// Each component's own wrapper class (e.g. .add-company-content, .add-regulation-content)
+// gets this treatment via a mixin — call @include drawer-content-wrapper() in each file.
+@mixin drawer-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--surface-card);
+}
+
+// ── PrimeNG input invalid states ───────────────────────────────────────────────
+.p-inputtext.ng-invalid.ng-dirty {
+  border-color: $error !important;
+}
+.p-inputtext.p-invalid {
+  border-color: $error !important;
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.08) !important;
+}
+:host ::ng-deep .form-field {
+  .p-inputtext.p-invalid {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.08) !important;
+  }
+}
+
+// ── Char counter ───────────────────────────────────────────────────────────────
+.char-count {
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  margin-top: 4px;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────────
+.drawer-header {
+  display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .7rem 1.5rem 1rem;
+    margin: 0px;
+    background: var(--surface-card);
+    border-bottom: 1px solid var(--surface-border);
+
+  &__icon {
+    width: 40px;
+    height: 41.71px;
+    border-radius: 10px;
+    background: var(--surface-hover);
+    color: $accent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    margin-top: 10px;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    height: 44px;
+  }
+
+  &__title {
+   // margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    //color: $primary;
+    line-height: 1;
+    font-family: Roboto, sans-serif;
+    padding-top: 10px;
+        font-size: 1.15rem;
+    //font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 0.1rem;
+    letter-spacing: -0.01em;
+  }
+
+  &__subtitle {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    color: $primary;
+  }
+
+  &__close {
+    width: 2rem;
+    height: 2rem;
+    background: var(--surface-hover);
+    border: none;
+    border-radius: 50%;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+
+    &:hover { background: var(--surface-border); }
+  }
+}
+
+// ── Body (scrollable) ──────────────────────────────────────────────────────────
+.drawer-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  padding: 1.5rem;
+  overflow-y: auto;
+  font-family: "Inter", "Segoe UI", sans-serif;
+      background: var(--surface-ground);
+}
+
+// ── Tab styles mixin (use per-component with the specific styleClass name) ──────
+// Usage:  @include drawer-tabs('company-tabs');
+@mixin drawer-tabs($tab-class) {
+  :host ::ng-deep .#{$tab-class} {
+    .p-tablist,
+    .p-tablist-tab-list {
+      border-bottom: 1px solid var(--surface-border);
+      background: transparent;
+      gap: 1.5rem;
+    }
+
+    .p-tab {
+      background: transparent;
+      border: none;
+      color: var(--text-color-secondary);
+      font-weight: 500;
+      padding: 0.75rem 0.25rem;
+      cursor: pointer;
+      box-shadow: none !important;
+    }
+
+    .p-tab[data-p-active='true'],
+    .p-tab.p-tab-active {
+      color: $accent;
+      border-bottom: 2px solid $accent;
+    }
+
+    .p-tabpanels {
+      padding: 1.75rem 0 0.5rem;
+      background: transparent;
+    }
+  }
+
+  .p-tab-active {
+    color: $primary !important;
+    border-bottom: 3px solid $primary !important;
+  }
+}
+
+// ── Form grid ──────────────────────────────────────────────────────────────────
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+  //margin-top: 20px;
+
+  // background: #ffffff;
+  //   border: 1px solid var(--p-slate-200);
+  //   border-radius: 10px;
+  //   padding: 1rem;
+  //   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 12px rgba(0, 0, 0, 0.04);
+  //   margin-bottom: 1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+
+  &--full { grid-column: 1 / -1; }
+}
+
+// ── Labels ─────────────────────────────────────────────────────────────────────
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.optional-label {
+  font-weight: 400;
+  color: $muted;
+  font-size: 0.8rem;
+  margin-left: 0.25rem;
+}
+
+// ── Inputs ─────────────────────────────────────────────────────────────────────
+:host ::ng-deep .form-field {
+  .p-inputtext,
+  .p-dropdown,
+  .p-calendar,
+  .p-inputnumber,
+  textarea.p-textarea,
+  textarea.p-inputtextarea {
+    width: 100%;
+  }
+
+  .p-inputtext,
+  .p-dropdown .p-dropdown-label,
+  .p-calendar .p-inputtext,
+  .p-inputnumber-input,
+  textarea.p-textarea,
+  textarea.p-inputtextarea {
+    border-radius: 8px;
+    padding: 0.75rem 0.9rem;
+    font-size: .9rem;
+    color: var(--text-color);
+    background: var(--surface-card);
+    border: 1px solid $input-border;
+    height: 44px;
+  }
+
+  .p-inputtext::placeholder,
+  .p-dropdown .p-placeholder,
+  textarea.p-textarea::placeholder,
+  textarea.p-inputtextarea::placeholder {
+    color: var(--text-color-secondary);
+  }
+
+  textarea.p-textarea,
+  textarea.p-inputtextarea {
+    height: 120px;
+    resize: vertical;
+  }
+}
+
+.p-select {
+  padding-top: 5px !important;
+  height: 44px !important;
+  font-size: .85rem !important;
+}
+.p-select-label {
+    font-size: .85rem !important;
+}
+.p-select-label.p-placeholder {
+  color: var(--text-color-secondary);
+  font-size: .85rem !important;
+}
+
+// ── Validation text ────────────────────────────────────────────────────────────
+.error-text {
+  color: $error;
+  padding: 3px;
+  font-size: 0.8rem;
+}
+
+.hint-text {
+  color: $muted;
+  font-size: 0.8rem;
+  padding: 3px 0 0;
+}
+
+// ── Checkbox helpers ───────────────────────────────────────────────────────────
+.p-checkbox-checked .p-checkbox-box {
+  border-color: $accent !important;
+  background: $accent !important;
+}
+
+.checkbox-row {
+  display: inline-block;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.92rem;
+    color: var(--text-color);
+    cursor: pointer;
+    margin-left: 0.5rem;
+  }
+
+  &--inline {
+    display: flex;
+    gap: 2.5rem;
+    flex-wrap: wrap;
+  }
+}
+
+.second { padding-left: 10px; }
+
+.checkbox-row--inline { display: inline !important; }
+
+// ── Custom chip / tag input ────────────────────────────────────────────────────
+.chip-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 44px;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid $input-border;
+  border-radius: 8px;
+  background: var(--surface-card);
+  cursor: text;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &--focus {
+    border-color: $accent;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 10%, transparent);
+  }
+
+  &--invalid {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.08) !important;
+  }
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem 0.2rem 0.65rem;
+  background: var(--surface-hover);
+  color: $accent;
+  border-radius: 99px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &__remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    color: $accent;
+    opacity: 0.7;
+    border-radius: 99px;
+    transition: opacity 0.15s, background 0.15s;
+
+    i { font-size: 0.6rem; }
+
+    &:hover { opacity: 1; background: color-mix(in srgb, var(--primary-color) 15%, transparent); }
+  }
+}
+
+.chip__text {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--text-color);
+  flex: 1;
+  min-width: 140px;
+  padding: 0.15rem 0.25rem;
+  font-family: inherit;
+
+  &::placeholder { color: var(--text-color-secondary); }
+}
+
+// ── File upload ────────────────────────────────────────────────────────────────
+.file-input-hidden { display: none; }
+
+.upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.75rem 1.5rem;
+  border: 2px dashed $input-border;
+  border-radius: 8px;
+  background: var(--surface-hover);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: center;
+
+  &:hover,
+  &--active {
+    border-color: $accent;
+    background: var(--surface-hover);
+    .upload-zone__icon { color: $accent; }
+  }
+
+  &__icon { font-size: 2rem; color: var(--text-color-secondary); transition: color 0.2s; }
+  &__text  { font-size: 0.875rem; color: $muted; }
+  &__link  { color: $accent; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+  &__hint  { font-size: 0.75rem; color: var(--text-color-secondary); }
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid $input-border;
+  border-radius: 8px;
+  background: var(--surface-hover);
+
+  &__icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    background: var(--surface-card);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    i { font-size: 1.1rem; color: $accent; }
+  }
+
+  &__info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  &__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__size { font-size: 0.75rem; color: $muted; }
+
+  &__remove {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid $input-border;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $muted;
+    transition: all 0.15s;
+    i { font-size: 0.75rem; }
+    &:hover { background: var(--p-red-50, var(--p-red-100)); border-color: var(--p-red-400, var(--p-red-400)); color: var(--p-red-600, var(--p-red-600)); }
+  }
+}
+
+// ── Cross-reference list ───────────────────────────────────────────────────────
+.xref-list {
+  margin-top: 0.75rem;
+  border: 1px solid $input-border;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.xref-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid $input-border;
+  gap: 0.75rem;
+  transition: background 0.15s;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: var(--surface-hover); }
+
+  &__info { display: flex; flex-direction: column; gap: 0.15rem; min-width: 0; }
+
+  &__title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__code { font-size: 0.75rem; color: $muted; font-family: 'Courier New', monospace; }
+
+  &__badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    background: var(--surface-hover);
+    color: $accent;
+    flex-shrink: 0;
+    letter-spacing: 0.04em;
+  }
+}
+
+// ── Footer ─────────────────────────────────────────────────────────────────────
+.drawer-footer {
+  flex-shrink: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.875rem 1.75rem;
+    background: var(--surface-card);
+    border-top: 1px solid var(--surface-border);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+}
+
+:host ::ng-deep {
+  .btn-cancel.p-button,
+  .btn-previous.p-button {
+    background: var(--surface-hover);
+    border: none;
+    color: $accent;
+    font-weight: 600;
+    padding: 0.7rem 5.5rem;
+    border-radius: 8px;
+    &:hover { background: var(--surface-border); }
+  }
+
+  .btn-cancel-basic.p-button {
+    background: var(--surface-hover);
+    border: none;
+    color: $accent;
+    font-weight: 600;
+    padding: 0.7rem 10.5rem;
+    border-radius: 8px;
+    &:hover { background: var(--surface-border); }
+  }
+
+  .btn-next.p-button {
+    background: $accent;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.7rem 10.5rem;
+    border-radius: 8px;
+    &:hover { opacity: 0.9; }
+  }
+
+  .btn-primary.p-button {
+    background: $accent;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.7rem 5.75rem;
+    border-radius: 8px;
+    margin-left: auto;
+    &:hover { opacity: 0.9; }
+  }
+
+  .btn-submit.p-button {
+    background: $accent;
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 0.7rem 3.75rem;
+    border-radius: 8px;
+    margin-left: auto;
+    &:hover { opacity: 0.9; }
+  }
+}
+
+// ── Responsive ─────────────────────────────────────────────────────────────────
+@media (max-width: 640px) {
+  .form-grid { grid-template-columns: 1fr; }
+  .drawer-footer { flex-wrap: wrap; }
+
+  :host ::ng-deep {
+    .btn-primary.p-button,
+    .btn-submit.p-button {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+}

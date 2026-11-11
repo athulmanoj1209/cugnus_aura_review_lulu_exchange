@@ -1,0 +1,351 @@
+$brand: var(--primary-color);
+
+:host {
+  display: flex; flex-direction: column; height: 100%; width: 100%; min-height: 0;
+
+  /* redeclared locally (drawer isn't nested under AuditPlanComponent's :host) —
+     values copied 1:1 from audit-plan.component.scss so colours stay identical */
+  --st-completed-bg: #EAF3DE; --st-completed-tx: #27500A;
+  --st-planned-bg:  #E6F1FB;  --st-planned-tx:  #0C447C;
+  --st-inprog-bg:   #FAEEDA;  --st-inprog-tx:   #633806;
+  --st-overdue-bg:  #FCEBEB;  --st-overdue-tx:  #791F1F;
+  --stc-completed: #7FB94E; --stc-planned: #6FA8E8; --stc-inprog: #EFA23B; --stc-overdue: #E06C61;
+
+  --fq-W: #7A5AF8;  --fq-W-bg: #F0EDFE;  --fq-W-tx: #5B3FD4;
+  --fq-BW: #D6409F; --fq-BW-bg: #FCE9F4; --fq-BW-tx: #B0327F;
+  --fq-M: #12A594;  --fq-M-bg: #E2F6F3;  --fq-M-tx: #0E7F72;
+  --fq-Q: #3E63DD;  --fq-Q-bg: #E8EDFC;  --fq-Q-tx: #3452B8;
+  --fq-HY: #AD7F58; --fq-HY-bg: #F5EDE4; --fq-HY-tx: #8A6240;
+  --fq-Y: var(--text-color-secondary);  --fq-Y-bg: #EEF1F5;  --fq-Y-tx: #52606F;
+}
+
+/* dark-mode overrides — copied 1:1 from audit-plan.component.scss (see note above) */
+:host-context(.app-dark) {
+  --st-completed-bg: rgba(39, 80, 10, 0.35);  --st-completed-tx: var(--p-green-300);
+  --st-planned-bg:  rgba(12, 68, 124, 0.35);  --st-planned-tx:  var(--p-blue-300);
+  --st-inprog-bg:   rgba(99, 56, 6, 0.35);    --st-inprog-tx:   var(--p-amber-400);
+  --st-overdue-bg:  rgba(121, 31, 31, 0.35);  --st-overdue-tx:  var(--p-red-300);
+
+  --stc-completed: #5da83a; --stc-planned: #4a90d9; --stc-inprog: #d98a2b; --stc-overdue: #d9534f;
+
+  --fq-W: #9b83fa;  --fq-W-bg: rgba(91, 63, 212, 0.25);  --fq-W-tx: var(--p-violet-300);
+  --fq-BW: #e373ba; --fq-BW-bg: rgba(176, 50, 127, 0.25); --fq-BW-tx: #f0abdc;
+  --fq-M: #34c9b8;  --fq-M-bg: rgba(14, 127, 114, 0.25);  --fq-M-tx: var(--p-teal-300);
+  --fq-Q: #7590f0;  --fq-Q-bg: rgba(52, 82, 184, 0.25);   --fq-Q-tx: #a5b8f5;
+  --fq-HY: #c9a17b; --fq-HY-bg: rgba(138, 98, 64, 0.25);  --fq-HY-tx: #e2c4a3;
+  --fq-Y: #93a0bd;  --fq-Y-bg: rgba(82, 96, 111, 0.35);   --fq-Y-tx: var(--p-blue-400);
+}
+
+.profile-drawer {
+  display: flex; flex-direction: column; flex: 1 1 0; min-height: 0;
+  background: var(--surface-card);
+}
+
+/* ═══════════════ HERO HEADER (gradient) ═══════════════ */
+.hero {
+  display: flex; align-items: center; gap: 16px;
+  padding: 22px 20px 30px;
+  background: linear-gradient(100deg, #3ad5c2 0% 0%, #458984 42%, var(--p-teal-700) 100%);
+  color: #fff; flex-shrink: 0;
+
+  &__avatar {
+    width: 58px; height: 58px; border-radius: 14px;
+    background: rgba(255, 255, 255, 0.16); border: 1px solid rgba(255, 255, 255, 0.28);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    backdrop-filter: blur(2px);
+    .pi { font-size: 1.4rem; }
+  }
+  &__text { flex: 1; min-width: 0; }
+  &__title {
+    margin: 0 0 3px; font-size: 1rem; font-weight: 700; color: #fff; line-height: 1.3;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    word-break: break-word;
+  }
+  &__sub {
+    margin: 0; font-size: 0.74rem; font-weight: 500; color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  &__close {
+    width: 32px; height: 32px; border: none; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; flex-shrink: 0; transition: background 0.15s;
+    .pi { font-size: 13px; }
+    &:hover { background: rgba(255, 255, 255, 0.3); }
+  }
+}
+
+.hero-badge {
+  display: inline-flex; align-items: center;
+  border-radius: 999px; padding: 0.26rem 0.75rem;
+  font-size: 0.72rem; font-weight: 700; white-space: nowrap; flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.92);
+  &.badge--blue   { color: var(--primary-color); }
+  &.badge--green  { color: var(--p-green-600); }
+  &.badge--amber  { color: var(--p-orange-600); }
+  &.badge--red    { color: var(--p-red-600); }
+  &.badge--grey   { color: var(--text-color-secondary); }
+  &.badge--orange { color: var(--p-orange-600); }
+}
+
+/* ── scrollable body ── */
+.drawer-body {
+  flex: 1 1 0; min-height: 0; overflow-y: auto;
+  padding: 20px 16px 16px;
+  display: flex; flex-direction: column; gap: 0.85rem;
+
+  scrollbar-width: thin; scrollbar-color: #c8cdd6 transparent;
+  &::-webkit-scrollbar { width: 5px; }
+  &::-webkit-scrollbar-thumb { background: var(--surface-hover); border-radius: 10px; }
+}
+
+/* ═══════════════ KPI STRIP (mirrors audit-plan.component.scss) ═══════════════ */
+.kpi-strip {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  margin-top: -6px;
+}
+.kpi {
+  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px;
+  padding: 8px 10px; box-shadow: 0 4px 14px -6px rgba(15, 23, 42, 0.12);
+  display: flex; flex-direction: column; min-width: 0;
+
+  &__num { font-size: 1.1rem; font-weight: 800; color: var(--text-color); line-height: 1.15; }
+  &__lbl { font-size: 0.6rem; color: var(--text-color-secondary); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  &--completed { background: linear-gradient(160deg, var(--surface-card), var(--surface-hover)); border-color: var(--p-green-100); .kpi__num { color: var(--st-completed-tx); } }
+  &--inprog    { background: linear-gradient(160deg, var(--p-orange-50), var(--surface-hover)); border-color: var(--p-orange-100); .kpi__num { color: var(--st-inprog-tx); } }
+  &--planned   { background: linear-gradient(160deg, var(--surface-card), var(--surface-hover)); border-color: var(--p-blue-100); .kpi__num { color: var(--st-planned-tx); } }
+  &--overdue   { background: linear-gradient(160deg, var(--surface-card), var(--surface-hover)); border-color: var(--p-red-100); .kpi__num { color: var(--st-overdue-tx); } }
+}
+
+/* ═══════════════ SECTION CARDS ═══════════════ */
+.sec-card {
+  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 14px; padding-bottom: 6px;
+}
+.sec-head {
+  display: flex; align-items: center; gap: 10px; padding: 14px 16px 12px;
+  h3 { margin: 0; font-size: 0.92rem; font-weight: 700; color: var(--text-color); flex: 1; }
+}
+.sec-ic {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  .pi { font-size: 0.85rem; }
+  &--blue { background: var(--p-blue-50); .pi { color: var(--primary-color); } }
+}
+
+/* ═══════════════ KEY / VALUE grid ═══════════════ */
+.kv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; padding: 0 16px 10px; }
+.kv {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface-hover); border-radius: 10px; padding: 10px 12px; min-width: 0;
+
+  &--full { grid-column: 1 / -1; }
+
+  &__k {
+    font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-color-secondary); flex-shrink: 0; max-width: 46%; line-height: 1.3;
+  }
+  &__v {
+    font-size: 0.82rem; font-weight: 500; color: var(--text-color);
+    display: flex; align-items: center; gap: 6px; margin-left: auto; text-align: right; min-width: 0;
+    strong { font-weight: 700; }
+    &--accent { color: $brand; font-weight: 700; }
+    &--wrap { flex-wrap: wrap; justify-content: flex-end; }
+  }
+}
+.kv-ic { font-size: 0.72rem; color: var(--text-color-secondary); flex-shrink: 0; }
+
+.notes {
+  margin: 0 16px 12px; background: var(--surface-hover); border-radius: 10px; padding: 10px 12px;
+  &__k {
+    font-size: 0.64rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--text-color-secondary); display: flex; align-items: center; gap: 5px; margin-bottom: 5px;
+    .pi { font-size: 0.65rem; }
+  }
+  &__v { margin: 0; font-size: 0.8rem; color: var(--text-color); line-height: 1.65; }
+}
+
+.status-chip {
+  display: inline-flex; align-items: center; border-radius: 6px;
+  padding: 0.2rem 0.6rem; font-size: 0.74rem; font-weight: 600;
+  &--draft       { background: var(--surface-hover); color: var(--text-color-secondary); }
+  &--planned     { background: var(--surface-hover); color: var(--primary-color); }
+  &--in-progress { background: var(--p-orange-50); color: var(--p-orange-600); }
+  &--overdue     { background: var(--p-red-50); color: var(--p-red-600); }
+  &--completed   { background: var(--p-green-50); color: var(--p-teal-600); }
+  &--on-hold     { background: var(--surface-card); color: var(--p-orange-600); }
+  &--cancelled   { background: var(--surface-hover); color: var(--text-color-secondary); }
+}
+
+/* ═══════════════ DEPARTMENTS & SCOPES ═══════════════ */
+.dept-section-lbl {
+  font-size: 0.72rem; font-weight: 700; color: var(--text-color-secondary);
+  text-transform: uppercase; letter-spacing: 0.07em; padding: 2px 2px 0;
+}
+
+.dept-card {
+  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 14px; 
+}
+
+.dept-hdr {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  cursor: pointer; user-select: none;
+  &:hover { background: var(--surface-card); }
+
+  .caret { font-size: 10px; color: var(--text-color-secondary); transition: transform 0.15s; width: 12px; flex-shrink: 0; }
+}
+.dept-card.open .dept-hdr .caret { transform: rotate(90deg); }
+
+.dept-name { font-weight: 700; font-size: 0.86rem; color: $brand; flex-shrink: 0; }
+.dept-meta { font-size: 0.68rem; color: var(--text-color-secondary); white-space: nowrap; }
+.dept-track {
+  flex: 1; display: flex; gap: 2px; min-width: 40px;
+  i { flex: 1; height: 7px; border-radius: 3px; background: var(--surface-hover); }
+  .r-completed { background: var(--stc-completed); }
+  .r-planned   { background: var(--stc-planned); }
+  .r-inprog    { background: var(--stc-inprog); }
+  .r-overdue   { background: var(--stc-overdue); }
+}
+.dept-pct { font-size: 0.72rem; font-weight: 700; color: var(--text-color-secondary); flex-shrink: 0; white-space: nowrap; }
+
+.dept-body { border-top: 1px solid var(--surface-border); padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+
+.scope-block {
+  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 10px; padding: 10px 10px 8px;
+}
+
+.scope-row {
+  display: flex; align-items: flex-start; gap: 8px; cursor: pointer;
+}
+.stripe {
+  width: 3px; align-self: stretch; border-radius: 2px; flex-shrink: 0; min-height: 30px;
+  &--W  { background: var(--fq-W); } &--BW { background: var(--fq-BW); } &--M  { background: var(--fq-M); }
+  &--Q  { background: var(--fq-Q); } &--HY { background: var(--fq-HY); } &--Y  { background: var(--fq-Y); }
+}
+.scope-ident { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.scope-name {
+  font-size: 0.82rem; font-weight: 700; color: var(--text-color);
+  &:hover { color: $brand; }
+}
+.scope-sub {
+  font-size: 0.7rem; color: var(--text-color-secondary); display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.job-caret { font-size: 0.65rem; color: var(--text-color-secondary); margin-top: 3px; flex-shrink: 0; }
+
+.fq-badge {
+  display: inline-flex; align-items: center; gap: 3px; border-radius: 8px;
+  font-size: 0.6rem; font-weight: 700; padding: 1px 6px; border: 1px solid;
+  &::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: currentColor; }
+  &--W  { background: var(--fq-W-bg);  color: var(--fq-W-tx);  border-color: var(--fq-W); }
+  &--BW { background: var(--fq-BW-bg); color: var(--fq-BW-tx); border-color: var(--fq-BW); }
+  &--M  { background: var(--fq-M-bg);  color: var(--fq-M-tx);  border-color: var(--fq-M); }
+  &--Q  { background: var(--fq-Q-bg);  color: var(--fq-Q-tx);  border-color: var(--fq-Q); }
+  &--HY { background: var(--fq-HY-bg); color: var(--fq-HY-tx); border-color: var(--fq-HY); }
+  &--Y  { background: var(--fq-Y-bg);  color: var(--fq-Y-tx);  border-color: var(--fq-Y); }
+}
+
+.risk-badge {
+  display: inline-flex; align-items: center; border-radius: 8px;
+  font-size: 0.6rem; font-weight: 700; padding: 1px 6px;
+  &--Low    { background: var(--st-completed-bg); color: var(--st-completed-tx); }
+  &--Medium { background: var(--st-inprog-bg);    color: var(--st-inprog-tx); }
+  &--High   { background: var(--st-overdue-bg);   color: var(--st-overdue-tx); }
+}
+
+/* ── quarter-grouped pills ── */
+.q-groups {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 6px; margin-top: 8px;
+}
+.q-group {
+  background: var(--surface-card); border: 1px dashed var(--surface-border); border-radius: 8px; padding: 5px 6px;
+  &__lbl {
+    display: block; font-size: 0.58rem; font-weight: 700; color: var(--text-color-secondary);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;
+  }
+  &__pills { display: flex; gap: 4px; }
+}
+
+.pill {
+  flex: 1; height: 24px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
+  font-size: 0.62rem; font-weight: 700; cursor: default;
+
+  .pill__m { font-size: 0.52rem; font-weight: 600; opacity: 0.75; text-transform: uppercase; }
+
+  &.ghost { background: transparent; border: 1px dashed var(--surface-border); color: var(--surface-border); }
+
+  &--completed { background: var(--st-completed-bg); color: var(--st-completed-tx); }
+  &--planned   { background: var(--st-planned-bg);   color: var(--st-planned-tx); }
+  &--inprog    { background: var(--st-inprog-bg);    color: var(--st-inprog-tx); }
+  &--overdue   { background: var(--st-overdue-bg);   color: var(--st-overdue-tx); }
+}
+
+/* ── inline scope jobs / findings (revealed on scope-row click) ── */
+.scope-jobs {
+  margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--surface-border);
+  display: flex; flex-direction: column; gap: 6px;
+
+  &__flags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 2px; }
+}
+
+.flag {
+  display: inline-flex; align-items: center; gap: 4px;
+  border-radius: 999px; padding: 0.16rem 0.55rem; font-size: 0.66rem; font-weight: 700;
+  .pi { font-size: 0.62rem; }
+  &--rfi     { background: var(--st-planned-bg);  color: var(--st-planned-tx); }
+  &--finding { background: var(--st-overdue-bg);  color: var(--st-overdue-tx); }
+}
+
+.tag {
+  display: inline-flex; align-items: center; width: fit-content;
+  border-radius: 999px; padding: 0.14rem 0.5rem; font-size: 0.64rem; font-weight: 700; white-space: nowrap;
+}
+.st-completed { background: var(--st-completed-bg); color: var(--st-completed-tx); }
+.st-planned  { background: var(--st-planned-bg);  color: var(--st-planned-tx); }
+.st-inprog   { background: var(--st-inprog-bg);   color: var(--st-inprog-tx); }
+.st-overdue  { background: var(--st-overdue-bg);  color: var(--st-overdue-tx); }
+
+.job-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: var(--surface-card); border-radius: 8px; padding: 7px 9px; border: 1px solid var(--surface-border);
+
+  &__main { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  &__code { font-size: 0.6rem; font-weight: 700; color: var(--text-color-secondary); letter-spacing: 0.02em; }
+  &__title { font-size: 0.76rem; font-weight: 600; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__who { font-size: 0.64rem; color: var(--text-color-secondary); }
+  &__meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  &__hours { font-size: 0.68rem; color: var(--text-color-secondary); }
+}
+
+.finding-rows { display: flex; flex-direction: column; gap: 6px; }
+.finding-row {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 8px; padding: 7px 9px;
+
+  &__badge {
+    flex-shrink: 0; background: var(--st-overdue-bg); color: var(--st-overdue-tx);
+    border-radius: 8px; padding: 0.1rem 0.45rem; font-size: 0.58rem; font-weight: 700;
+  }
+  &__text { flex: 1; font-size: 0.72rem; color: var(--text-color); line-height: 1.4; }
+  &__state { flex-shrink: 0; font-size: 0.62rem; color: var(--text-color-secondary); font-weight: 600; }
+}
+
+/* ═══════════════ DEPARTMENT PAGINATOR ═══════════════ */
+:host ::ng-deep .dept-pgr .p-paginator {
+  background: var(--surface-card); border: 1px solid var(--surface-border); border-radius: 12px;
+  padding: 6px 10px; flex-wrap: wrap; gap: 4px;
+  .p-paginator-current { font-size: 0.68rem; color: var(--text-color-secondary); order: -1; margin-right: auto; }
+  .p-paginator-page, .p-paginator-next, .p-paginator-prev, .p-paginator-first, .p-paginator-last {
+    min-width: 26px; height: 26px; font-size: 0.72rem;
+  }
+  .p-paginator-page.p-highlight { background: var(--primary-color); color: #fff; border-radius: 6px; }
+  .p-dropdown, .p-select { font-size: 0.72rem; height: 26px; }
+}
+
+/* ═══════════════ LOADING ═══════════════ */
+.ep-loading {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px;
+  color: var(--text-color-secondary); font-size: 0.85rem;
+  .pi { font-size: 1rem; }
+}

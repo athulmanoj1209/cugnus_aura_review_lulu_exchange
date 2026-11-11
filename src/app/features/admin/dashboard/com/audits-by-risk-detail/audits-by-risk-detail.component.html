@@ -1,0 +1,133 @@
+<div class="drawer-inner">
+
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-shield"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title" i18n="@@dashboard.auditsByRisk.drawerTitle">Risk Rating <strong>Distribution</strong></h2>
+        <p class="drawer-subtitle" i18n="@@dashboard.auditsByRisk.drawerSubtitle">
+          {{ data.orgBreakdown.length }} companies · {{ data.riskLevels.length }} risk levels —
+          one risk level per page, every company shown
+        </p>
+      </div>
+    </div>
+    <button type="button"
+            class="close-btn"
+            (click)="close()"
+            aria-label="Close detailed view"
+            i18n-aria-label="@@common.closeDetailedView">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+  <!-- ============== Risk-level pager — the page itself IS one risk level ============== -->
+  <div class="dept-pager">
+    <span class="dept-pager__label" i18n="@@dashboard.auditsByRisk.riskLevelLabel">Risk level</span>
+    <button type="button"
+            class="dept-pager__arrow"
+            [disabled]="isFirstPage"
+            (click)="prevRisk()"
+            aria-label="Previous risk level"
+            i18n-aria-label="@@dashboard.auditsByRisk.previousRiskLevelAriaLabel">
+      <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon>
+    </button>
+    <div class="dept-pager__tabs">
+      <button type="button"
+              #tabBtn
+              *ngFor="let risk of data.riskLevels; let i = index"
+              class="dept-pager__tab"
+              [class.active]="i === riskIndex"
+              (click)="goToRisk(i)">
+        {{ riskLabel(risk) }}
+      </button>
+    </div>
+    <button type="button"
+            class="dept-pager__arrow"
+            [disabled]="isLastPage"
+            (click)="nextRisk()"
+            aria-label="Next risk level"
+            i18n-aria-label="@@dashboard.auditsByRisk.nextRiskLevelAriaLabel">
+      <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+    </button>
+    <span class="dept-pager__count" i18n="@@dashboard.auditsByRisk.pageOf">Page {{ riskIndex + 1 }} of {{ totalPages }}</span>
+  </div>
+
+  <!-- ============== Sort + search within the current risk level ============== -->
+  <div class="sub-controls">
+    <span class="control-label" i18n="@@dashboard.auditsByRisk.sortCompanies">Sort companies</span>
+    <div class="segmented">
+      <button type="button" [class.active]="sort === 'count'" (click)="setSort('count')" i18n="@@dashboard.auditsByRisk.sortByAudits">By audits</button>
+      <button type="button" [class.active]="sort === 'alpha'" (click)="setSort('alpha')" i18n="@@common.sortAZ">A–Z</button>
+    </div>
+    <div class="search-input">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input type="text"
+             placeholder="Filter companies in this risk level…"
+             i18n-placeholder="@@dashboard.auditsByRisk.filterPlaceholder"
+             [value]="search"
+             (input)="onSearchChange($any($event.target).value)">
+    </div>
+  </div>
+
+  <!-- ============== Chart: ALL companies for the current risk level ============== -->
+  <div class="chart-card">
+    <div class="chart-card__title-row">
+      <h3 class="chart-card__title" i18n="@@dashboard.auditsByRisk.chartTitle">{{ currentRiskLabel }} risk — audits by company</h3>
+      <span class="chart-card__meta" i18n="@@dashboard.auditsByRisk.companiesShown">{{ rows.length }} of {{ data.orgBreakdown.length }} companies shown</span>
+    </div>
+    <div class="chart-scroll">
+      <div class="chart-wrap" [style.min-width.px]="chartMinWidthPx">
+        <p-chart type="bar"
+                 [data]="chartData"
+                 [options]="barOptions()">
+        </p-chart>
+      </div>
+    </div>
+    <p *ngIf="showScrollHint" class="chart-hint" i18n="@@dashboard.auditsByRisk.scrollHint">Scroll horizontally to see every company →</p>
+  </div>
+
+  <!-- ============== Table: same companies, current risk level only ============== -->
+  <div class="table-card">
+    <div class="table-card__title-row">
+      <h3 class="table-card__title" i18n="@@dashboard.auditsByRisk.tableTitle">Same data, as a table</h3>
+      <span class="chart-card__meta" i18n="@@dashboard.auditsByRisk.tableMeta">Every company for this risk level · scrolls if long</span>
+    </div>
+    <div class="table-scroll">
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th i18n="@@common.company">Company</th>
+            <th i18n="@@dashboard.auditsByRisk.colRiskAudits">{{ currentRiskLabel }} audits</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows" [class.is-top]="isTop(row)">
+            <td class="name-cell">
+              <span class="swatch" [style.background]="colorFor(row.org)"></span>
+              <span>{{ row.org }}</span>
+            </td>
+            <td class="count-cell">{{ row.count }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td i18n="@@dashboard.auditsByRisk.total">Total</td>
+            <td>{{ totalForRisk }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <p class="footnote" i18n="@@dashboard.auditsByRisk.footnote">
+      Each company keeps the same color on every risk-level page and in every sort order — and the
+      same color it uses in the Audits by Sub-Division detail view. The leading company for this risk
+      level is outlined rather than recolored, so its color still identifies it correctly.
+    </p>
+  </div>
+
+  </div>
+
+</div>

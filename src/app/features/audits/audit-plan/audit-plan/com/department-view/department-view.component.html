@@ -1,0 +1,50 @@
+<button class="back" (click)="store.view.set(PlanViews.Calendar)">← Back to Month Calendar</button>
+
+<p-accordion [multiple]="true" [value]="['0']">
+  @for (card of cards(); track card.subDivision.id; let i = $index) {
+    <p-accordion-panel [value]="'' + i">
+      <p-accordion-header>
+        <div class="dept-hdr">
+          <span class="name">{{ card.subDivision.name }}</span>
+          <span class="count-pill">{{ card.scopes.length }} scope{{ card.scopes.length === 1 ? '' : 's' }}</span>
+          <span class="pct-pill"><span class="dot"></span>{{ card.pct }}% done</span>
+        </div>
+      </p-accordion-header>
+      <p-accordion-content>
+        @for (row of card.rows; track row.scope.id) {
+          <button class="scope-row" (click)="store.drillToScope(row.scope.id)">
+            <span class="stripe bf-{{ row.scope.freq }}"></span>
+
+            <span class="ident">
+              <span class="nm">{{ row.scope.name }}</span>
+              <span class="sub">{{ row.scope.code }} · {{ row.scope.auditor }}
+                <span class="freq-badge fq-{{ row.scope.freq }}">{{ freqLabels[row.scope.freq] }}</span>
+              </span>
+            </span>
+
+            <span class="mini-cal">
+              @for (m of row.scope.months; track $index; let mi = $index) {
+                <i class="mini" [class.qgap]="mi % 3 === 0 && mi !== 0"
+                   [style.background]="m ? lightBg[m] : null"
+                   [style.border-color]="m ? lightBd[m] : null"
+                   [pTooltip]="months[mi] + (m ? ' · ' + meta[m].label : notScheduledSuffix)"
+                   tooltipPosition="top"></i>
+              }
+            </span>
+
+            <span class="s-pct" pTooltip="Instances completed">{{ row.pct }}%</span>
+            <span class="tag st-{{ row.status }}">{{ meta[row.status].label }}</span>
+            <span class="risk risk-{{ row.scope.risk }}">{{ row.scope.risk }}</span>
+            <i class="pi pi-chevron-right chev"></i>
+          </button>
+        }
+
+        <div class="completion">
+          <span class="c-lbl">{{ card.subDivision.isDivisionLevel ? 'Division' : 'Sub-Division' }} completion</span>
+          <p-progressBar [value]="card.pct" [showValue]="false" styleClass="ap-progress" />
+          <span class="c-val">{{ card.pct }}%</span>
+        </div>
+      </p-accordion-content>
+    </p-accordion-panel>
+  }
+</p-accordion>

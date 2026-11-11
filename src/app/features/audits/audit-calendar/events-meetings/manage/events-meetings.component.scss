@@ -1,0 +1,187 @@
+// Pull in every token, mixin, and utility class from the shared drawer partial.
+// Adjust the path to match where you placed _drawer-modal.scss in your project.
+@use '../../../../../../assets/drawer-modal.scss' as *;
+
+// ── Header / footer shell overrides (matches rfi-client.component.scss) ──────
+// The shared drawer-modal.scss partial defines its own (older) .drawer-header /
+// .drawer-footer BEM classes; these local rules take precedence for this
+// component so its shell matches the standardized "Add ___" drawer pattern.
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left { display: flex; align-items: center; gap: 12px; }
+
+.drawer-icon-wrap {
+  width: 40px; height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  .pi { font-size: 18px; color: var(--primary-color); }
+}
+
+.drawer-title-block { display: flex; flex-direction: column; gap: 2px; }
+
+.drawer-title {
+  font-size: 16px; font-weight: 400; color: var(--text-color); margin: 0;
+  strong { font-weight: 700; color: var(--primary-color); }
+}
+
+.drawer-subtitle { font-size: 11px; color: var(--text-color-secondary); margin: 0; }
+
+.close-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi { font-size: 13px; color: var(--text-color-secondary); }
+  &:hover { background: var(--surface-hover); }
+}
+
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--surface-border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+::ng-deep .cancel-btn.p-button {
+  background: var(--surface-hover) !important;
+  border: none !important;
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  &:hover { background: var(--surface-hover) !important; }
+}
+
+::ng-deep .submit-btn.p-button {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  margin-inline-start: auto;
+  &:hover { opacity: 0.9; }
+}
+
+// ── Component-only additions ───────────────────────────────────────────────────
+
+// "Linked Entities" section heading
+.section-label {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-color);
+}
+
+// Read-only organizer field — slightly muted so it reads as non-editable
+.organizer-input {
+  background: var(--surface-hover) !important;
+  color: var(--text-color-secondary) !important;
+  cursor: default !important;
+}
+
+// Stack uploaded files with a small gap
+.uploaded-files {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+// PrimeNG multiselect — match the shared p-select height / font rules
+:host ::ng-deep {
+  .p-multiselect {
+    height: 44px !important;
+    font-size: 0.85rem !important;
+    align-items: center;
+
+    .p-multiselect-label {
+      font-size: 0.85rem !important;
+      line-height: 1;
+      &.p-placeholder { color: var(--text-color-secondary); }
+    }
+  }
+
+  // p-datepicker — keep consistent with p-select height
+  .p-datepicker-input {
+    height: 44px !important;
+    font-size: 0.85rem !important;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    padding: 0 0.9rem;
+
+    &::placeholder { color: var(--text-color-secondary); }
+
+    &:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(59, 91, 219, 0.1);
+    }
+  }
+
+  .p-datepicker-trigger {
+    border: 1px solid var(--surface-border);
+    border-inline-start: none;
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    border-start-end-radius: 8px;
+    border-end-end-radius: 8px;
+    background: var(--surface-hover);
+    color: var(--text-color-secondary);
+  }
+}
+.form-field
+{
+  padding-bottom: 10px !important;
+}
+.event
+{
+  background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 12px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1rem;
+}
+.drawer-body{
+  padding: 20px 1.5rem 1.5rem !important;
+}
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field-label {
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--text-color);
+  line-height: 1.2;
+}
+
+.required {
+  color: var(--p-red-500);
+}

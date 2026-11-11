@@ -1,0 +1,298 @@
+<section class="rec-page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title" i18n="@@audit.recommendations.title">Recommendations</h1>
+        <p class="page-header__subtitle" i18n="@@audit.recommendations.subtitle">Remediation actions raised from audit observations and findings</p>
+      </div>
+    </div>
+    <div class="page-header__actions">
+      <p-button label="+ New Recommendation" i18n-label="@@audit.recommendations.newRecommendation" styleClass="btn-add" (onClick)="openAdd()" type="button"></p-button>
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-toggle__btn" [class.is-active]="viewMode() === RecommendationViewModes.List"
+                (click)="setView(RecommendationViewModes.List)" pTooltip="List view" i18n-pTooltip="@@common.listView" tooltipPosition="top"><app-draw-icon icon="pi pi-list"></app-draw-icon></button>
+        <button type="button" class="view-toggle__btn" [class.is-active]="viewMode() === RecommendationViewModes.Grid"
+                (click)="setView(RecommendationViewModes.Grid)" pTooltip="Grid view" i18n-pTooltip="@@common.gridView" tooltipPosition="top"><app-draw-icon icon="pi pi-th-large"></app-draw-icon></button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+
+    <!-- Filter button + floating panel -->
+    <div class="filter-wrap" (click)="$event.stopPropagation()">
+      <button type="button" class="filters-btn" [class.is-active]="showFilter()"
+              (click)="toggleFilter($event)">
+        <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> <span i18n="@@common.filters">Filters</span>
+        <span *ngIf="hasFilters()" class="filters-btn__badge"></span>
+      </button>
+
+      <!-- Floating filter panel -->
+      <div *ngIf="showFilter()" class="filter-panel" (click)="onFilterPanelClick($event)">
+
+        <div class="filter-panel__header">
+          <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+          <span i18n="@@common.filters">Filters</span>
+          <button type="button" class="filter-panel__close" (click)="showFilter.set(false)" aria-label="Close" i18n-aria-label="@@common.close">
+            <app-draw-icon icon="pi pi-times"></app-draw-icon>
+          </button>
+        </div>
+
+        <div class="filter-panel__body">
+
+          <!-- Row 1: Priority + Status -->
+          <div class="filter-panel__row">
+            <div class="filter-panel__field">
+              <label i18n="@@audit.recommendations.priorityUppercase">PRIORITY</label>
+              <select [ngModel]="draft().priority" (ngModelChange)="setDraft('priority', $event)">
+                <option value="" i18n="@@audit.recommendations.allPriorities">All priorities</option>
+                <option *ngFor="let o of priorityOptions" [value]="o.value">{{ o.label }}</option>
+              </select>
+            </div>
+            <div class="filter-panel__field">
+              <label i18n="@@common.statusUppercase">STATUS</label>
+              <select [ngModel]="draft().status" (ngModelChange)="setDraft('status', $event)">
+                <option value="" i18n="@@audit.recommendations.allStatuses">All statuses</option>
+                <option *ngFor="let o of statusOptions" [value]="o.value">{{ o.label }}</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Row 2: Company + Division -->
+          <div class="filter-panel__row">
+            <div class="filter-panel__field">
+              <label i18n="@@common.companyUppercase">COMPANY</label>
+              <select [ngModel]="draft().company" (ngModelChange)="onDraftCompanyChange($event)">
+                <option value="" i18n="@@audit.recommendations.allCompanies">All companies</option>
+                <option *ngFor="let o of companyOptions()" [value]="o.value">{{ o.label }}</option>
+              </select>
+            </div>
+            <div class="filter-panel__field">
+              <label i18n="@@common.divisionUppercase">DIVISION</label>
+              <p-multiSelect [options]="divisionOptions()" [ngModel]="draft().division" (ngModelChange)="onDraftDivisionChange($event)"
+                optionLabel="label" optionValue="value" placeholder="All divisions" i18n-placeholder="@@audit.recommendations.allDivisions" display="chip"
+                [maxSelectedLabels]="1" selectedItemsLabel="{0} divisions" i18n-selectedItemsLabel="@@audit.recommendations.selectedDivisions" appendTo="body" styleClass="fp-select" panelStyleClass="filter-panel-overlay"></p-multiSelect>
+            </div>
+          </div>
+
+          <!-- Row 3: Sub-Division + Auditor -->
+          <div class="filter-panel__row">
+            <div class="filter-panel__field">
+              <label i18n="@@common.subDivisionUppercase">SUB-DIVISION</label>
+              <p-multiSelect [disabled]="!subDivisionFilterVisible()" [options]="subDivisionOptions()" [ngModel]="draft().subDivision" (ngModelChange)="setDraft('subDivision', $event ?? [])"
+                [placeholder]="subDivisionFilterVisible() ? subDivisionPlaceholders.All : subDivisionPlaceholders.None" display="chip"
+                optionLabel="label" optionValue="value"
+                [maxSelectedLabels]="1" selectedItemsLabel="{0} sub-divisions" i18n-selectedItemsLabel="@@audit.recommendations.selectedSubDivisions" appendTo="body" styleClass="fp-select" panelStyleClass="filter-panel-overlay"></p-multiSelect>
+            </div>
+            <div class="filter-panel__field">
+              <label i18n="@@audit.recommendations.auditorUppercase">AUDITOR</label>
+              <select [ngModel]="draft().auditor" (ngModelChange)="setDraft('auditor', $event)">
+                <option value="" i18n="@@audit.recommendations.allAuditors">All auditors</option>
+                <option *ngFor="let o of auditorOptions()" [value]="o.value">{{ o.label }}</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="filter-panel__footer">
+          <button type="button" class="fp-btn fp-btn--reset" (click)="resetFilters()" i18n="@@common.reset">Reset</button>
+          <button type="button" class="fp-btn fp-btn--apply" (click)="applyFilters()" i18n="@@common.applyFilters">Apply filters</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Clear active filters -->
+    <button *ngIf="hasFilters()" type="button" class="toolbar__clear" (click)="clearAll()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon><span i18n="@@common.clear">Clear</span>
+    </button>
+
+    <!-- Search — pushed to right -->
+    <div class="toolbar__right">
+      <span class="toolbar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input pInputText type="text" [ngModel]="searchQuery()"
+               (ngModelChange)="onSearch($event)" placeholder="Search by ID, title or assignee…" i18n-placeholder="@@audit.recommendations.searchPlaceholder" />
+      </span>
+    </div>
+
+  </div>
+
+  <!-- ── LIST VIEW ── -->
+  <div *ngIf="viewMode() === RecommendationViewModes.List" class="rec-card">
+    <div *ngIf="paginated().length === 0" class="rec-empty">
+      <app-draw-icon icon="pi pi-inbox"></app-draw-icon>
+      <span i18n="@@audit.recommendations.noMatch">No recommendations match your filters.</span>
+      <button *ngIf="hasFilters()" type="button" class="rec-empty__btn" (click)="clearAll()" i18n="@@common.clearFilters">Clear filters</button>
+    </div>
+
+    <div *ngIf="paginated().length > 0" class="rec-rows">
+      <div class="list-header">
+        <span class="list-header__cell col-id sortable" (click)="onSort(RecommendationSortColumns.Id)" [class.is-sorted]="sortColumn() === RecommendationSortColumns.Id">
+          <span i18n="@@common.id">ID</span> <i class="pi sortable__arrow" [ngClass]="sortIcon(RecommendationSortColumns.Id)"></i>
+        </span>
+        <span class="list-header__cell col-title sortable" (click)="onSort(RecommendationSortColumns.Title)" [class.is-sorted]="sortColumn() === RecommendationSortColumns.Title">
+          <span i18n="@@audit.recommendations.recommendation">Recommendation</span> <i class="pi sortable__arrow" [ngClass]="sortIcon(RecommendationSortColumns.Title)"></i>
+        </span>
+        <span class="list-header__cell col-obs" i18n="@@audit.recommendations.finding">Finding</span>
+        <span class="list-header__cell col-priority sortable" (click)="onSort(RecommendationSortColumns.Priority)" [class.is-sorted]="sortColumn() === RecommendationSortColumns.Priority">
+          <span i18n="@@audit.recommendations.priority">Priority</span> <i class="pi sortable__arrow" [ngClass]="sortIcon(RecommendationSortColumns.Priority)"></i>
+        </span>
+        <span class="list-header__cell col-status sortable" (click)="onSort(RecommendationSortColumns.Status)" [class.is-sorted]="sortColumn() === RecommendationSortColumns.Status">
+          <span i18n="@@common.status">Status</span> <i class="pi sortable__arrow" [ngClass]="sortIcon(RecommendationSortColumns.Status)"></i>
+        </span>
+        <span class="list-header__cell col-assigned sortable" (click)="onSort(RecommendationSortColumns.AssignedTo)" [class.is-sorted]="sortColumn() === RecommendationSortColumns.AssignedTo">
+          <span i18n="@@audit.recommendations.assignedTo">Assigned To</span> <i class="pi sortable__arrow" [ngClass]="sortIcon(RecommendationSortColumns.AssignedTo)"></i>
+        </span>
+        <span class="list-header__cell col-due sortable" (click)="onSort(RecommendationSortColumns.DueDate)" [class.is-sorted]="sortColumn() === RecommendationSortColumns.DueDate">
+          <span i18n="@@common.dueDate">Due Date</span> <i class="pi sortable__arrow" [ngClass]="sortIcon(RecommendationSortColumns.DueDate)"></i>
+        </span>
+        <span class="list-header__cell col-actions" i18n="@@common.actions">Actions</span>
+      </div>
+
+      <article *ngFor="let r of paginated(); trackBy: trackById"
+          class="rec-row"
+          [class.rec-row--inactive]="r.isActive === false">
+        <div class="col-id"><span class="rec-id">{{ r.id }}</span></div>
+        <div class="col-title"><span class="rec-title">{{ r.title }}</span></div>
+        <div class="col-obs"><span class="obs-chip"><app-draw-icon icon="pi pi-eye"></app-draw-icon> {{ r.findingId }}</span></div>
+        <div class="col-priority">
+          <span class="priority-badge" [ngClass]="'priority--' + r.priority">
+            {{ priorityLabel(r.priority) }}
+          </span>
+        </div>
+        <div class="col-status">
+          <span class="status-chip" [ngClass]="'rec-status--' + r.status">
+            {{ statusLabel(r.status) }}
+          </span>
+        </div>
+        <div class="col-assigned"><span class="assignee"><app-draw-icon icon="pi pi-user"></app-draw-icon> {{ r.assignedTo }}</span></div>
+        <div class="col-due">
+          <span class="due-date" [class.is-overdue]="isOverdue(r)">
+            <i class="pi" [ngClass]="isOverdue(r) ? dueIcons.Overdue : dueIcons.OnTime"></i>
+            {{ r.dueDate | date:'MMM d, y' }}
+          </span>
+        </div>
+        <div class="col-actions">
+          <div class="row-actions">
+            <button type="button" class="btn-view" (click)="openView(r)" i18n="@@common.view">View</button>
+            <button type="button" class="icon-btn"
+                    (click)="openEdit(r)" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top">
+              <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+            </button>
+            <button type="button" class="icon-btn"
+                    [class.icon-btn--activate]="r.isActive === false"
+                    [class.icon-btn--deactivate]="r.isActive !== false"
+                    [pTooltip]="r.isActive !== false ? activeLabels.Deactivate : activeLabels.Activate"
+                    tooltipPosition="top"
+                    (click)="openConfirmation(r)">
+              <app-draw-icon [icon]="r.isActive !== false ? activeIcons.Deactivate : activeIcons.Activate"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- ── GRID VIEW ── -->
+  <div *ngIf="viewMode() === RecommendationViewModes.Grid">
+    <div *ngIf="paginated().length === 0" class="rec-empty rec-empty--block">
+      <app-draw-icon icon="pi pi-inbox"></app-draw-icon><span i18n="@@audit.recommendations.noMatch">No recommendations match your filters.</span>
+    </div>
+    <div class="rec-grid">
+      <article *ngFor="let r of paginated(); trackBy: trackById"
+               class="rec-card-item"
+               [class.is-overdue]="isOverdue(r)"
+               [class.rec-card-item--inactive]="r.isActive === false">
+
+        <span class="status-chip status-tag--corner" [ngClass]="'rec-status--' + r.status">{{ statusLabel(r.status) }}</span>
+
+        <div class="card-header">
+          <div class="rec-avatar-wrap">
+            <div class="rec-badge"><app-draw-icon icon="pi pi-check-square"></app-draw-icon></div>
+            <svg class="rec-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+              <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <h3 class="rec-card-item__title">{{ r.title }}</h3>
+          <span class="rec-id-sub"><app-draw-icon icon="pi pi-hashtag"></app-draw-icon>{{ r.id }}</span>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item" pTooltip="Finding" i18n-pTooltip="@@audit.recommendations.finding" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-eye"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ r.findingId }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Assigned To" i18n-pTooltip="@@audit.recommendations.assignedTo" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ r.assignedTo }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Sub-Division" i18n-pTooltip="@@common.subDivision" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value">{{ r.subDivision }}</span></div>
+          </div>
+          <div class="info-item" pTooltip="Due Date" i18n-pTooltip="@@common.dueDate" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon [icon]="isOverdue(r) ? dueIcons.OverdueFull : dueIcons.OnTimeFull"></app-draw-icon></span>
+            <div class="info-content"><span class="info-value due-date" [class.is-overdue]="isOverdue(r)">{{ r.dueDate | date:'MMM d, y' }}</span></div>
+          </div>
+        </div>
+
+        <div class="tags-row">
+          <span class="priority-badge" [ngClass]="'priority--' + r.priority">{{ priorityLabel(r.priority) }}</span>
+        </div>
+
+        <footer class="card-footer">
+          <span class="company-label">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon>{{ r.company }}
+          </span>
+          <div class="card-actions">
+            <div class="card-actions__icons">
+              <button type="button" class="icon-btn"
+                      (click)="openEdit(r)" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn"
+                      [class.icon-btn--activate]="r.isActive === false"
+                      [class.icon-btn--deactivate]="r.isActive !== false"
+                      [pTooltip]="r.isActive !== false ? activeLabels.Deactivate : activeLabels.Activate"
+                      tooltipPosition="top"
+                      (click)="openConfirmation(r)">
+                <app-draw-icon [icon]="r.isActive !== false ? activeIcons.Deactivate : activeIcons.Activate"></app-draw-icon>
+              </button>
+            </div>
+
+            <button type="button" class="btn-view" (click)="openView(r)" i18n="@@common.view">View</button>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </div>
+
+  <!-- PAGINATION -->
+  @if (filtered().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="recommendations"
+      i18n-entityLabel="@@audit.recommendations.entityLabel"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+  <!-- ── Shared confirm dialog ── -->
+  <app-confirm-action-dialog
+    [visible]="displayConfirmation()"
+    [action]="confirmationAction()"
+    [itemName]="confirmationTarget()?.title ?? ''"
+    (confirmed)="confirmToggleBlocked()"
+    (cancelled)="closeConfirmation()"
+  />
+
+</section>

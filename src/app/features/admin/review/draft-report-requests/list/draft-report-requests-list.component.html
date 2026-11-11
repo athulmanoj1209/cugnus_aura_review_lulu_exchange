@@ -1,0 +1,217 @@
+<section class="drl-page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title" i18n="@@admin.draftReportRequests.title">Review Draft Reports </h1>
+        <p class="page-header__subtitle" i18n="@@admin.draftReportRequests.subtitle">Reports generated from a template that have been submitted for review </p>
+      </div>
+    </div>
+    <div class="view-toggle">
+      <button type="button" class="view-toggle__btn" [class.is-active]="viewMode()==='grid'"
+              (click)="viewMode.set('grid')" pTooltip="Grid view" i18n-pTooltip="@@common.gridView" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+      </button>
+      <button type="button" class="view-toggle__btn" [class.is-active]="viewMode()==='list'"
+              (click)="viewMode.set('list')" pTooltip="List view" i18n-pTooltip="@@common.listView" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-list"></app-draw-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- STAT CARDS -->
+  <div class="stat-cards">
+    <div class="stat-card stat-card--total">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-file"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().total }}</span>
+        <span class="stat-card__label" i18n="@@admin.draftReportRequests.totalDrafts">Total Drafts</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--ready">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-check-circle"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().ready }}</span>
+        <span class="stat-card__label" i18n="@@admin.draftReportRequests.awaitingReview">Awaiting Review</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--reopened">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-history"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().reopened }}</span>
+        <span class="stat-card__label" i18n="@@common.reopened">Reopened</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar__left">
+      <!-- Clear all -->
+      <button *ngIf="hasFilters()" type="button" class="toolbar__clear" (click)="clearAll()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon><span i18n="@@common.clear">Clear</span>
+      </button>
+
+      <!-- Filter modal
+           Dropdown order: report type, year, status, prepared by, company, division, sub-division.
+           Sub-Divisions enabled (showSubDivision=true); Year added (showYear=true). -->
+      <app-filter-modal
+        [typeOptions]="reportTypeOptions"
+        [yearOptions]="yearOptions()"
+        [statusOptions]="statusOptions"
+        [submittedByOptions]="preparerOptions()"
+        [companyOptions]="companyOptions()"
+        [divisionOptions]="divisionOptions()"
+        [subDivisionOptions]="subDivisionOptions()"
+        [selectedTypes]="filterReportTypes()"
+        [selectedYears]="filterYears()"
+        [selectedStatuses]="filterStatuses()"
+        [selectedSubmittedBys]="filterPreparedBys()"
+        [selectedCompanies]="filterCompanies()"
+        [selectedDivisions]="filterDivisions()"
+        [selectedSubDivisions]="filterSubDivisions()"
+        typeLabel="REPORT TYPE"
+        i18n-typeLabel="@@admin.draftReportRequests.reportType"
+        yearLabel="YEAR"
+        i18n-yearLabel="@@admin.draftReportRequests.year"
+        submittedByLabel="PREPARED BY"
+        i18n-submittedByLabel="@@admin.draftReportRequests.preparedBy"
+        [showRisk]="false"
+        [showYear]="true"
+        [showSubmittedBy]="true"
+        [showSubDivision]="true"
+        (typesChange)="filterReportTypes.set($event)"
+        (yearsChange)="filterYears.set($event)"
+        (statusesChange)="filterStatuses.set($event)"
+        (submittedBysChange)="filterPreparedBys.set($event)"
+        (companiesChange)="filterCompanies.set($event)"
+        (divisionsChange)="filterDivisions.set($event)"
+        (subDivisionsChange)="filterSubDivisions.set($event)"
+        (filtersCleared)="clearAll()"
+      ></app-filter-modal>
+    </div>
+
+    <!-- Search (reactive form control) -->
+    <div class="toolbar__right">
+      <span class="toolbar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input type="text" [formControl]="searchControl"
+               placeholder="Search by ID, title, preparer…" i18n-placeholder="@@admin.draftReportRequests.searchPlaceholder" />
+      </span>
+    </div>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="filtered().length === 0" class="drl-empty">
+    <app-draw-icon icon="pi pi-file"></app-draw-icon>
+    <span i18n="@@admin.draftReportRequests.noReports">No draft reports match your filters.</span>
+    <button *ngIf="hasFilters()" type="button" i18n="@@common.clearFilters" class="drl-empty__btn" (click)="clearAll()">Clear filters</button>
+  </div>
+
+  <!-- ── GRID VIEW ── -->
+  <div *ngIf="viewMode() === 'grid' && filtered().length > 0" class="drl-grid">
+    <article *ngFor="let item of filtered(); trackBy: trackById" class="drl-card">
+      <div class="drl-card__bar" [ngClass]="'bar--' + item.status"></div>
+      <div class="drl-card__head">
+        <div class="drl-card__icon-wrap">
+          <div class="drl-card__icon"><app-draw-icon [icon]="'pi ' + reportTypeIcon(item.reportType)"></app-draw-icon></div>
+          <svg class="drl-card__icon-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+            <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+          </svg>
+        </div>
+        <div class="drl-card__meta">
+          <span class="drl-card__id">{{ item.id }}</span>
+          <h3 class="drl-card__title">{{ item.title }}</h3>
+        </div>
+      </div>
+      <div class="drl-card__body info-grid">
+        <div class="info-item" pTooltip="Prepared By" i18n-pTooltip="@@admin.draftReportRequests.preparedByLabel" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ item.preparedBy }}</span></div>
+        </div>
+        <div class="info-item" pTooltip="Last Modified" i18n-pTooltip="@@admin.draftReportRequests.lastModified" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ item.lastModified | date:'MMM d, y' }}</span></div>
+        </div>
+        <div class="info-item info-item--full" pTooltip="File Size" i18n-pTooltip="@@admin.draftReportRequests.fileSize" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-file"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ item.fileSize }}</span></div>
+        </div>
+      </div>
+      <div class="drl-card__badges">
+        <span class="status-chip" [ngClass]="'status--' + item.status">{{ statusLabel(item.status) }}</span>
+        <span class="type-badge">{{ item.reportType }}</span>
+        <span class="template-badge" pTooltip="Created from template" i18n-pTooltip="@@admin.draftReportRequests.createdFromTemplate" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-copy"></app-draw-icon> {{ item.templateName }}
+        </span>
+      </div>
+      <div class="drl-card__footer">
+        <div class="drl-card__footer-icons">
+          <button type="button" class="action-btn action-btn--download" (click)="downloadReport(item)"
+                  pTooltip="Download" i18n-pTooltip="@@common.download" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-download"></app-draw-icon>
+          </button>
+        </div>
+
+        <button type="button" class="btn-view" (click)="reviewReport(item)" i18n="@@common.review">Review</button>
+      </div>
+    </article>
+  </div>
+
+  <!-- ── LIST VIEW ── -->
+  <div *ngIf="viewMode() === 'list' && filtered().length > 0" class="drl drl--list">
+    <div class="list-header">
+      <span class="list-header__cell col-id" i18n="@@common.id">ID</span>
+      <span class="list-header__cell col-title" i18n="@@common.title">Title</span>
+      <span class="list-header__cell col-type" i18n="@@common.type">Type</span>
+      <span class="list-header__cell col-template" i18n="@@common.template">Template</span>
+      <span class="list-header__cell col-prepared" i18n="@@admin.draftReportRequests.preparedByLabel">Prepared By</span>
+      <span class="list-header__cell col-date" i18n="@@admin.draftReportRequests.lastModified">Last Modified</span>
+      <span class="list-header__cell col-actions" i18n="@@admin.draftReportRequests.action">Action</span>
+    </div>
+
+    <article *ngFor="let item of filtered(); trackBy: trackById"
+             class="drl-row" [ngClass]="'row--' + item.status">
+
+      <div class="col-id">
+        <span class="drl-id">{{ item.id }}</span>
+      </div>
+
+      <div class="col-title">
+        <span class="drl-title">{{ item.title }}</span>
+      </div>
+
+      <div class="col-type">
+        <span class="type-badge">{{ item.reportType }}</span>
+      </div>
+
+      <div class="col-template">
+        <span class="template-badge"><app-draw-icon icon="pi pi-copy"></app-draw-icon> {{ item.templateName }}</span>
+      </div>
+
+      <div class="col-prepared">
+        {{ item.preparedBy }}
+      </div>
+
+      <div class="col-date">
+        {{ item.lastModified | date:'MMM d, y' }}
+      </div>
+
+      <div class="col-actions">
+        <div class="row-actions">
+          <button type="button" class="action-btn action-btn--review action-btn--sm"
+                  (click)="reviewReport(item)" pTooltip="Review" i18n-pTooltip="@@common.review" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          </button>
+          <button type="button" class="action-btn action-btn--download action-btn--sm"
+                  (click)="downloadReport(item)" pTooltip="Download" i18n-pTooltip="@@common.download" tooltipPosition="top">
+            <app-draw-icon icon="pi pi-download"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+</section>

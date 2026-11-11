@@ -1,0 +1,20 @@
+<div class="drawer-inner">
+    <header class="drawer-header">
+        <div class="drawer-header-left">
+            <div class="drawer-icon-wrap"><app-draw-icon icon="pi pi-list-check"></app-draw-icon></div>
+            <div class="drawer-title-block"><h2 class="drawer-title">{{ task.title }}</h2><p class="drawer-subtitle">{{ task.id }} · Scope Task</p></div>
+        </div>
+        <button class="close-btn" type="button" (click)="close()" aria-label="Close"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+    </header>
+
+    <div class="drawer-body">
+        <div class="hero-card"><div><span class="task-id">{{ task.id }}</span><h3>{{ task.title }}</h3><p>{{ task.objective || 'No objective provided.' }}</p></div><p-tag [value]="statusLabels[task.status]"></p-tag></div>
+        <p-divider></p-divider>
+        <section class="sec-card"><div class="sec-head"><span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span><h3>Overview</h3></div><div class="kv-grid"><div class="kv"><span>Assigned Auditor</span><strong>{{ auditorName(task.assignedTo) }}</strong></div><div class="kv"><span>Control Rating</span><p-tag [value]="controlRatingLabels[task.controlRating ?? 'moderate']"></p-tag></div><div class="kv"><span>Risk Priority</span><p-tag [value]="priorityLabels[task.priority] + ' Risk'"></p-tag></div></div></section>
+        <section class="sec-card"><div class="sec-head"><span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span><h3>Timeline</h3></div><div class="timeline"><div><span>Start</span><strong>{{ task.startDate | date:'mediumDate' }}</strong></div><app-draw-icon icon="pi pi-arrow-right"></app-draw-icon><div><span>End</span><strong>{{ task.endDate | date:'mediumDate' }}</strong></div></div></section>
+        <section class="sec-card"><div class="sec-head"><span class="sec-ic sec-ic--violet"><app-draw-icon icon="pi pi-align-left"></app-draw-icon></span><h3>Description</h3></div><p class="body-copy">{{ task.description }}</p></section>
+        <section class="sec-card"><div class="sec-head"><span class="sec-ic sec-ic--green"><app-draw-icon icon="pi pi-list-check"></app-draw-icon></span><h3>Checklist Items</h3><span class="sec-count">{{ task.checklistItems?.length ?? 0 }}</span></div><div class="chip-row"><p-chip *ngFor="let item of task.checklistItems" [label]="item"></p-chip></div></section>
+        <section class="sec-card"><div class="sec-head"><span class="sec-ic sec-ic--amber"><app-draw-icon icon="pi pi-tags"></app-draw-icon></span><h3>Tags</h3></div><div class="chip-row"><p-chip *ngFor="let tag of task.tags" [label]="tag" icon="pi pi-tag"></p-chip></div></section>
+    </div>
+    <footer class="drawer-footer"><p-button label="Close" styleClass="cancel-btn" (onClick)="close()" type="button"></p-button></footer>
+</div>

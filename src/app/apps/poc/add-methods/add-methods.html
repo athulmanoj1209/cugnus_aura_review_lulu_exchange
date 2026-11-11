@@ -1,0 +1,48 @@
+<p-toast />
+
+<div class="card">
+    <div class="text-xl font-bold mb-6">Add Method</div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+
+        <div class="flex flex-col gap-1">
+            <label for="methodName" class="font-medium">Method Name</label>
+            <input
+                pInputText
+                id="methodName"
+                formControlName="methodName"
+                placeholder="Enter method name"
+                class="w-full"
+            />
+            @if (form.get('methodName')?.hasError('required') && form.get('methodName')?.touched) {
+                <small class="text-red-500">Method name is required</small>
+            }
+            @if (form.get('methodName')?.hasError('minlength') && form.get('methodName')?.touched) {
+                <small class="text-red-500">Method name must be at least 2 characters</small>
+            }
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="methodExpiration" class="font-medium">Method Expiration</label>
+            <p-datepicker
+                inputId="methodExpiration"
+                formControlName="methodExpiration"
+                [showTime]="true"
+                hourFormat="24"
+                placeholder="Select expiration date and time"
+                class="w-full"
+            />
+            @if (form.get('methodExpiration')?.hasError('required') && form.get('methodExpiration')?.touched) {
+                <small class="text-red-500">Method expiration date is required</small>
+            }
+        </div>
+
+        <button
+            pButton
+            type="submit"
+            label="Add Method"
+            class="w-full mt-2"
+        ></button>
+
+    </form>
+</div>

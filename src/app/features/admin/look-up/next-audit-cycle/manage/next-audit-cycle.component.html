@@ -1,0 +1,155 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [style]="{ width: '520px' }"
+  styleClass="nac-modal"
+  (onHide)="onClose()"
+>
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <ng-template pTemplate="header">
+    <div class="modal-header">
+      <div class="modal-header__left">
+        <span class="modal-header__icon">
+          <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+        </span>
+        <div>
+          <h3 class="modal-header__title">
+            {{ headerTitle }}
+          </h3>
+          <p class="modal-header__sub">
+            {{ headerSubtitle }}
+          </p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="onClose()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+      </button>
+    </div>
+  </ng-template>
+
+  <!-- ── Body ──────────────────────────────────────────────────────────────── -->
+  @if (form) {
+  <div class="modal-body" [formGroup]="form">
+
+    <!-- Name -->
+    <div class="field-group">
+      <label class="field-label" i18n="@@admin.nextAuditCycle.cycleName">Cycle Name <span class="req">*</span></label>
+      <input
+        pInputText
+        formControlName="name"
+        placeholder="e.g. Q1 – January to March"
+        i18n-placeholder="@@admin.nextAuditCycle.namePlaceholder"
+        maxlength="100"
+        [class.ng-invalid]="invalid('name')"
+        [class.ng-dirty]="invalid('name')"
+      />
+      <div class="field-footer">
+        @if (invalid('name') && form.get('name')?.errors?.['required']) {
+          <small class="err" i18n="@@admin.nextAuditCycle.nameRequired">Cycle name is required.</small>
+        } @else { <span></span> }
+        <span class="char-count">{{ nameLen }}/100</span>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div class="field-group">
+      <label class="field-label"><span class="opt" i18n="@@common.description">Description</span> <span class="opt" i18n="@@common.optional">(optional)</span></label>
+      <textarea
+        pInputTextarea
+        formControlName="description"
+        rows="3"
+        maxlength="500"
+        [autoResize]="false"
+        placeholder="Brief description of this audit cycle…"
+        i18n-placeholder="@@admin.nextAuditCycle.descriptionPlaceholder"
+      ></textarea>
+      <div class="field-footer">
+        <span></span>
+        <span class="char-count">{{ descLen }}/500</span>
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="field-group">
+      <div class="status-row">
+        <div>
+          <span class="field-label" style="display:block;margin-bottom:0" i18n="@@common.status">Status</span>
+          <small class="hint" style="display:block;margin-top:2px">
+            {{ form.get('isActive')?.value ? activeStatusHint : inactiveStatusHint }}
+          </small>
+        </div>
+        <p-toggleSwitch formControlName="isActive" />
+      </div>
+    </div>
+
+    <!-- Add to list (add mode only) -->
+    @if (!isEditMode) {
+      <div class="add-to-list-row">
+        <button type="button" class="btn-add-to-list" (click)="addToList()">
+          <app-draw-icon icon="pi pi-plus"></app-draw-icon>  <span i18n="@@common.addToList">Add to List</span>
+        </button>
+      </div>
+    }
+
+    <!-- Pending Submission -->
+    @if (!isEditMode && pendingCount() > 0) {
+      <div class="pending-section">
+        <div class="pending-section__header">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          <span class="pending-section__title" i18n="@@common.pendingSubmission">Pending Submission</span>
+          <span class="pending-section__badge">{{ pendingCount() }}</span>
+        </div>
+
+        <div class="pending-list">
+          @for (entry of pendingList(); track $index; let i = $index) {
+            <div class="pending-item">
+              <span class="pending-item__num">{{ i + 1 }}</span>
+              <div class="pending-item__info">
+                <span class="pending-item__name">{{ entry.name }}</span>
+                @if (entry.description) {
+                  <span class="pending-item__desc">{{ entry.description }}</span>
+                }
+              </div>
+              <span class="status-pill"
+                [class.status-pill--active]="entry.isActive"
+                [class.status-pill--inactive]="!entry.isActive">
+                {{ statusLabel(entry.isActive) }}
+              </span>
+              <button type="button" class="pending-item__remove" (click)="removePending(i)">
+                <app-draw-icon icon="pi pi-times"></app-draw-icon>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+  } <!-- /@if (form) -->
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────────── -->
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <button class="btn-cancel" [disabled]="submitting()" i18n="@@common.cancel" (click)="onClose()">Cancel</button>
+      <button
+        class="btn-primary"
+        [disabled]="submitting()"
+        (click)="submit()"
+      >
+        <app-draw-icon icon="pi pi-spin pi-spinner" *ngIf="submitting()"></app-draw-icon>
+        <app-draw-icon icon="pi pi-check" *ngIf="!submitting()"></app-draw-icon>
+        @if (isEditMode) {
+          {{ saveChangesLabel }}
+        } @else if (pendingCount() > 1) {
+          {{ addMultipleLabel(pendingCount()) }}
+        } @else {
+          {{ addAuditCycleLabel }}
+        }
+      </button>
+    </div>
+  </ng-template>
+
+</p-dialog>

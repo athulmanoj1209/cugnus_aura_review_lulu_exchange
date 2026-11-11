@@ -1,0 +1,660 @@
+$primary: var(--primary-color);
+$primary-light: color-mix(in srgb, var(--primary-color) 16%, transparent);
+$bg-page: var(--surface-ground);
+$card-bg: var(--surface-card);
+$border: var(--surface-border);
+$text-muted: var(--text-color-secondary);
+$text-dark: var(--text-color);
+
+:host {
+  display: block;
+}
+
+.final-report-list-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  min-height: 100%;
+}
+
+/* ── Header ──────────────────────────────── */
+.page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.page-header__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.page-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.page-header__filters {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 1px 4px rgba(16, 24, 40, 0.06);
+}
+
+.page-header__search {
+  flex: 0 0 340px;
+  min-width: 260px;
+  position: relative;
+}
+
+.page-header__title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.page-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: $primary;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 11px;
+  color: $text-muted;
+  margin: 0;
+}
+
+/* ── Add button ──────────────────────────── */
+:host ::ng-deep .final-report-btn.p-button {
+  background: transparent;
+  border: 1.5px solid $primary;
+  color: $primary;
+  border-radius: 8px;
+  height: 38px;
+  padding: 0 18px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+
+  .p-button-label { color: $primary !important; }
+
+  &:hover {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+    color: #fff;
+    .p-button-label { color: #fff !important; }
+  }
+}
+
+/* ── Search ──────────────────────────────── */
+.search-wrapper {
+  position: relative;
+
+  .search-input {
+    width: 100%;
+    height: 42px;
+    border-radius: 8px;
+    border: 1px solid var(--surface-border);
+    padding-inline-start: 36px;
+    font-size: 13px;
+    color: $text-dark;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    background: var(--surface-card);
+
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+    }
+  }
+}
+
+.search-icon {
+  position: absolute;
+  inset-inline-start: 12px;
+  top: 15.1px;
+}
+
+/* ── Results bar ─────────────────────────── */
+.results-bar {
+  display: flex;
+  align-items: center;
+}
+
+.results-count {
+  font-size: 13px;
+  color: $text-muted;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  i { color: $primary; font-size: 14px; }
+}
+
+/* ── Grid ────────────────────────────────── */
+.sub-divisions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  @media (max-width: 1600px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 1200px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 640px)  { grid-template-columns: 1fr; }
+}
+
+/* ── Card ────────────────────────────────── */
+.dept-card {
+  position: relative;
+  background: $card-bg;
+  border-radius: 16px;
+  border: 1px solid $border;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Card header ─────────────────────────── */
+.card-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.dept-identity {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 0;
+  min-width: 0;
+}
+
+.dept-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0.9rem;
+}
+
+.company-badge {
+  position: relative;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dept-avatar-ring {
+  position: absolute;
+  top: -4px;
+  inset-inline-start: -4px;
+  pointer-events: none;
+  transform: scaleX(-1);
+  transform-origin: 26px 26px;
+
+  circle {
+    stroke: var(--p-blue-600);
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 0.45s ease;
+  }
+}
+
+.dept-card:hover .dept-avatar-ring circle { stroke-dashoffset: 0; }
+
+.dept-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.dept-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dept-division-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.dept-division {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text-color-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  i { font-size: 10px; }
+}
+
+:host ::ng-deep .status-tag.p-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+:host ::ng-deep .status-tag--corner {
+  position: absolute;
+  top: 20px;
+  inset-inline-end: 20px;
+}
+
+/* ── Report id badge (grid view) ─────────── */
+.report-id-badge {
+  display: inline-block;
+  width: fit-content;
+}
+
+/* ── Divider ─────────────────────────────── */
+:host ::ng-deep .card-divider {
+  margin: 0;
+  .p-divider-content { display: none; }
+}
+
+/* ── Info grid ───────────────────────────── */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 16px;
+  margin-top: 30px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.info-icon {
+  width: auto;
+  height: auto;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-color-secondary);
+
+  ::ng-deep .icon-draw { width: 12px; height: 12px; }
+}
+
+.info-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.info-value {
+  font-size: 12px;
+  color: var(--text-color);
+  font-weight: 400;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &.dept-id-badge {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11px;
+    color: $primary;
+    background: $primary-light;
+    border-radius: 4px;
+    padding: 1px 6px;
+    white-space: nowrap;
+  }
+}
+
+/* ── Tags row ────────────────────────────── */
+:host ::ng-deep .meta-tag.p-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+
+/* ── Footer ──────────────────────────────── */
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.footer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.company-label {
+  font-size: 11px;
+  color: $text-muted;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 500;
+
+  i { font-size: 11px; color: $primary; }
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.card-actions .icon-btn {
+  background: transparent;
+}
+
+/* ── Empty state ─────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  text-align: center;
+  background: $card-bg;
+  border-radius: 14px;
+  border: 1px dashed $border;
+
+  .empty-icon {
+    font-size: 48px;
+    color: $text-muted;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: $text-dark;
+    margin: 0 0 8px;
+  }
+
+  p {
+    font-size: 13px;
+    color: $text-muted;
+    margin: 0;
+  }
+}
+
+/* ── View toggle ──────────────────────────────────────── */
+.view-toggle {
+  display: flex;
+  border: 1px solid $border;
+  border-radius: 6px;
+  overflow: hidden;
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    background: var(--surface-card);
+    border: none;
+    cursor: pointer;
+    color: $text-muted;
+    transition: background 0.15s, color 0.15s;
+
+    &:not(:last-child) {
+      border-inline-end: 1px solid $border;
+    }
+
+    &:hover {
+      background: var(--surface-hover);
+    }
+
+    &.is-active {
+      background: $primary;
+      color: #fff;
+    }
+  }
+}
+
+/* ── List view (row cards) ───────────────────────────── */
+$sub-division-list-cols: 2.2fr 1.1fr 1.1fr 1fr 1fr 1.3fr 1.3fr 0.9fr 0.9fr;
+
+.sub-divisions--list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow-x: auto;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: $sub-division-list-cols;
+  min-width: 1080px;
+  padding: 0 1.25rem;
+
+  &__cell {
+    font-weight: 600;
+    color: $text-muted;
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .col-actions { text-align: end; }
+}
+
+.dept-row {
+  display: grid;
+  grid-template-columns: $sub-division-list-cols;
+  min-width: 1080px;
+  align-items: center;
+  gap: 0.5rem;
+  background: $card-bg;
+  border: 1px solid $border;
+  border-radius: 16px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .col-actions {
+    display: flex;
+    justify-content: end;
+  }
+}
+
+@media (max-width: 640px) {
+  .list-header {
+    display: none;
+  }
+
+  .dept-row {
+    grid-template-columns: 1fr;
+    min-width: 0;
+    white-space: normal;
+    gap: 0.65rem;
+
+    .col-actions {
+      justify-content: start;
+    }
+  }
+}
+
+.cell-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &__text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  &__title {
+    font-weight: 600;
+    color: $text-dark;
+    font-size: 13px;
+  }
+
+  &__id {
+    font-size: 10px;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    color: $primary;
+    background: $primary-light;
+    border-radius: 4px;
+    padding: 1px 5px;
+    display: inline-block;
+    width: fit-content;
+    white-space: nowrap;
+  }
+}
+
+.company-badge--sm {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 6px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cell-division {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: $text-muted;
+  font-size: 13px;
+
+  i { font-size: 11px; color: $primary; }
+}
+
+.cell-employees { font-weight: 600; color: $text-dark; }
+
+.cell-head { font-size: 13px; color: $text-dark; }
+
+.cell-publisher {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+
+  &__name {
+    font-size: 13px;
+    font-weight: 600;
+    color: $text-dark;
+    white-space: nowrap;
+  }
+
+  &__role {
+    font-size: 11px;
+    color: $text-muted;
+  }
+}
+
+.row-actions {
+  display: inline-flex;
+  gap: 0.25rem;
+  justify-content: end;
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.82rem;
+  transition: background 0.15s, color 0.15s;
+
+  .pi { font-size: 14px; }
+
+  &:hover              { background: var(--p-indigo-50); }
+  &--activate          { color: var(--p-green-500) !important; }
+  &--deactivate        { color: var(--p-orange-600) !important; }
+  &--activate:hover    { background: color-mix(in srgb, var(--p-green-500) 8%, transparent) !important; color: var(--p-green-500) !important; }
+  &--deactivate:hover  { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent) !important; color: var(--p-orange-600) !important; }
+}
+
+/* ── Inactive card (grid view) ────────────────────────────────────────── */
+.dept-card--inactive {
+  opacity: 0.5;
+  pointer-events: none;
+
+  .card-actions {
+    pointer-events: all;
+    .icon-btn { opacity: 0.6; }
+    .icon-btn--activate { opacity: 1; }
+  }
+}
+
+/* ── Inactive row (list view) ─────────────────────────────────────────── */
+.dept-row--inactive {
+  opacity: 0.5;
+  pointer-events: none;
+
+  .row-actions {
+    pointer-events: all;
+    .icon-btn { opacity: 0.6; }
+    .icon-btn--activate { opacity: 1; }
+  }
+}

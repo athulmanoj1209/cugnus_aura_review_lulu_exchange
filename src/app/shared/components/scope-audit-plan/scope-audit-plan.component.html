@@ -1,0 +1,545 @@
+<p-toast></p-toast>
+<p-confirmDialog styleClass="audit-confirm-dialog"></p-confirmDialog>
+
+<!-- ══════════════════════════════════════════════════════
+     SCOPE TAB CONTENT
+════════════════════════════════════════════════════════ -->
+<div class="scope-table-host">
+
+  <p-table
+    [value]="pagedScopes"
+    styleClass="scope-tbl"
+    [tableStyle]="{'min-width':'860px'}"
+    [rowHover]="true">
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="col-title">Title</th>
+        <th class="col-dept">Department</th>
+        <th class="col-auditors">Auditors</th>
+        <th class="col-mode">Mode</th>
+        <th class="col-timeframe">Timeframe</th>
+        <th class="col-status">Status</th>
+        <th class="col-action">Action</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-scope>
+      <tr>
+        <td class="col-title">
+          <div class="title-cell">
+            <span class="title-name">{{ scope.scopeName }}</span>
+            <span class="title-desc">{{ scope.objective || 'No description provided.' }}</span>
+          </div>
+        </td>
+
+        <td class="col-dept">
+          <span class="dept-text">{{ getDeptLabel(scope.linkedDepartments[0]) }}</span>
+        </td>
+
+        <td class="col-auditors">
+          <div class="avatar-stack avatar-stack-clickable"
+               (click)="openAuditorDialog(scope)"
+               pTooltip="Click to view all auditors"
+               tooltipPosition="top">
+            <span
+              class="av"
+              *ngFor="let a of scope.assignedAuditors.slice(0, 3); let i = index"
+              [ngStyle]="{'z-index': 10 - i}">
+              {{ getAuditorInitials(a) }}
+            </span>
+            <span
+              class="av av-more"
+              *ngIf="scope.assignedAuditors.length > 3"
+              [ngStyle]="{'z-index': 6}">
+              +{{ scope.assignedAuditors.length - 3 }}
+            </span>
+          </div>
+        </td>
+
+        <td class="col-mode">
+          <span class="mode-txt">{{ scope.modeOfAudit }}</span>
+        </td>
+
+        <td class="col-timeframe">
+          <div class="tf-wrap">
+            <span class="tf-line">{{ scope.startDate | date:'MMM d, yyyy' }} to</span>
+            <span class="tf-line">{{ scope.endDate | date:'MMM d yyyy' }}</span>
+          </div>
+        </td>
+
+        <td class="col-status">
+          <div class="status-cell">
+            <span class="status-name">{{ scope.status }}</span>
+            <span class="status-sub">{{ scope.auditFrequency }}</span>
+          </div>
+        </td>
+
+        <td class="col-action">
+          <div class="action-icons">
+            <button class="icon-btn" pTooltip="View" tooltipPosition="top" (click)="openViewDrawer(scope)">
+              <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+            </button>
+            <button class="icon-btn" pTooltip="Edit" tooltipPosition="top" (click)="openEditDrawer(scope)">
+              <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+            </button>
+            <button class="icon-btn icon-btn-cancel" pTooltip="Cancel / Delete" tooltipPosition="top" (click)="confirmDelete(scope)">
+              <app-draw-icon icon="pi pi-ban"></app-draw-icon>
+            </button>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7">
+          <div class="scope-empty">
+            <app-draw-icon icon="pi pi-inbox"></app-draw-icon>
+            <p>No scopes found</p>
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+
+  </p-table>
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     AUDITOR LIST DIALOG
+════════════════════════════════════════════════════════ -->
+<p-dialog
+  [(visible)]="auditorDialogVisible"
+  [modal]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [resizable]="false"
+  styleClass="auditor-list-dialog"
+  [style]="{ width: '420px' }">
+
+  <ng-template pTemplate="header">
+    <div class="ald-header">
+      <div class="ald-icon-wrap"><app-draw-icon icon="pi pi-users"></app-draw-icon></div>
+      <div>
+        <p class="ald-title">Assigned Auditors</p>
+        <p class="ald-sub">{{ auditorDialogName }}</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    <ul class="ald-list">
+      <li class="ald-item" *ngFor="let a of auditorDialogList; let i = index">
+        <span class="ald-av" [attr.data-idx]="i % 4">{{ getAuditorInitials(a) }}</span>
+        <div class="ald-info">
+          <span class="ald-name">{{ getAuditorLabel(a) }}</span>
+          <span class="ald-role">Auditor</span>
+        </div>
+      </li>
+    </ul>
+    <p class="ald-count">{{ auditorDialogList.length }} auditor{{ auditorDialogList.length !== 1 ? 's' : '' }} assigned</p>
+  </ng-template>
+
+</p-dialog>
+
+<!-- ══════════════════════════════════════════════════════
+     VIEW / EDIT DRAWER
+════════════════════════════════════════════════════════ -->
+<p-drawer
+  [(visible)]="drawerVisible"
+  position="right"
+  styleClass="audit-scope-drawer"
+  [modal]="true"
+  [dismissible]="true"
+  [showCloseIcon]="false"
+  (onHide)="onDrawerClose()">
+
+  <ng-template pTemplate="content">
+    <ng-container *ngIf="scopeForm">
+      <div class="drawer-inner" [formGroup]="scopeForm">
+
+        <!-- Drawer Header -->
+        <div class="drawer-header">
+          <div class="drawer-header-left">
+            <div class="drawer-icon-wrap">
+              <app-draw-icon icon="pi pi-building"></app-draw-icon>
+            </div>
+            <div class="drawer-title-block">
+              <h2 class="drawer-title">
+                Scope <strong>Details</strong>
+              </h2>
+              <p class="drawer-subtitle">
+                <ng-container *ngIf="drawerMode === 'view'">Read-only — click Edit to make changes</ng-container>
+                <ng-container *ngIf="drawerMode === 'edit'">Editing scope — save to apply changes</ng-container>
+              </p>
+            </div>
+          </div>
+          <div class="drawer-header-right">
+            <button *ngIf="drawerMode === 'view'" class="mode-toggle-btn" (click)="switchToEdit()">
+              <app-draw-icon icon="pi pi-pencil"></app-draw-icon> Edit
+            </button>
+            <button class="close-btn" (click)="onDrawerClose()">
+              <app-draw-icon icon="pi pi-times"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+
+        <!-- Form fields -->
+        <div class="drawer-scroll-body">
+          <div class="tab-content">
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Parent Scope <span class="field-optional">(optional)</span></label>
+                <p-select
+                  formControlName="parentScope"
+                  [options]="availableScopeOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select parent scope"
+                  styleClass="form-dropdown"
+                  [showClear]="true"
+                  [disabled]="isViewMode">
+                </p-select>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Scope Name <span class="field-required">*</span></label>
+                <input
+                  pInputText
+                  type="text"
+                  formControlName="scopeName"
+                  placeholder="Scope Name"
+                  class="form-input"
+                  [class.input-error]="isFieldInvalid('scopeName')"
+                  [readonly]="isViewMode" />
+                <small class="error-hint" *ngIf="isFieldInvalid('scopeName')">{{ getErrorMessage('scopeName') }}</small>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Scope Type <span class="field-required">*</span></label>
+                <p-select
+                  formControlName="scopeType"
+                  [options]="scopeTypeOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Departmental / Functional / Independent"
+                  styleClass="form-dropdown"
+                  [invalid]="isFieldInvalid('scopeType')"
+                  [disabled]="isViewMode">
+                </p-select>
+                <small class="error-hint" *ngIf="isFieldInvalid('scopeType')">{{ getErrorMessage('scopeType') }}</small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Linked Department(s) / Node(s) <span class="field-required">*</span></label>
+                <p-multiselect
+                  formControlName="linkedDepartments"
+                  [options]="departmentOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select departments or nodes"
+                  styleClass="form-dropdown"
+                  display="chip"
+                  [invalid]="isFieldInvalid('linkedDepartments')"
+                  [disabled]="isViewMode">
+                </p-multiselect>
+                <small class="error-hint" *ngIf="isFieldInvalid('linkedDepartments')">{{ getErrorMessage('linkedDepartments') }}</small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Audit Frequency <span class="field-required">*</span></label>
+                <p-select
+                  formControlName="auditFrequency"
+                  [options]="auditFrequencyOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Quarterly / Annually / Monthly"
+                  styleClass="form-dropdown"
+                  [invalid]="isFieldInvalid('auditFrequency')"
+                  [disabled]="isViewMode">
+                </p-select>
+                <small class="error-hint" *ngIf="isFieldInvalid('auditFrequency')">{{ getErrorMessage('auditFrequency') }}</small>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Mode of Audit <span class="field-required">*</span></label>
+                <p-select
+                  formControlName="modeOfAudit"
+                  [options]="modeOfAuditOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Full / Limited / Thematic"
+                  styleClass="form-dropdown"
+                  [invalid]="isFieldInvalid('modeOfAudit')"
+                  [disabled]="isViewMode">
+                </p-select>
+                <small class="error-hint" *ngIf="isFieldInvalid('modeOfAudit')">{{ getErrorMessage('modeOfAudit') }}</small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Objective</label>
+                <textarea
+                  pTextarea
+                  formControlName="objective"
+                  placeholder="Describe the audit objective (max 500 characters)"
+                  rows="4"
+                  class="form-textarea"
+                  [class.input-error]="!!f['objective'].errors?.['maxlength']"
+                  [readonly]="isViewMode"></textarea>
+                <div class="char-counter" [class.char-over]="objectiveLength > 500">{{ objectiveLength }} / 500</div>
+              </div>
+            </div>
+
+            <p class="section-label">Timeframe</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Start Date <span class="field-required">*</span></label>
+                <p-datepicker
+                  formControlName="startDate"
+                  placeholder="Start Date"
+                  dateFormat="dd/mm/yy"
+                  [showIcon]="true"
+                  class="form-datepicker"
+                  [invalid]="isFieldInvalid('startDate')"
+                  [disabled]="isViewMode">
+                </p-datepicker>
+                <small class="error-hint" *ngIf="isFieldInvalid('startDate')">{{ getErrorMessage('startDate') }}</small>
+              </div>
+              <div class="form-col">
+                <label class="field-label">End Date <span class="field-required">*</span></label>
+                <p-datepicker
+                  formControlName="endDate"
+                  placeholder="End Date"
+                  dateFormat="dd/mm/yy"
+                  [showIcon]="true"
+                  class="form-datepicker"
+                  [invalid]="isFieldInvalid('endDate') || (!!scopeForm.errors?.['endBeforeStart'] && f['endDate'].touched)"
+                  [disabled]="isViewMode">
+                </p-datepicker>
+                <small class="error-hint" *ngIf="scopeForm.errors?.['endBeforeStart'] && f['endDate'].touched">
+                  End date must be after start date.
+                </small>
+                <small class="error-hint" *ngIf="f['endDate'].hasError('required') && f['endDate'].touched">
+                  End date is required.
+                </small>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Assigned Auditor(s) <span class="field-required">*</span></label>
+                <p-multiselect
+                  formControlName="assignedAuditors"
+                  [options]="auditorOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select auditors from Audit Team"
+                  styleClass="form-dropdown"
+                  display="chip"
+                  [invalid]="isFieldInvalid('assignedAuditors')"
+                  [disabled]="isViewMode">
+                </p-multiselect>
+                <small class="error-hint" *ngIf="isFieldInvalid('assignedAuditors')">{{ getErrorMessage('assignedAuditors') }}</small>
+              </div>
+            </div>
+
+            <p class="section-label">Budget</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Hourly Rate</label>
+                <p-select
+                  formControlName="hourlyRate"
+                  [options]="hourlyRateOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select hourly rate"
+                  styleClass="form-dropdown"
+                  [disabled]="isViewMode">
+                </p-select>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Estimated Hours</label>
+                <p-inputnumber
+                  formControlName="estimatedHours"
+                  placeholder="Estimated hours"
+                  [min]="1"
+                  class="w-full !h-[40.4px]"
+                  inputStyleClass="form-input"
+                  [readonly]="isViewMode">
+                </p-inputnumber>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Budget (Auto-calculated)</label>
+                <input
+                  pInputText
+                  type="text"
+                  [value]="computedBudget"
+                  placeholder="Auto-calculated from Hourly Rate × Estimated Hours"
+                  class="form-input"
+                  readonly />
+                <small class="field-hint"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> Calculated as Hourly Rate × Estimated Hours</small>
+              </div>
+            </div>
+
+            <p class="section-label">Sampling Methodology</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Methodology <span class="field-required">*</span></label>
+                <p-select
+                  formControlName="samplingMethodology"
+                  [options]="methodologyOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Random / Risk-based / Judgmental"
+                  styleClass="form-dropdown"
+                  [invalid]="isFieldInvalid('samplingMethodology')"
+                  [disabled]="isViewMode">
+                </p-select>
+                <small class="error-hint" *ngIf="isFieldInvalid('samplingMethodology')">{{ getErrorMessage('samplingMethodology') }}</small>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Sampling Size <span class="field-required">*</span></label>
+                <p-inputnumber
+                  formControlName="samplingSize"
+                  placeholder="Sampling Size"
+                  [min]="1"
+                  class="w-full !h-[40.4px]"
+                  inputStyleClass="form-input"
+                  [invalid]="isFieldInvalid('samplingSize')"
+                  [readonly]="isViewMode">
+                </p-inputnumber>
+                <small class="error-hint" *ngIf="isFieldInvalid('samplingSize')">{{ getErrorMessage('samplingSize') }}</small>
+              </div>
+            </div>
+
+            <div class="form-row" *ngIf="isJudgmental">
+              <div class="form-col full">
+                <label class="field-label">Justification for Sampling <span class="field-required">*</span></label>
+                <textarea
+                  pTextarea
+                  formControlName="justificationForSampling"
+                  placeholder="Provide justification for using Judgmental sampling…"
+                  rows="3"
+                  class="form-textarea"
+                  [class.input-error]="isFieldInvalid('justificationForSampling')"
+                  [readonly]="isViewMode"></textarea>
+                <small class="error-hint" *ngIf="isFieldInvalid('justificationForSampling')">{{ getErrorMessage('justificationForSampling') }}</small>
+              </div>
+            </div>
+
+            <p class="section-label">Risk Information</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Risk Reference ID</label>
+                <input
+                  pInputText
+                  type="text"
+                  formControlName="riskReferenceId"
+                  placeholder="e.g. RR-001"
+                  class="form-input"
+                  [readonly]="isViewMode" />
+                <small class="field-hint"><app-draw-icon icon="pi pi-link"></app-draw-icon> Links to Risk Register item</small>
+              </div>
+              <div class="form-col">
+                <label class="field-label">Risk Rating</label>
+                <p-select
+                  formControlName="riskRating"
+                  [options]="riskRatingOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Low / Medium / High"
+                  styleClass="form-dropdown"
+                  [disabled]="isViewMode">
+                </p-select>
+                <small class="field-hint"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> Auto-populated when Risk Reference ID is matched</small>
+              </div>
+            </div>
+
+            <p class="section-label">Scope Status</p>
+            <div class="form-row">
+              <div class="form-col">
+                <label class="field-label">Status</label>
+                <p-select
+                  formControlName="status"
+                  [options]="statusOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  styleClass="form-dropdown"
+                  [disabled]="isViewMode">
+                </p-select>
+              </div>
+              <div class="form-col"></div>
+            </div>
+
+            <p class="section-label">Evidence Uploads</p>
+            <div class="evidence-upload-area" *ngIf="!isViewMode">
+              <p-fileupload
+                mode="basic"
+                accept=".pdf,.docx,.jpg,.jpeg,.png,.txt"
+                [maxFileSize]="52428800"
+                [auto]="false"
+                chooseLabel="Choose Files"
+                chooseIcon="pi pi-upload"
+                styleClass="evidence-upload-btn"
+                (onSelect)="onEvidenceSelect($event)"
+                [multiple]="true">
+              </p-fileupload>
+              <p class="upload-hint">
+                <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+                Accepted: PDF, DOCX &nbsp;·&nbsp; Max 50 MB &nbsp;·&nbsp; Virus-scanned
+              </p>
+            </div>
+
+            <div class="evidence-file-list" *ngIf="evidenceFiles.length > 0">
+              <div class="evidence-file-item" *ngFor="let file of evidenceFiles; let i = index">
+                <app-draw-icon icon="pi pi-file" class="evidence-file-icon"></app-draw-icon>
+                <span class="evidence-file-name" [title]="file.name">{{ file.name }}</span>
+                <span class="evidence-file-size">{{ formatFileSize(file.size) }}</span>
+                <button class="evidence-file-remove" *ngIf="!isViewMode" (click)="removeEvidence(i)">
+                  <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="evidence-empty" *ngIf="isViewMode && evidenceFiles.length === 0">
+              <span class="field-hint"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> No evidence files attached.</span>
+            </div>
+
+            <p class="section-label">Completion</p>
+            <div class="form-row">
+              <div class="form-col full">
+                <label class="field-label">Completion Notes</label>
+                <textarea
+                  pTextarea
+                  formControlName="completionNote"
+                  placeholder="Completion notes"
+                  rows="4"
+                  class="form-textarea"
+                  [readonly]="isViewMode"></textarea>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="drawer-footer" *ngIf="drawerMode === 'edit'">
+          <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onDrawerClose()"></p-button>
+          <p-button label="Save Changes" styleClass="submit-btn" (onClick)="onSubmit()"></p-button>
+        </div>
+
+      </div>
+    </ng-container>
+  </ng-template>
+</p-drawer>

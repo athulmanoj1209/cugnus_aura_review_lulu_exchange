@@ -1,0 +1,296 @@
+@use '../../../../../../assets/drawer-modal.scss' as *;
+:host { display: flex; flex-direction: column; height: 100%; width: 100%; }
+
+/* Border-box everywhere in this drawer so padding/border on the PrimeNG
+   inputs (already given `width: 100%` below) is included in that 100%
+   instead of added on top of it — otherwise fields in the right-hand grid
+   column render wider than their cell and bleed past the drawer's edge. */
+:host, :host * , :host *::before, :host *::after { box-sizing: border-box; }
+
+.add-ev-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface-card);
+}
+
+/* Header */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left { display: flex; align-items: center; gap: 12px; }
+
+.drawer-icon-wrap {
+  width: 40px; height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  .pi { font-size: 18px; color: var(--primary-color); }
+}
+
+.drawer-title-block { display: flex; flex-direction: column; gap: 2px; }
+
+.drawer-title {
+  font-size: 16px; font-weight: 400; color: var(--text-color); margin: 0;
+  strong { font-weight: 700; color: var(--primary-color); }
+}
+
+.drawer-subtitle { font-size: 11px; color: var(--text-color-secondary); margin: 0; }
+
+.close-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi { font-size: 13px; color: var(--text-color-secondary); }
+  &:hover { background: var(--surface-hover); }
+}
+
+/* Body */
+.drawer-body {
+  display: flex; flex-direction: column; flex: 1;
+  min-height: 0; padding: 1.25rem 1.75rem 1.5rem; overflow-y: auto;
+  /* Reserve the scrollbar's width up front instead of only once content
+     overflows — otherwise the scrollbar appearing shrinks the available
+     width after the two-column grid has already been laid out, and it
+     ends up overlapping/clipping the right-hand column's controls. */
+  scrollbar-gutter: stable;
+}
+
+/* Grid */
+// .form-grid {
+//   display: grid;
+//   grid-template-columns: 1fr 1fr;
+//   gap: 1rem;
+// }
+
+// .form-field {
+//   display: flex; flex-direction: column;
+//   &--full { grid-column: 1 / -1; }
+// }
+
+// .form-label {
+//   font-size: 0.85rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.4rem;
+// }
+
+// .error-text {
+//   display: block; margin-top: 4px; font-size: 0.78rem; color: var(--p-red-500);
+// }
+.form-grid{
+  background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 12px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1rem;
+}
+/* PrimeNG overrides */
+:host ::ng-deep .form-field {
+  /* A flex/grid item's default minimum width is its content's min-content
+     size, not 0 — and PrimeNG's Select ships its own min-width (a CSS
+     variable in its base theme), which wins over the `width: 100%` below
+     whenever the grid column is narrower than that built-in minimum. That
+     mismatch is what pushes the control past the column's right edge, so
+     it has to be zeroed out everywhere along the chain: the grid item
+     itself, the <p-select>/<p-multiselect> host element, and PrimeNG's own
+     inner `.p-select`/`.p-multiselect` box. */
+  min-width: 0;
+
+  p-select, p-multiselect,
+  .p-inputtext, .p-select, .p-multiselect {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .p-inputtext, .p-select { width: 100%; }
+
+  .p-inputtext:not(.p-invalid),
+  .p-select:not(.p-invalid) {
+    border-radius: 8px; padding: 0.55rem 0.9rem;
+    font-size: 0.92rem; color: var(--primary-color);
+    border: 1px solid var(--surface-border); height: 44px;
+  }
+  .p-inputtext::placeholder,
+  .p-select .p-select-label { color: var(--text-color-secondary); }
+  .p-select .p-select-label.p-placeholder { color: var(--text-color-secondary); }
+
+  textarea.p-textarea {
+    width: 100%; border-radius: 8px; padding: 0.55rem 0.9rem;
+    font-size: 0.92rem; color: var(--primary-color);
+    border: 1px solid var(--surface-border); resize: vertical; font-family: inherit;
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 2px rgba(37,99,235,.15); }
+    &.ng-invalid.ng-touched { border-color: var(--p-red-500); }
+  }
+}
+
+:host ::ng-deep {
+  input.ng-invalid.ng-touched { border-color: var(--p-red-500) !important; }
+  p-select.ng-invalid.ng-touched .p-select { border-color: var(--p-red-500) !important; }
+}
+
+/* File upload */
+:host ::ng-deep .custom-fileupload {
+  border: 2px dashed var(--p-blue-200); border-radius: 12px; background: var(--p-blue-100);
+  transition: border-color 0.15s;
+  &:hover { border-color: var(--primary-color); }
+  .p-fileupload-header { display: none; }
+  .p-fileupload-content { background: transparent; border: none; padding: 0; }
+}
+
+.upload-drop-zone {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 1.75rem 1rem; text-align: center; gap: 0.4rem;
+
+  &__icon-wrap {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--p-blue-100); display: flex; align-items: center; justify-content: center;
+    margin-bottom: 0.25rem;
+    .pi { font-size: 1.4rem; color: var(--primary-color); }
+  }
+  &__title { margin: 0; font-size: 0.92rem; font-weight: 600; color: var(--text-color); }
+  &__or    { font-size: 0.8rem; color: var(--text-color-secondary); }
+  &__hint  { margin: 0.2rem 0 0; font-size: 0.75rem; color: var(--text-color-secondary); }
+}
+
+.upload-browse-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--primary-color); color: #fff; border: none; border-radius: 8px;
+  padding: 0.45rem 1.25rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
+  &:hover { opacity: 0.9; }
+  .pi { font-size: 0.82rem; }
+}
+
+/* File list */
+.file-list {
+  list-style: none; margin: 0.5rem 0 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.4rem;
+
+  &__item {
+    display: flex; align-items: center; gap: 0.5rem;
+    background: var(--surface-hover); border-radius: 8px; padding: 0.45rem 0.75rem; font-size: 0.85rem;
+  }
+  &__icon { color: var(--primary-color); flex-shrink: 0; }
+  &__name { flex: 1; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 260px; }
+  &__size { color: var(--text-color-secondary); font-size: 0.75rem; flex-shrink: 0; }
+  &__remove {
+    background: none; border: none; cursor: pointer; color: var(--text-color-secondary);
+    display: flex; align-items: center; padding: 2px; border-radius: 4px;
+    transition: color 0.15s;
+    &:hover { color: var(--p-red-500); }
+  }
+}
+
+/* Footer */
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--surface-border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+::ng-deep .cancel-btn.p-button {
+  background: var(--surface-hover) !important;
+  border: none !important;
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  &:hover { background: var(--surface-hover) !important; }
+}
+
+::ng-deep .submit-btn.p-button {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  margin-inline-start: auto;
+  &:hover { opacity: 0.9; }
+}
+.p-select.p-invalid {
+    padding: 5px;
+    height: 44px;
+}
+/* ── Approve banner ──────────────────────────────────────────────── */
+.approve-banner {
+  display: flex; align-items: center; gap: 0.6rem;
+  margin: 0 1.75rem 0; padding: 0.65rem 1rem;
+  background: var(--surface-hover); border: 1px solid var(--p-blue-200); border-radius: 8px;
+  font-size: 0.83rem; color: var(--primary-color); flex-shrink: 0;margin:5px;
+  .pi { font-size: 1rem; flex-shrink: 0; }
+  strong { font-weight: 700; }
+}
+
+/* ── Approver notes section ──────────────────────────────────────── */
+.approver-section {
+  background: var(--surface-card); border: 1.5px solid var(--surface-border);
+  border-inline-start: 4px solid var(--primary-color); border-radius: 10px;
+  padding: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.06); margin-bottom: 1rem;
+
+  &__head {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.88rem; font-weight: 700; color: var(--text-color); margin-bottom: 0.75rem;
+    .pi { color: var(--primary-color); }
+  }
+  &__hint {
+    margin-inline-start: auto; font-size: 0.72rem; font-weight: 600;
+    color: var(--p-red-600); background: var(--p-red-50); border-radius: 999px; padding: 0.15rem 0.5rem;
+  }
+}
+
+/* ── Approve footer actions ──────────────────────────────────────── */
+.footer-approve-actions { display: flex; gap: 0.6rem; margin-inline-start: auto; }
+
+:host ::ng-deep {
+  .btn-reject.p-button {
+    background: var(--p-red-600); border: 1.5px solid var(--p-red-600); color: var(--p-red-600);
+    font-weight: 600; padding: 0.7rem 1.75rem; border-radius: 8px;
+    &:hover { background: var(--p-red-50); }
+    .p-button-icon { color: var(--p-red-600); }
+  }
+  .btn-approve.p-button {
+    background: var(--p-green-600); border: none; color: #fff;
+    font-weight: 600; padding: 0.7rem 1.75rem; border-radius: 8px;
+    &:hover { opacity: 0.9; }
+  }
+}
+
+/* ── Confirm dialog body ─────────────────────────────────────────── */
+.confirm-body {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 1rem; padding: 0.5rem 0 1rem; text-align: center;
+  &__icon-wrap {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    .pi { font-size: 1.75rem; }
+    &.icon-wrap--approve { background: var(--p-green-50); color: var(--p-green-600); }
+    &.icon-wrap--reject  { background: var(--p-red-50); color: var(--p-red-600); }
+  }
+  &__text { margin: 0; font-size: 0.92rem; color: var(--text-color-secondary); line-height: 1.6; max-width: 320px; }
+}

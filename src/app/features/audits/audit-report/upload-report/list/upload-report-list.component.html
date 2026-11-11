@@ -1,0 +1,211 @@
+<div class="ru-card">
+
+  <!-- Header -->
+  <div class="ru-header">
+    <div class="ru-header__icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="ru-header__title" i18n="@@audit.auditReport.uploadReports">Upload Reports</h2>
+      <p class="ru-header__subtitle" i18n="@@audit.auditReport.uploadReportsSubtitle">Choose a division, report type and period to find the report to upload against</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" autocomplete="off">
+
+    <div class="ru-section">
+
+    <!-- ── Filters toolbar: every field here just narrows the full list already loaded below ──── -->
+    <div class="ru-toolbar">
+
+        <div class="ru-field ru-field--fixed" *ngIf="isAdmin">
+          <label class="ru-label" i18n="@@common.company">Company</label>
+          <p-select formControlName="company" [options]="companyOptions"
+            optionLabel="label" optionValue="value" placeholder="All companies" i18n-placeholder="@@audit.auditReport.allCompanies"
+            [showClear]="true" styleClass="w-full" appendTo="body">
+          </p-select>
+        </div>
+
+        <div class="ru-field ru-field--fixed">
+          <label class="ru-label"><span i18n="@@common.division">Division</span> <span class="ru-required">*</span></label>
+          <p-select formControlName="division" [options]="divisionOptions"
+            optionLabel="label" optionValue="value" placeholder="Select division" i18n-placeholder="@@audit.auditReport.selectDivision"
+            [invalid]="isInvalid('division')" styleClass="w-full" appendTo="body">
+          </p-select>
+          <small *ngIf="getError('division','Division') as err" class="error-text">{{ err }}</small>
+        </div>
+
+        <div class="ru-field ru-field--type">
+          <label class="ru-label" i18n="@@audit.auditReport.reportType">Report Type</label>
+          <div class="ru-pill-row">
+            <button type="button" *ngFor="let opt of reportTypeOptions"
+              class="ru-pill"
+              [class.ru-pill--active]="form.get('reportType')?.value === opt.value"
+              [title]="form.get('reportType')?.value === opt.value ? clickToClearLabel : opt.label"
+              (click)="selectReportType(opt.value)">
+              {{ opt.label }}
+              <span class="ru-pill__clear" *ngIf="form.get('reportType')?.value === opt.value">×</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ru-field ru-field--fixed">
+          <label class="ru-label" i18n="@@audit.auditReport.year">Year</label>
+          <p-select formControlName="year" [options]="yearOptions"
+            optionLabel="label" optionValue="value" placeholder="All years" i18n-placeholder="@@audit.auditReport.allYears"
+            [showClear]="true" styleClass="w-full" appendTo="body">
+          </p-select>
+        </div>
+
+        <div class="ru-field ru-field--fixed" *ngIf="periodZoneVisible">
+          <label class="ru-label" i18n="@@audit.auditReport.period">Period</label>
+          <p-select formControlName="periodZone" [options]="periodOptions"
+            optionLabel="label" optionValue="value" placeholder="All periods" i18n-placeholder="@@audit.auditReport.allPeriods"
+            [group]="selectedReportType === 'weekly'"
+            optionGroupLabel="label" optionGroupChildren="items"
+            [filter]="selectedReportType === 'weekly'" filterPlaceholder="Search period..." i18n-filterPlaceholder="@@audit.auditReport.searchPeriod"
+            [showClear]="true" styleClass="w-full" appendTo="body">
+          </p-select>
+        </div>
+
+      </div>
+
+    <!-- ── Section: Results — full list on load, filters above just narrow it ──── -->
+    <div class="ru-results">
+      <div class="ru-section__label" i18n="@@audit.auditReport.reports">Reports</div>
+
+      <ng-container *ngIf="loadingReports">
+        <div class="ru-skeleton">
+          <div class="ru-skeleton__row" *ngFor="let _ of [1,2]">
+            <div class="ru-skeleton__cell"></div>
+            <div class="ru-skeleton__cell ru-skeleton__cell--sm"></div>
+            <div class="ru-skeleton__cell ru-skeleton__cell--sm"></div>
+            <div class="ru-skeleton__cell ru-skeleton__cell--xs"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!loadingReports">
+        <div class="ru-table" *ngIf="hasResults; else noResults">
+          <div class="ru-table-head">
+            <div class="ru-th" i18n="@@audit.auditReport.report">Report</div>
+            <div class="ru-th" i18n="@@audit.auditReport.period">Period</div>
+            <div class="ru-th" i18n="@@audit.auditReport.lastUpdated">Last Updated</div>
+
+            <div class="ru-th"></div>
+          </div>
+
+          <div class="ru-row" *ngFor="let r of pagedReports">
+            <div class="ru-td ru-td--name">{{ r.name }}</div>
+            <div class="ru-td">{{ periodLabel(r) }}</div>
+            <div class="ru-td">{{ r.lastUpdated | date:'dd MMM yyyy' }}</div>
+
+            <div class="ru-td ru-td--action">
+              <button type="button" class="ru-icon-btn" title="Upload" i18n-title="@@common.upload"
+                      (click)="openUploadModal(r)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p-paginator *ngIf="hasResults"
+          [first]="first" [rows]="rows" [totalRecords]="filteredReports.length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          (onPageChange)="onPageChange($event)" styleClass="ru-paginator">
+        </p-paginator>
+
+        <ng-template #noResults>
+          <div class="ru-empty" i18n="@@audit.auditReport.noReportsForFilters">No reports found for the selected filters.</div>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+    <div class="ru-footer">
+      <button type="button" class="ru-btn ru-btn--ghost" (click)="onReset()" i18n="@@common.reset">Reset</button>
+    </div>
+
+    </div><!-- /ru-section -->
+
+  </form>
+</div>
+
+<!-- ── Upload modal ─────────────────────────────────────────────────────────── -->
+<p-dialog header="Upload report" i18n-header="@@audit.auditReport.uploadReport" [(visible)]="uploadModalVisible" [modal]="true"
+          [style]="{width: '420px'}" [draggable]="false" [resizable]="false">
+
+  <form [formGroup]="uploadForm" *ngIf="selectedReportForUpload as r" class="ru-upload-form">
+    <div class="ru-upload-subject">
+      <span class="ru-upload-subject__name">{{ r.name }}</span>
+      <span class="ru-upload-subject__meta">{{ periodLabel(r) }}</span>
+    </div>
+
+    <div class="ru-field">
+      <label class="ru-label"><span i18n="@@common.file">File</span> <span class="ru-required">*</span></label>
+      <div class="ru-dropzone"
+           [class.ru-dropzone--dragging]="isDragging"
+           [class.ru-dropzone--invalid]="isUploadInvalid('file')"
+           [class.ru-dropzone--filled]="selectedFileName"
+           (click)="triggerFileBrowse()"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onFileDrop($event)">
+        <input #fileInput type="file" hidden (change)="onFileSelected($event)"
+               accept=".pdf,.doc,.docx,.xls,.xlsx" />
+
+        <ng-container *ngIf="!selectedFileName">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <span class="ru-dropzone__label" i18n="@@audit.auditReport.dragDropFile">Drag and drop a file, or click to browse</span>
+          <span class="ru-dropzone__hint" i18n="@@audit.auditReport.uploadFileHint">PDF, DOC or XLSX up to 20 MB</span>
+        </ng-container>
+
+        <ng-container *ngIf="selectedFileName">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span class="ru-dropzone__label">{{ selectedFileName }}</span>
+          <span class="ru-dropzone__hint" i18n="@@audit.auditReport.clickToReplace">Click to replace</span>
+        </ng-container>
+      </div>
+      <small *ngIf="isUploadInvalid('file')" class="error-text" i18n="@@audit.auditReport.fileRequired">A file is required</small>
+    </div>
+
+    <div class="ru-field">
+      <label class="ru-label" i18n="@@audit.auditReport.remarksCorrectionSummary">Remarks / Correction Summary</label>
+      <textarea class="ru-textarea" formControlName="remarks" rows="3"
+                placeholder="Describe what changed in this upload..." i18n-placeholder="@@audit.auditReport.remarksPlaceholder"></textarea>
+    </div>
+  </form>
+
+  <ng-template pTemplate="footer">
+    <button type="button" class="ru-btn ru-btn--secondary" (click)="closeUploadModal()" i18n="@@common.cancel">Cancel</button>
+    <button type="button" class="ru-btn ru-btn--primary" [disabled]="uploading" (click)="submitUpload()">
+      <ng-container *ngIf="!uploading">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span i18n="@@common.upload">Upload</span>
+      </ng-container>
+      <ng-container *ngIf="uploading">
+        <span class="ru-spinner ru-spinner--light"></span>
+         <span i18n="@@audit.auditReport.uploading">Uploading...</span>
+      </ng-container>
+    </button>
+  </ng-template>
+</p-dialog>

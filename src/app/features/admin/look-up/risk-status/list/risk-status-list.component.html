@@ -1,0 +1,131 @@
+<div class="risk-status-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title" i18n="@@admin.riskStatus.title">Risk Statuses</h2>
+          <p class="page-subtitle" i18n="@@admin.riskStatus.subtitle">Define and manage risk status labels for tracking audit risk lifecycle</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+        <p-button label="+ New Risk Status" i18n-label="@@admin.riskStatus.newRiskStatus" styleClass="risk-status-btn" (onClick)="openAddDialog()"></p-button>
+      </div>
+    </div>
+    <div class="page-header__filters">
+      <span class="p-input-icon-left search-wrapper page-header__search relative">
+        <app-draw-icon icon="pi pi-search" class="start-3 top-[15.1px] absolute"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search by Risk Status" [(ngModel)]="searchQuery"
+          (input)="onSearch()" class="search-input" i18n-placeholder="@@admin.riskStatus.searchPlaceholder" />
+      </span>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  @if (filteredStatuses.length === 0) {
+    <div class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+      <span i18n="@@admin.riskStatus.empty">No risk statuses found. Try adjusting your search or add a new risk status.</span>
+    </div>
+  }
+
+  <!-- List -->
+  @if (filteredStatuses.length > 0) {
+    <div class="it-list">
+      <div class="list-header">
+        <span class="list-header__cell col-index" i18n="@@common.number">#</span>
+        <span class="list-header__cell col-name sortable" i18n="@@admin.riskStatus.columnName" (click)="toggleSort('name')">RISK STATUS <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'name'" [class.pi-sort-amount-up-alt]="sortField === 'name' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'name' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-status" i18n="@@common.statusUppercase">STATUS</span>
+        <span class="list-header__cell col-date sortable" (click)="toggleSort('createdOn')"><span i18n="@@common.createdOn">CREATED ON</span> <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'createdOn'" [class.pi-sort-amount-up-alt]="sortField === 'createdOn' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'createdOn' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-actions" i18n="@@common.actionsUppercase">ACTIONS</span>
+      </div>
+
+      @for (status of pagedStatuses; track status.id; let i = $index) {
+        <article class="it-row" [class.row-inactive]="status.status === 'inactive'">
+          <div class="col-index">
+            <span class="row-idx">{{ ((currentPage * pageSize) + i + 1).toString().padStart(2, '0') }}</span>
+          </div>
+          <div class="col-name">
+            <span class="ev-title">{{ status.name }}</span>
+            <span class="ev-uploader">{{ truncate(status.description, 100) }}</span>
+          </div>
+          <div class="col-status">
+            <span class="status-badge" [class.status-badge--active]="status.status === 'active'" [class.status-badge--inactive]="status.status === 'inactive'">
+              {{ statusLabel(status.status) }}
+            </span>
+          </div>
+          <div class="col-date">{{ status.createdOn }}</div>
+          <div class="col-actions">
+            <div class="row-actions">
+              <button type="button" class="icon-btn" (click)="viewStatus(status)" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn" (click)="editStatus(status)" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn"
+                [class.icon-btn--activate]="status.status === 'inactive'"
+                [class.icon-btn--deactivate]="status.status === 'active'"
+                (click)="openConfirm(status)"
+                [pTooltip]="status.status === 'inactive' ? activateLabel : deactivateLabel" tooltipPosition="top">
+                <app-draw-icon [icon]="status.status === 'inactive' ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+
+  @if (filteredStatuses.length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize"
+      [totalRecords]="filteredStatuses.length"
+      [currentPage]="currentPage"
+      entityLabel="risk statuses"
+      i18n-entityLabel="@@admin.riskStatus.entityLabel"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onRowsChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>
+
+<!-- Add / Edit Dialog (showHeader=false) -->
+<p-dialog
+  [(visible)]="showAddDialog"
+  [modal]="true" [draggable]="false" [resizable]="false" [closable]="false" [showHeader]="false"
+  [style]="{ width: '560px', padding: '0' }" styleClass="no-pad-dialog">
+  <app-risk-status
+    [mode]="dialogMode"
+    [editItem]="editingItem"
+    (submitted)="onStatusesSubmitted($event)"
+    (cancelled)="onDialogCancelled()">
+  </app-risk-status>
+</p-dialog>
+
+<!-- View Dialog -->
+@if (viewingItem) {
+  <app-lookup-view-dialog
+    [(visible)]="showViewDialog"
+    icon="pi pi-info-circle"
+    [title]="viewingItem.name"
+    subtitle="Risk Status Details"
+    i18n-subtitle="@@admin.riskStatus.details"
+    [active]="viewingItem.status === 'active'"
+    [description]="viewingItem.description"
+    [createdOn]="viewingItem.createdOn">
+  </app-lookup-view-dialog>
+}
+
+<!-- Confirm Dialog -->
+<app-confirm-action-dialog
+  [visible]="showConfirmDialog"
+  [action]="confirmTarget && isBlocked(confirmTarget.id) ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()"
+  (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>

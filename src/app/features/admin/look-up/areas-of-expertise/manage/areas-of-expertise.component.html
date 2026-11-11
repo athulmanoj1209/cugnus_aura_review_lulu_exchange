@@ -1,0 +1,137 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [style]="{ width: '520px' }"
+  styleClass="aoe-modal"
+  (onHide)="onClose()"
+>
+  <ng-template pTemplate="header">
+    <div class="modal-header">
+      <div class="modal-header__left">
+        <span class="modal-header__icon">
+          <app-draw-icon icon="pi pi-star"></app-draw-icon>
+        </span>
+        <div>
+          <h3 class="modal-header__title">
+            {{ isEditMode ? editTitle : addTitle }}
+          </h3>
+          <p class="modal-header__sub">
+            {{ isEditMode ? editSubtitle : addSubtitle }}
+          </p>
+        </div>
+      </div>
+      <button class="modal-close" (click)="onClose()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+      </button>
+    </div>
+  </ng-template>
+
+  @if (form) {
+  <div class="modal-body" [formGroup]="form">
+
+    <div class="field-group">
+      <label class="field-label"><span i18n="@@admin.areaOfExpertise.areaName">Area of Expertise</span> <span class="req">*</span></label>
+      <input
+        pInputText
+        formControlName="name"
+        placeholder="e.g. Financial Audit"
+        i18n-placeholder="@@admin.areaOfExpertise.namePlaceholder"
+        maxlength="100"
+        [class.ng-invalid]="invalid('name')"
+        [class.ng-dirty]="invalid('name')"
+      />
+      <div class="field-footer">
+        @if (invalid('name') && form.get('name')?.errors?.['required']) {
+          <small class="err" i18n="@@admin.areaOfExpertise.nameRequired">Area of expertise is required.</small>
+        } @else { <span></span> }
+        <span class="char-count">{{ nameLen }}/100</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label"><span i18n="@@common.description">Description</span> <span class="opt" i18n="@@common.optional">(optional)</span></label>
+      <textarea
+        pInputTextarea
+        formControlName="description"
+        rows="3"
+        maxlength="500"
+        [autoResize]="false"
+        placeholder="Brief description of this area of expertise…"
+        i18n-placeholder="@@admin.areaOfExpertise.descriptionPlaceholder"
+      ></textarea>
+      <div class="field-footer">
+        <span></span>
+        <span class="char-count">{{ descLen }}/500</span>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="status-row">
+        <div>
+          <span class="field-label" style="display:block;margin-bottom:0" i18n="@@common.status">Status</span>
+          <small class="hint" style="display:block;margin-top:2px">
+            {{ form.get('isActive')?.value
+              ? activeStatusHint
+              : inactiveStatusHint }}
+          </small>
+        </div>
+        <p-toggleSwitch formControlName="isActive" />
+      </div>
+    </div>
+
+    @if (!isEditMode) {
+      <div class="add-to-list-row">
+        <button type="button" class="btn-add-to-list" (click)="addToList()">
+          <app-draw-icon icon="pi pi-plus"></app-draw-icon>  <span i18n="@@admin.areaOfExpertise.addToList">Add to List</span>
+        </button>
+      </div>
+    }
+
+    @if (!isEditMode && pendingCount() > 0) {
+      <div class="pending-section">
+        <div class="pending-section__header">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          <span class="pending-section__title" i18n="@@admin.areaOfExpertise.pendingSubmission">Pending Submission</span>
+          <span class="pending-section__badge">{{ pendingCount() }}</span>
+        </div>
+        <div class="pending-list">
+          @for (entry of pendingList(); track $index; let i = $index) {
+            <div class="pending-item">
+              <span class="pending-item__num">{{ i + 1 }}</span>
+              <div class="pending-item__info">
+                <span class="pending-item__name">{{ entry.name }}</span>
+                @if (entry.description) {
+                  <span class="pending-item__desc">{{ entry.description }}</span>
+                }
+              </div>
+              <span class="status-pill"
+                [class.status-pill--active]="entry.isActive"
+                [class.status-pill--inactive]="!entry.isActive">
+                {{ statusLabel(entry.isActive) }}
+              </span>
+              <button type="button" class="pending-item__remove" (click)="removePending(i)">
+                <app-draw-icon icon="pi pi-times"></app-draw-icon>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+  }
+
+  <ng-template pTemplate="footer">
+    <div class="modal-footer">
+      <button class="btn-cancel" [disabled]="submitting()" (click)="onClose()" i18n="@@common.cancel">Cancel</button>
+      <button class="btn-primary" [disabled]="submitting()" (click)="submit()">
+        <app-draw-icon icon="pi pi-spin pi-spinner" *ngIf="submitting()"></app-draw-icon>
+        <app-draw-icon icon="pi pi-check" *ngIf="!submitting()"></app-draw-icon>
+        <span>{{ submitButtonLabel() }}</span>
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

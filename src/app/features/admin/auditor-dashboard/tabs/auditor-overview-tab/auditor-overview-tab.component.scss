@@ -1,0 +1,338 @@
+.auditor-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+@keyframes auditor-overview-icon-draw {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+// ── Stats Grid (2 rows × 5) ───────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.65rem;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+    line-height: 1.35;
+  }
+
+  &__icon {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    display: inline-flex;
+
+    .draw-icon {
+      overflow: visible;
+
+      path, circle, rect, line, polyline {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 0;
+      }
+    }
+  }
+
+  &:hover &__icon .draw-icon {
+    path, circle, rect, line, polyline {
+      animation: auditor-overview-icon-draw 0.6s ease;
+    }
+
+    > :not(:first-child) {
+      animation-delay: 0.35s;
+    }
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1;
+  }
+
+  &.stat--warning  { background: color-mix(in srgb, var(--p-yellow-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-orange-500) 40%, transparent); .stat-card__icon { color: var(--p-orange-600); } }
+  &.stat--orange   { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent); border-color: color-mix(in srgb, var(--p-orange-500) 30%, transparent); .stat-card__icon { color: var(--p-orange-600); } }
+  &.stat--success  { background: var(--surface-hover); border-color: color-mix(in srgb, var(--p-green-500) 30%, transparent); .stat-card__icon { color: var(--p-green-500); } }
+  &.stat--danger   { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-red-500) 30%, transparent); .stat-card__icon { color: var(--p-red-500); } }
+  &.stat--info     { background: var(--surface-hover); border-color: color-mix(in srgb, var(--p-blue-500) 30%, transparent); .stat-card__icon { color: var(--p-blue-600); } }
+
+  :host-context(.app-dark) & {
+    &.stat--warning { background: rgba(217, 119, 6, 0.12); border-color: var(--surface-border); }
+    &.stat--orange  { background: rgba(234, 88, 12, 0.12); border-color: var(--surface-border); }
+    &.stat--success { border-color: var(--surface-border); }
+    &.stat--danger  { background: rgba(220, 38, 38, 0.12); border-color: var(--surface-border); }
+    &.stat--info    { border-color: var(--surface-border); }
+  }
+
+  // Clickable KPI cards (e.g. "My Active Audits")
+  &--clickable {
+    cursor: pointer;
+    transition: box-shadow 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
+
+    &:hover {
+      border-color: color-mix(in srgb, var(--p-blue-500) 40%, transparent);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+      transform: translateY(-2px);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  }
+}
+
+// ── Layouts ───────────────────────────────────────────────────
+.two-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  min-width: 0;
+
+  > * { min-width: 0; }
+}
+
+.three-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  min-width: 0;
+
+  > * { min-width: 0; }
+}
+
+// ── Chart Cards ──────────────────────────────────────────────
+.chart-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chart-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 1rem 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  i { font-size: 0.85rem; color: var(--text-color-secondary); }
+}
+
+.chart-box {
+  position: relative;
+  height: 230px;
+}
+
+// ── Audit Progress Bars ───────────────────────────────────────
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 0.25rem;
+}
+
+.progress-item {
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+  }
+  &__name { font-size: 12.5px; font-weight: 500; color: var(--text-color); }
+  &__pct  { font-size: 12.5px; font-weight: 600; color: var(--text-color); }
+}
+
+.progress-track {
+  height: 8px;
+  background: var(--surface-hover);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+// ── Table Card ───────────────────────────────────────────────
+.table-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-width: 0;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  &__title { font-size: 0.9rem; font-weight: 600; color: var(--text-color); }
+
+  ::ng-deep .p-datatable-table-container {
+    overflow-x: auto;
+  }
+}
+
+.header-icon { font-size: 16px; }
+.header-icon--warn    { color: var(--p-orange-600); }
+.header-icon--info    { color: var(--p-blue-500); }
+.header-icon--blue    { color: var(--p-blue-600); }
+.header-icon--danger  { color: var(--p-red-500); }
+.header-icon--success { color: var(--p-green-500); }
+
+.due-today    { color: var(--p-red-500); font-weight: 600; }
+.due-tomorrow { color: var(--p-orange-600); font-weight: 600; }
+
+// ── Task Type Badges ──────────────────────────────────────────
+.task-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  .pi { font-size: 11px; }
+
+  &.type--working-paper  { background: var(--surface-hover); color: var(--p-blue-700); border: 1px solid color-mix(in srgb, var(--p-blue-500) 30%, transparent); }
+  &.type--rfi            { background: color-mix(in srgb, var(--p-purple-500) 6%, transparent); color: var(--p-purple-700); border: 1px solid var(--p-violet-200); }
+  &.type--scope          { background: var(--p-teal-50); color: var(--p-teal-700); border: 1px solid var(--p-teal-200); }
+  &.type--evidence       { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent); color: var(--p-orange-700); border: 1px solid color-mix(in srgb, var(--p-orange-500) 30%, transparent); }
+  &.type--finding        { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); color: var(--p-red-700); border: 1px solid color-mix(in srgb, var(--p-red-500) 30%, transparent); }
+  &.type--fieldwork      { background: var(--surface-hover); color: var(--p-indigo-700); border: 1px solid color-mix(in srgb, var(--p-indigo-500) 30%, transparent); }
+  &.type--review         { background: color-mix(in srgb, var(--p-yellow-500) 8%, transparent); color: var(--p-yellow-700); border: 1px solid color-mix(in srgb, var(--p-orange-500) 40%, transparent); }
+  &.type--risk           { background: var(--p-rose-50); color: var(--p-rose-700); border: 1px solid var(--p-rose-200); }
+  &.type--audit-report   { background: var(--surface-hover); color: var(--p-blue-700); border: 1px solid var(--p-sky-200); }
+  &.type--checklist      { background: var(--surface-hover); color: var(--p-green-700); border: 1px solid color-mix(in srgb, var(--p-green-500) 30%, transparent); }
+  &.type--meeting        { background: var(--surface-hover); color: var(--text-color-secondary); border: 1px solid var(--surface-border); }
+  &.type--default        { background: var(--surface-hover); color: var(--text-color-secondary); border: 1px solid var(--surface-border); }
+
+  :host-context(.app-dark) & {
+    &.type--rfi      { background: rgba(109, 40, 217, 0.15); color: var(--p-violet-300); border-color: rgba(109, 40, 217, 0.35); }
+    &.type--scope    { background: rgba(15, 118, 110, 0.15); color: var(--p-teal-300); border-color: rgba(15, 118, 110, 0.35); }
+    &.type--evidence { background: rgba(194, 65, 12, 0.15); color: var(--p-orange-300); border-color: rgba(194, 65, 12, 0.35); }
+    &.type--finding  { background: rgba(185, 28, 28, 0.15); color: var(--p-red-300); border-color: rgba(185, 28, 28, 0.35); }
+    &.type--review   { background: rgba(161, 98, 7, 0.15); color: var(--p-yellow-300); border-color: rgba(161, 98, 7, 0.35); }
+    &.type--risk     { background: rgba(190, 18, 60, 0.15); color: var(--p-rose-300); border-color: rgba(190, 18, 60, 0.35); }
+  }
+}
+
+// ── Right Column ─────────────────────────────────────────────
+.right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+// ── Notifications ─────────────────────────────────────────────
+.notif-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  border-inline-start: 3px solid var(--surface-border);
+  background: var(--surface-hover);
+
+  &--info    { border-inline-start: var(--p-blue-500); background: var(--surface-hover); }
+  &--success { border-inline-start: var(--p-green-500); background: var(--surface-hover); }
+  &--warn    { border-inline-start: var(--p-orange-500); background: color-mix(in srgb, var(--p-yellow-500) 8%, transparent); }
+  &--danger  { border-inline-start: var(--p-red-500); background: color-mix(in srgb, var(--p-red-500) 8%, transparent); }
+
+  :host-context(.app-dark) & {
+    &--warn   { background: rgba(245, 158, 11, 0.12); }
+    &--danger { background: rgba(239, 68, 68, 0.12); }
+  }
+}
+
+.notif-icon {
+  font-size: 14px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  &--info    { color: var(--p-blue-500); }
+  &--success { color: var(--p-green-500); }
+  &--warn    { color: var(--p-orange-600); }
+  &--danger  { color: var(--p-red-500); }
+}
+
+.notif-body { flex: 1; }
+
+.notif-text {
+  font-size: 12.5px;
+  color: var(--text-color);
+  margin: 0 0 2px 0;
+  line-height: 1.4;
+}
+
+.notif-time { font-size: 11px; color: var(--text-color-secondary); }
+
+// ── Quick Actions ─────────────────────────────────────────────
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+
+::ng-deep .quick-btn.p-button {
+  width: 100%;
+  justify-content: start !important;
+  font-size: 12.5px !important;
+}
+
+// ── Compact paginator for list sections ──────────────────────
+::ng-deep .list-paginator.p-paginator {
+  padding: 0.35rem 0;
+  margin-top: 0.75rem;
+  background: transparent;
+  border: none;
+  justify-content: center;
+
+  .p-paginator-pages .p-paginator-page {
+    min-width: 1.8rem;
+    height: 1.8rem;
+    font-size: 12px;
+  }
+
+  .p-paginator-first,
+  .p-paginator-prev,
+  .p-paginator-next,
+  .p-paginator-last {
+    min-width: 1.8rem;
+    height: 1.8rem;
+    font-size: 12px;
+  }
+}

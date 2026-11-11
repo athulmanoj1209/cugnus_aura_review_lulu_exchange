@@ -1,0 +1,668 @@
+/* ============================================================
+ *  Audit Team Chart page
+ * ============================================================ */
+
+:host {
+  display: block;
+  background: var(--surface-hover);
+  min-height: 100vh;
+  color: var(--text-color);
+}
+:host ::ng-deep .p-organizationchart-connector-top {
+    border-top: 1px solid var(--surface-border) !important;
+}
+
+:host ::ng-deep .p-organizationchart-connector-left {
+    border-right: 1px solid var(--surface-border) !important;
+}
+
+:host ::ng-deep .p-organizationchart-connector-right {
+    border-left: 1px solid var(--surface-border) !important;
+}
+
+:host ::ng-deep .p-organizationchart-connector-down {
+    background: var(--surface-border) !important;
+    width: 1px !important;
+}
+.chart-page {
+  padding: 1.5rem 2rem 2rem;
+  background: var(--surface-hover);
+}
+
+/* ---------- Back button ---------------------------------------------- */
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { background: var(--surface-hover); color: var(--p-indigo-800); border-color: var(--p-indigo-800); }
+  &:dir(rtl) { app-draw-icon { transform: scaleX(-1); } }
+}
+
+/* ---------- Header --------------------------------------------------- */
+.page-header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+
+  &__lead {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  &__text { flex-shrink: 0; }
+
+  &__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: end;
+  }
+}
+:host ::ng-deep .sort-select.p-select {
+  width: 150px;
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+
+  .p-select-label { padding: 1rem 0.9rem; font-size: 0.9rem; color: var(--text-color);height: 44px; }
+}
+
+.sort-selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-color-secondary);
+  i { color: var(--text-color-secondary); }
+}
+.search-input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 1 1 320px;
+  max-width: 480px;
+ 
+
+  &__icon {
+    position: absolute;
+    inset-inline-start: 14px;
+    color: var(--text-color-secondary);
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding-block: 0.7rem;
+    padding-inline-start: 2.6rem;
+    padding-inline-end: 0.9rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    font-size: 0.92rem;
+    background: var(--surface-card);
+     height:44px;
+
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus { outline: 2px solid var(--primary-color)33; border-color: var(--primary-color); }
+  }
+}
+
+
+:host ::ng-deep .region-select.p-select {
+  width: 200px;
+  border-radius: 999px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+
+  .p-select-label { padding: 0.7rem 0.9rem; font-size: 0.9rem; color: var(--text-color-secondary); }
+}
+
+.header-action-btn {
+  width: 38px;
+  height: 44px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-color); }
+}
+
+/* Grab-to-pan toggle button */
+.header-action-btn--pan.is-active {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.18);
+
+  &:hover { background: var(--primary-color); color: #fff; }
+}
+
+.pan-hand-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  overflow: hidden;
+
+  &__btn {
+    background: var(--surface-card);
+    border: none;
+    padding: 0.55rem 0.85rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    height:44px;
+
+    &:hover { background: var(--surface-hover); }
+    &.is-active {
+      background: var(--primary-color);
+      color: #fff !important;
+    }
+    & + .view-toggle__btn { border-inline-start: 1px solid var(--surface-border); }
+    &.is-active + .view-toggle__btn,
+    & + .view-toggle__btn.is-active { border-inline-start-color: var(--primary-color); }
+  }
+}
+
+/* ---------- Empty state --------------------------------------------- */
+.empty-state {
+  background: var(--surface-card);
+  border: 1px dashed var(--surface-border);
+  border-radius: 14px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+
+  &__icon { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+  &__text { margin: 0; font-size: 0.95rem; }
+}
+
+/* ---------- Org chart container ------------------------------------- */
+
+.chart-wrap {
+  padding: 1.5rem 0;
+  overflow-x: auto;
+  display: flex;
+  justify-content: center;
+
+  /* Grab-to-pan: open hand while armed, closed fist while actively dragging.
+     Selection/drag-out is disabled so it can't hijack the gesture mid-pan. */
+  &.pan-mode-active {
+    cursor: grab;
+    user-select: none;
+
+    .node-card,
+    .node-card__draggable { cursor: grab; }
+
+    * {
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  }
+
+  &.is-panning {
+    cursor: grabbing;
+
+    .node-card,
+    .node-card__draggable { cursor: grabbing; }
+  }
+}
+
+/* PrimeNG OrganizationChart styling overrides. The chart is rendered
+   as nested HTML tables; we strip down its default node/line styles
+   so our custom node-card can fully control the look. */
+:host ::ng-deep .audit-org-chart.p-organizationchart {
+  .p-organizationchart-node-content {
+    border: none;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  /* Connector lines */
+  .p-organizationchart-line-down {
+    background: var(--surface-border);
+    width: 2px;
+  }
+  .p-organizationchart-line-left,
+  .p-organizationchart-line-right {
+    border-color: var(--surface-border);
+  }
+
+  /* Collapse/expand toggler chip */
+  .p-organizationchart-node-content .p-node-toggler {
+    bottom: -0.85rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-left: -0.75rem;
+
+    &:hover { background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-color); }
+  }
+}
+
+/* When we're dragging, dim cards that aren't valid drop targets. */
+.chart-wrap.is-dragging .node-card:not(.is-drop-target):not(.is-cae) {
+  opacity: 0.5;
+}
+
+/* ---------- Node card ----------------------------------------------- */
+.node-card {
+  position: relative;
+  width: 280px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+  text-align: start;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  }
+
+  &.is-selected {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(59, 91, 219, 0.18);
+  }
+
+  &.is-drop-target {
+    border-color: var(--primary-color);
+    background: rgba(59, 91, 219, 0.1);
+    box-shadow: 0 0 0 3px rgba(59, 91, 219, 0.18);
+  }
+
+  &.is-blocked { opacity: 0.55; border-style: dashed; }
+
+  &__draggable {
+    padding: 0.95rem 1rem 0.6rem;
+    border-radius: inherit;
+  }
+
+  /* Drag preview shrinks the card to a chip */
+  &--preview {
+    width: 220px;
+    transform: rotate(-2deg);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+    .node-card__draggable { padding: 0.6rem 0.85rem; }
+  }
+
+  /* Colored top-right badge */
+  &__badge {
+    position: absolute;
+    top: -6px;
+    inset-inline-end: -6px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
+    background: var(--surface-hover);
+
+    &.tier-critical { background: var(--p-orange-500); }
+    &.tier-high     { background: var(--p-red-500); }
+    &.tier-medium   { background: var(--p-violet-500); }
+    &.tier-low      { background: var(--p-green-500); }
+  }
+
+  /* Head ----------------------------------------------------------- */
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.65rem;
+  }
+
+  &__avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--surface-hover);
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+
+  &__title-block { flex: 1; min-width: 0; }
+
+  &__name {
+    margin: 0 0 2px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1.2;
+  }
+
+  &__role {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+  }
+
+  /* Body ----------------------------------------------------------- */
+  &__body {
+    border-top: 1px dashed var(--surface-border);
+    padding-top: 0.55rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    flex-wrap: wrap;
+  }
+
+  &__row-icon { color: var(--primary-color); font-size: 0.85rem; }
+
+  &__row-label {
+    font-weight: 600;
+    flex: 1;
+    min-width: 60px;
+  }
+
+  &__row-chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  /* Workload bar */
+  &__workload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.35rem;
+
+    &-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+
+      .label { font-size: 0.72rem; color: var(--text-color-secondary); font-weight: 600; }
+      .value { font-size: 0.78rem; color: var(--text-color); font-weight: 700; }
+    }
+
+    &-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    &-fill {
+      display: block;
+      height: 100%;
+      background: var(--p-green-500);
+      border-radius: inherit;
+      transition: width 0.25s ease;
+
+      &[data-tier='mid']  { background: var(--p-orange-500); }
+      &[data-tier='high'] { background: var(--p-red-500); }
+    }
+  }
+
+  /* Actions -------------------------------------------------------- */
+  &__actions {
+    display: flex;
+    gap: 0.4rem;
+    border-top: 1px dashed var(--surface-border);
+    margin-top: 0.6rem;
+    padding-top: 0.45rem;
+    justify-content: center;
+  }
+}
+
+/* Grab-to-pan travel highlight — lit up while the hand icon is over this card. */
+.node-card--pan-highlight {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 3px;
+  box-shadow: 0 8px 24px rgba(59, 91, 219, 0.35);
+  transform: scale(1.02);
+  z-index: 5;
+}
+
+/* ---------- Chips --------------------------------------------------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  line-height: 1;
+
+  &--years { background: var(--p-orange-50); color: var(--p-orange-600); }
+  &--exp   { background: var(--p-green-50); color: var(--p-green-600); }
+}
+
+/* ---------- Icon buttons ------------------------------------------- */
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+
+  &:hover { background: var(--surface-hover); color: var(--text-color); }
+
+  &--view:hover  { color: var(--primary-color); }
+  &--edit:hover  { color: var(--primary-color); }
+  &--focus:hover { color: var(--primary-color); }
+  &--block {
+    color: var(--text-color-secondary);
+    &:hover { color: var(--p-red-500); }
+    &.is-blocked { color: var(--p-red-500); }
+  }
+}
+
+/* ---------- List view ---------------------------------------------- */
+.list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.list-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 0.65rem 0.85rem;
+  flex-wrap: wrap;
+  margin-inline-start: calc(var(--depth, 0) * 28px);
+  transition: margin-left 0.15s ease;
+
+  &.is-blocked { opacity: 0.55; border-style: dashed; }
+
+  /* Elbow connector for nested rows — indentation alone already conveys
+     parent → child → sub-child, this just makes the relationship explicit. */
+  &.is-child::before {
+    content: '';
+    position: absolute;
+    top: -0.75rem;
+    inset-inline-start: -16px;
+    width: 14px;
+    height: calc(50% + 0.75rem);
+    border-inline-start: 1px dashed var(--surface-border);
+    border-bottom: 1px dashed var(--surface-border);
+    border-end-start-radius: 8px;
+    pointer-events: none;
+  }
+
+  &__toggle {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s, color 0.15s;
+
+    &:hover:not(:disabled) { background: var(--surface-hover); color: var(--text-color); }
+
+    &.is-collapsed { transform: rotate(-90deg); &:dir(rtl) { transform: rotate(90deg); } }
+
+    &.is-leaf {
+      visibility: hidden;
+      cursor: default;
+      background: transparent;
+    }
+
+    &:disabled { cursor: default; }
+  }
+
+  &__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--surface-hover);
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 140px;
+  }
+
+  &__name  { font-weight: 700; color: var(--text-color); font-size: 0.9rem; }
+  &__title { font-size: 0.78rem; color: var(--text-color-secondary); }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-inline-start: 0.5rem;
+    border-inline-start: 1px solid var(--surface-border);
+    padding-inline-start: 0.75rem;
+  }
+
+  &__workload {
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 140px;
+
+    .value { font-size: 0.78rem; font-weight: 600; color: var(--text-color-secondary); min-width: 36px; text-align: end; }
+
+    .bar {
+      flex: 1;
+      height: 6px;
+      background: var(--surface-border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .fill {
+      display: block;
+      height: 100%;
+      background: var(--p-green-500);
+      border-radius: inherit;
+
+      &[data-tier='mid']  { background: var(--p-orange-500); }
+      &[data-tier='high'] { background: var(--p-red-500); }
+    }
+  }
+}
+
+/* ---------- CDK drag styling --------------------------------------- */
+.cdk-drag-preview {
+  border-radius: 14px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.25);
+}
+
+.cdk-drag-placeholder {
+  opacity: 0;
+}
+
+.cdk-drag-animating {
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+
+/* ---------- Responsive --------------------------------------------- */
+@media (max-width: 960px) {
+  .page-header__controls {
+    width: 100%;
+    justify-content: start;
+  }
+  .search-input { flex: 1 1 100%; max-width: none; }
+}
+
+@media (max-width: 640px) {
+  .chart-page { padding: 1rem; }
+  .node-card { width: 240px; }
+}

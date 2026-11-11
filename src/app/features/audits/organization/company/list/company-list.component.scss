@@ -1,0 +1,704 @@
+/* ============================================================
+ *  Companies list page
+ * ============================================================ */
+.companies-page {
+  background: var(--surface-hover);
+
+}
+
+:host {
+  display: block;
+  background: var(--surface-hover);
+  min-height: 100vh;
+  color: var(--text-color);
+}
+
+.companies-page {
+  padding: 1.5rem 2rem 2rem;
+}
+
+/* ---------- Back button ---------------------------------------------- */
+.back-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s ease, color 0.15s ease;
+
+  &:hover { background: var(--surface-hover); color: var(--p-indigo-800); border-color: var(--p-indigo-800); }
+  &:dir(rtl) { app-draw-icon { transform: scaleX(-1); } }
+}
+
+/* ---------- Header --------------------------------------------------- */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+
+  &__lead {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  &__text {
+    flex-shrink: 0;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: flex-end;
+  }
+}
+
+/* Search */
+.search-input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: 1 1 320px;
+  max-width: 480px;
+
+  &__icon {
+    position: absolute;
+    left: 14px;
+    color: var(--text-color-secondary);
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding: 0.7rem 0.9rem 0.7rem 2.4rem;
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    font-size: 0.92rem;
+    background: var(--surface-card);
+    height: 44px;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+    }
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      border-color: var(--primary-color);
+    }
+  }
+}
+
+/* Sort dropdown */
+:host ::ng-deep .sort-select.p-select {
+  width: 180px;
+  border-radius: 12px;
+  border: 1px solid var(--surface-border);
+  height: 44px;
+  padding-top: 5px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  &.p-focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  }
+
+  .p-select-label {
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
+}
+
+.sort-selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-color-secondary);
+
+  i {
+    color: var(--text-color-secondary);
+  }
+}
+
+/* View toggle */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  overflow: hidden;
+  height: 44px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+
+  &__btn {
+    background: var(--surface-card);
+    border: none;
+    padding: 0.6rem 0.85rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+
+
+    &:hover {
+      background: var(--surface-hover);
+    }
+
+    &.is-active {
+      background: var(--primary-color);
+      color: #fff;
+    }
+
+    &+.view-toggle__btn {
+      border-left: 1px solid var(--surface-border);
+      height: 100%;
+    }
+
+    &.is-active+.view-toggle__btn,
+    &+.view-toggle__btn.is-active {
+      border-left-color: var(--primary-color);
+      height: 100%;
+    }
+  }
+}
+
+/* Add Company button */
+:host ::ng-deep .btn-add-company.p-button {
+  background-color: transparent !important;
+    border: 1.5px solid var(--primary-color) !important;
+  color: var(--primary-color) !important;
+  border-radius: 12px !important;
+  height: 44px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 0 16px;
+  white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+
+  &:hover {
+    background: var(--primary-color) !important;
+
+    .p-button-label {
+      color: #fff !important;
+    }
+  }
+}
+
+/* ---------- Empty state --------------------------------------------- */
+.empty-state {
+  background: var(--surface-card);
+  border: 1px dashed var(--surface-border);
+  border-radius: 14px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+
+  &__icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+/* ---------- Cards grid --------------------------------------------- */
+.companies--grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+}
+
+/* ---------- LIST VIEW (row cards) ----------------------------------- */
+$list-cols: 2.2fr 1.2fr 1.3fr 1.6fr 1fr;
+
+.companies--list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.list-header {
+  display: grid;
+  grid-template-columns: $list-cols;
+  padding: 0 1.25rem;
+
+  &__cell {
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .col-actions {
+    text-align: right;
+  }
+}
+
+.company-row {
+  display: grid;
+  grid-template-columns: $list-cols;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &--blocked {
+    opacity: 0.55;
+  }
+
+  .col-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+}
+
+/* Cell: Company Name (avatar + name) */
+.cell-name {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+
+  &__block {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  &__text {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  &__type {
+    color: var(--text-color-secondary);
+    font-size: 0.78rem;
+  }
+}
+
+/* Circular blue avatar — company name column */
+.cell-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 0.9rem;
+}
+
+/* Cell: Type (green industry text) */
+.cell-industry {
+  color: var(--p-green-600);
+  font-weight: 500;
+}
+
+/* Plain icon shared across location + contact rows */
+.cell-icon {
+  flex-shrink: 0;
+  color: var(--text-color-secondary);
+}
+
+/* Cell: Location */
+.cell-location-block {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.cell-location {
+  color: var(--text-color);
+}
+
+/* Cell: Primary Contact */
+.cell-contact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  &__name {
+    font-weight: 500;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__phone {
+    color: var(--text-color-secondary);
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Row action group */
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+/* ---------- Single card -------------------------------------------- */
+.company-card {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s, transform 0.15s;
+
+  &:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+
+  &--blocked {
+    opacity: 0.7;
+    border-style: dashed;
+  }
+
+  &__avatar-row {
+    position: relative;
+    height: 44px;
+    margin-bottom: 0.9rem;
+  }
+
+  &__avatar {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  /* Ring — hidden by default, draws around the avatar on hover */
+  &__avatar-ring {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    pointer-events: none;
+    transform: scaleX(-1);
+    transform-origin: 26px 26px;
+
+    circle {
+      stroke: var(--primary-color);
+      stroke-dasharray: 100;
+      stroke-dashoffset: 100;
+      transition: stroke-dashoffset 0.45s ease;
+    }
+  }
+
+  &:hover {
+    .company-card__avatar-ring circle {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__industry-text {
+    margin: 2px 0 0;
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--text-color-secondary);
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0.3rem 0 0;
+  }
+
+  &__tag {
+    background: var(--surface-hover);
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+  }
+
+  /* Email + phone — equal halves on one line */
+  &__contact-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin: 30px 0 1rem;
+  }
+
+  &__contact-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  &__row-icon {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__row-text {
+    font-size: 0.82rem;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__actions {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--surface-border);
+  }
+
+  &__actions-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+  }
+
+  &__actions-icons {
+    display: flex;
+    gap: 0.15rem;
+  }
+}
+
+/* View pill button */
+.btn-view {
+  border: 1.5px solid var(--primary-color);
+  border-radius: 999px;
+  background: var(--surface-card);
+  color: var(--primary-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--primary-color);
+    color: #fff;
+  }
+}
+
+/* ---------- Icon buttons ------------------------------------------- */
+.icon-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text-color);
+  }
+
+  &--edit:hover {
+    color: var(--primary-color);
+  }
+
+  &--block {
+    color: var(--text-color-secondary);
+
+    &:hover {
+      color: var(--p-red-500);
+    }
+
+    &.is-blocked {
+      color: var(--p-red-500);
+    }
+  }
+}
+
+/* ---------- Page footer / pagination -------------------------------
+ * Pagination is now rendered by the shared <app-pagination-bar>
+ * component — see pagination-bar.scss for its styling. */
+.companies-page > app-pagination-bar {
+  margin-top: 1.5rem;
+  display: block;
+
+  ::ng-deep .pagination-bar {
+    background: transparent;
+    box-shadow: none;
+  }
+}
+
+/* ---------- Confirmation dialog ------------------------------------ */
+.confirm-body {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 0;
+
+  &__icon {
+    font-size: 2rem;
+    color: var(--p-orange-500);
+    flex-shrink: 0;
+  }
+
+  &__text {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    line-height: 1.4;
+  }
+}
+
+:host ::ng-deep .confirm-dialog {
+  .p-dialog-footer {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    padding: 1rem 1.5rem 1.25rem;
+  }
+}
+
+/* ---------- Responsive --------------------------------------------- */
+@media (max-width: 1600px) {
+  .companies--grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 1280px) {
+  .companies--grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 960px) {
+  .page-header__controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .search-input {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  .companies--grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .companies-page {
+    padding: 1rem;
+  }
+
+  .companies--grid {
+    grid-template-columns: 1fr;
+  }
+
+  .companies-page > app-pagination-bar {
+    ::ng-deep .pagination-bar {
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+  }
+
+  .list-header {
+    display: none;
+  }
+
+  .company-row {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+
+    .col-actions {
+      justify-content: flex-start;
+    }
+  }
+}

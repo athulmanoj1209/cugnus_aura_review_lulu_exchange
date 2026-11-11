@@ -1,0 +1,249 @@
+<div class="reg-detail" *ngIf="regulation">
+
+  <!-- ========================= PAGE HEADER ========================= -->
+  <div class="reg-detail__topbar">
+    <app-back-button to="/audits/libraries/regulations" label="Back to Library" [tooltip]="true"></app-back-button>
+
+    <button class="download-btn" type="button" (click)="onDownload()">
+      <app-draw-icon icon="pi pi-download"></app-draw-icon>
+      Download
+    </button>
+  </div>
+
+  <!-- Breadcrumb badges -->
+  <div class="reg-detail__badges">
+    <span class="badge badge--plain">{{ regulation.authority }}</span>
+    <span class="badge badge--plain">{{ regulation.type }}</span>
+    <span class="badge" [ngClass]="'badge--status-' + regulation.status.toLowerCase()">
+      {{ regulation.status }}
+    </span>
+    <span class="badge badge--plain">{{ regulation.jurisdiction }}</span>
+  </div>
+
+  <!-- Title block -->
+  <div class="reg-detail__title-block">
+    <h1 class="reg-detail__title">{{ regulation.title }}</h1>
+    <p class="reg-detail__reference">Reference: <span>{{ regulation.reference }}</span></p>
+  </div>
+
+  <!-- ========================= TABS ================================ -->
+  <p-tabs [(value)]="activeTab" styleClass="detail-tabs">
+    <p-tablist>
+      <p-tab value="0">Overview</p-tab>
+      <p-tab value="1">Metadata</p-tab>
+      <p-tab value="2">Where Used ({{ whereUsedCount }})</p-tab>
+      <p-tab value="3">Version History ({{ versionCount }})</p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+
+      <!-- =================== TAB 1 – OVERVIEW =================== -->
+      <p-tabpanel value="0">
+        <div class="tab-content">
+
+          <!-- Description -->
+          <div class="detail-card">
+            <h3 class="detail-card__title">Description</h3>
+            <p class="detail-card__body">{{ regulation.description }}</p>
+          </div>
+
+          <!-- Dates + Document Info side by side -->
+          <div class="detail-grid-2">
+
+            <div class="detail-card">
+              <h3 class="detail-card__title">Effective Dates</h3>
+              <div class="meta-row">
+                <span class="meta-row__icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+                <div>
+                  <p class="meta-row__label">Effective Date</p>
+                  <p class="meta-row__value">{{ formatDate(regulation.effectiveDate) }}</p>
+                </div>
+              </div>
+              <div class="meta-row" *ngIf="regulation.lastAmended">
+                <span class="meta-row__icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+                <div>
+                  <p class="meta-row__label">Last Amended</p>
+                  <p class="meta-row__value">{{ formatDate(regulation.lastAmended) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <h3 class="detail-card__title">Document Information</h3>
+              <div class="meta-row" *ngIf="regulation.fileName">
+                <span class="meta-row__icon"><app-draw-icon icon="pi pi-file"></app-draw-icon></span>
+                <div>
+                  <p class="meta-row__label">File Name</p>
+                  <p class="meta-row__value">{{ regulation.fileName }}</p>
+                </div>
+              </div>
+              <div class="meta-row">
+                <span class="meta-row__icon"><app-draw-icon icon="pi pi-map-marker"></app-draw-icon></span>
+                <div>
+                  <p class="meta-row__label">Jurisdiction</p>
+                  <p class="meta-row__value">{{ regulation.jurisdiction }}</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Keywords & Tags -->
+          <div class="detail-card" *ngIf="regulation.tags?.length">
+            <h3 class="detail-card__title">Keywords &amp; Tags</h3>
+            <div class="tag-list">
+              <span class="tag" *ngFor="let tag of regulation.tags">
+                <app-draw-icon icon="pi pi-tag"></app-draw-icon> {{ tag }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Related Functions -->
+          <div class="detail-card" *ngIf="regulation.relatedFunctions?.length">
+            <h3 class="detail-card__title">Related Functions</h3>
+            <div class="tag-list">
+              <span class="tag tag--function" *ngFor="let fn of regulation.relatedFunctions">
+                {{ fn }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Cross-References -->
+          <div class="detail-card" *ngIf="regulation.crossReferences?.length">
+            <div class="detail-card__header">
+              <app-draw-icon icon="pi pi-link" class="detail-card__header-icon"></app-draw-icon>
+              <div>
+                <h3 class="detail-card__title detail-card__title--inline">Cross-References</h3>
+                <p class="detail-card__subtitle">Related regulations referenced in this document</p>
+              </div>
+            </div>
+            <div class="xref-list">
+              <div class="xref-row" *ngFor="let ref of regulation.crossReferences">
+                <div class="xref-row__info">
+                  <span class="xref-row__title">{{ ref.title }}</span>
+                  <span class="xref-row__code">{{ ref.code }}</span>
+                </div>
+                <span class="xref-row__badge">{{ ref.authority }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </p-tabpanel>
+
+      <!-- =================== TAB 2 – METADATA =================== -->
+      <p-tabpanel value="1">
+        <div class="tab-content">
+          <div class="detail-card">
+            <h3 class="detail-card__title">Regulation Metadata</h3>
+            <table class="meta-table">
+              <tbody>
+                <tr><td class="meta-table__key">Regulation ID</td>    <td class="meta-table__val">{{ regulation.id }}</td></tr>
+                <tr><td class="meta-table__key">Authority</td>         <td class="meta-table__val">{{ regulation.authority }}</td></tr>
+                <tr><td class="meta-table__key">Instrument Type</td>   <td class="meta-table__val">{{ regulation.type }}</td></tr>
+                <tr><td class="meta-table__key">Reference/Number</td>  <td class="meta-table__val">{{ regulation.reference }}</td></tr>
+                <tr>
+                  <td class="meta-table__key">Status</td>
+                  <td class="meta-table__val">
+                    <span class="badge" [ngClass]="'badge--status-' + regulation.status.toLowerCase()">
+                      {{ regulation.status }}
+                    </span>
+                  </td>
+                </tr>
+                <tr><td class="meta-table__key">Jurisdiction</td>      <td class="meta-table__val">{{ regulation.jurisdiction }}</td></tr>
+                <tr><td class="meta-table__key">Effective Date</td>    <td class="meta-table__val">{{ formatDateShort(regulation.effectiveDate) }}</td></tr>
+                <tr><td class="meta-table__key">Last Amended</td>      <td class="meta-table__val">{{ formatDateShort(regulation.lastAmended) }}</td></tr>
+                <tr>
+                  <td class="meta-table__key">Created By</td>
+                  <td class="meta-table__val">{{ regulation.createdBy }} on {{ formatDateShort(regulation.createdDate) }}</td>
+                </tr>
+                <tr>
+                  <td class="meta-table__key">Last Modified By</td>
+                  <td class="meta-table__val">{{ regulation.lastModifiedBy }} on {{ formatDateShort(regulation.lastModifiedDate) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </p-tabpanel>
+
+      <!-- =================== TAB 3 – WHERE USED ================= -->
+      <p-tabpanel value="2">
+        <div class="tab-content">
+          <div class="detail-card">
+            <div class="detail-card__header detail-card__header--stack">
+              <h3 class="detail-card__title">Where Used</h3>
+              <p class="detail-card__subtitle">Scopes, tasks, findings, and RFIs that reference this regulation</p>
+            </div>
+            <table class="data-table" *ngIf="regulation.whereUsed?.length; else noData">
+              <thead>
+                <tr>
+                  <th>Type</th>
+                  <th>ID</th>
+                  <th>Title</th>
+                  <th>Linked Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of regulation.whereUsed">
+                  <td><span class="type-badge" [ngClass]="typeClass(item.type)">{{ item.type }}</span></td>
+                  <td class="data-table__id">{{ item.id }}</td>
+                  <td>{{ item.title }}</td>
+                  <td>{{ formatDateShort(item.linkedDate) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </p-tabpanel>
+
+      <!-- =================== TAB 4 – VERSION HISTORY ============ -->
+      <p-tabpanel value="3">
+        <div class="tab-content">
+          <div class="detail-card">
+            <div class="detail-card__header detail-card__header--stack">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <app-draw-icon icon="pi pi-history" style="color:var(--text-color-secondary)"></app-draw-icon>
+                <h3 class="detail-card__title" style="margin:0">Version History</h3>
+              </div>
+              <p class="detail-card__subtitle">Track changes and amendments to this regulation</p>
+            </div>
+            <table class="data-table" *ngIf="regulation.versionHistory?.length; else noData">
+              <thead>
+                <tr>
+                  <th>Version</th>
+                  <th>Effective Date</th>
+                  <th>Amended Date</th>
+                  <th>File Name</th>
+                  <th>Uploaded By</th>
+                  <th>Upload Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let v of regulation.versionHistory">
+                  <td>
+                    <span class="version-badge" [class.version-badge--current]="v.isCurrent">
+                      {{ v.version }}<ng-container *ngIf="v.isCurrent"> (Current)</ng-container>
+                    </span>
+                  </td>
+                  <td>{{ formatDateShort(v.effectiveDate) }}</td>
+                  <td>{{ formatDateShort(v.amendedDate) }}</td>
+                  <td class="data-table__filename">{{ v.fileName }}</td>
+                  <td>{{ v.uploadedBy }}</td>
+                  <td>{{ formatDateShort(v.uploadDate) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </p-tabpanel>
+
+    </p-tabpanels>
+  </p-tabs>
+
+</div>
+
+<!-- No data fallback -->
+<ng-template #noData>
+  <p class="no-data">No records found.</p>
+</ng-template>

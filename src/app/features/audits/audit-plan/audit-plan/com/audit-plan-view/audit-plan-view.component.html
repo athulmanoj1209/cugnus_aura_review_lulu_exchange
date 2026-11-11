@@ -1,0 +1,200 @@
+@if (p(); as pl) {
+<div class="profile-drawer">
+
+  <!-- ═══════════════ HERO HEADER (gradient) ═══════════════ -->
+  <header class="hero">
+    <div class="hero__avatar"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+    <div class="hero__text">
+      <h2 class="hero__title">{{ planTitle() }}</h2>
+      <p class="hero__sub">{{ pl.id }} · {{ pl.organizationName }} / {{ pl.divisionName }}</p>
+    </div>
+    <span class="hero-badge" [ngClass]="heroBadgeClass(pl.status)">{{ statusLabel(pl.status) }}</span>
+    <button type="button" class="hero__close" pTooltip="Close" tooltipPosition="bottom" (click)="onClose()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </header>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="drawer-body">
+
+    <!-- ── plan-wide scope KPI strip ── -->
+    <div class="kpi-strip">
+      <div class="kpi"><span class="kpi__num">{{ scopeStats().total }}</span><span class="kpi__lbl">Scopes</span></div>
+      <div class="kpi kpi--completed"><span class="kpi__num">{{ scopeStats().completed }}</span><span class="kpi__lbl">Completed</span></div>
+      <div class="kpi kpi--inprog"><span class="kpi__num">{{ scopeStats().inprog }}</span><span class="kpi__lbl">In Progress</span></div>
+      <div class="kpi kpi--planned"><span class="kpi__num">{{ scopeStats().planned }}</span><span class="kpi__lbl">Planned</span></div>
+      <div class="kpi kpi--overdue"><span class="kpi__num">{{ scopeStats().overdue }}</span><span class="kpi__lbl">Overdue</span></div>
+    </div>
+
+    <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3>Basic Information</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k">Plan ID</span>
+          <span class="kv__v"><strong>{{ pl.id }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Organization</span>
+          <span class="kv__v">{{ pl.organizationName }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Division</span>
+          <span class="kv__v"><app-draw-icon icon="pi pi-map-marker" class="kv-ic"></app-draw-icon>{{ pl.divisionName }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k">Status</span>
+          <span class="kv__v"><span [class]="statusChipClass(pl.status)">{{ statusLabel(pl.status) }}</span></span>
+        </div>
+        @if (pl.startDate) {
+          <div class="kv">
+            <span class="kv__k">Start Date</span>
+            <span class="kv__v"><app-draw-icon icon="pi pi-calendar-plus" class="kv-ic"></app-draw-icon>{{ formatDateOnly(pl.startDate) }}</span>
+          </div>
+        }
+        @if (pl.endDate) {
+          <div class="kv">
+            <span class="kv__k">End Date</span>
+            <span class="kv__v"><app-draw-icon icon="pi pi-calendar-minus" class="kv-ic"></app-draw-icon>{{ formatDateOnly(pl.endDate) }}</span>
+          </div>
+        }
+        @if (durationLabel()) {
+          <div class="kv">
+            <span class="kv__k">Duration</span>
+            <span class="kv__v kv__v--accent"><app-draw-icon icon="pi pi-hourglass" class="kv-ic"></app-draw-icon>{{ durationLabel() }}</span>
+          </div>
+        }
+        <div class="kv">
+          @if (pl.subDivisions[0]?.isDivisionLevel) {
+            <span class="kv__k">Plan level</span>
+            <span class="kv__v">Division</span>
+          } @else {
+            <span class="kv__k">Sub-Divisions</span>
+            <span class="kv__v">{{ pl.subDivisions.length }}</span>
+          }
+        </div>
+       
+      </div>
+
+      @if (pl.description) {
+        <div class="notes">
+          <span class="notes__k"><app-draw-icon icon="pi pi-file-edit"></app-draw-icon> Description</span>
+          <p class="notes__v">{{ pl.description }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- ═══════════════ SUB-DIVISIONS & SCOPES ═══════════════ -->
+    <div class="dept-section-lbl">Sub-Division wise Scopes</div>
+
+    @for (card of pagedSubDivisionCards(); track card.subDivision.id) {
+      <div class="dept-card" [class.open]="isSubDivisionOpen(card.subDivision.id)">
+        <header class="dept-hdr" (click)="toggleSubDivision(card.subDivision.id)">
+          <app-draw-icon icon="pi pi-chevron-right" class="caret"></app-draw-icon>
+          <span class="dept-name">{{ card.subDivision.name }}</span>
+          <span class="dept-meta">{{ card.subDivision.isDivisionLevel ? 'Division · ' : '' }}{{ card.scopes.length }} scope{{ card.scopes.length === 1 ? '' : 's' }} · {{ card.instances }} instances</span>
+          <span class="dept-track">
+            @for (st of card.rollup; track $index) { <i [class]="st ? ('r-' + st) : ''"></i> }
+          </span>
+          <span class="dept-pct">{{ card.pct }}% done</span>
+        </header>
+
+        @if (isSubDivisionOpen(card.subDivision.id)) {
+          <div class="dept-body">
+            @for (row of card.scopes; track row.scope.id) {
+              <div class="scope-block">
+                <div class="scope-row" (click)="toggleScopeJobs(row.scope.id)" role="button" tabindex="0">
+                  <span [class]="freqStripeClass(row.scope.freq)"></span>
+                  <div class="scope-ident">
+                    <span class="scope-name">{{ row.scope.name }}</span>
+                    <span class="scope-sub">
+                      {{ row.scope.code }} · {{ row.scope.auditor }}
+                      <span [class]="freqBadgeClass(row.scope.freq)">{{ row.scope.freq }}</span>
+                      <span [class]="riskClass(row.scope.risk)">{{ row.scope.risk }}</span>
+                    </span>
+                  </div>
+                  <i class="pi job-caret" [ngClass]="isScopeOpen(row.scope.id) ? caretIcons.Open : caretIcons.Closed"></i>
+                </div>
+
+                <div class="q-groups">
+                  @for (q of row.quarters; track $index; let qi = $index) {
+                    <div class="q-group">
+                      <span class="q-group__lbl">Q{{ qi + 1 }}</span>
+                      <div class="q-group__pills">
+                        @for (m of q; track m.monthIndex) {
+                          @if (m.status === null) {
+                            <span class="pill ghost" [pTooltip]="m.tooltip" tooltipPosition="top">·</span>
+                          } @else {
+                            <span class="pill" [class]="'pill--' + m.status" [pTooltip]="m.tooltip" tooltipPosition="top">
+                              <span class="pill__m">{{ m.label }}</span>{{ m.mark }}
+                            </span>
+                          }
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                @if (isScopeOpen(row.scope.id)) {
+                  <div class="scope-jobs">
+                    @if (row.scope.rfi > 0 || row.scope.findings > 0) {
+                      <div class="scope-jobs__flags">
+                        @if (row.scope.rfi > 0) { <span class="flag flag--rfi"><app-draw-icon icon="pi pi-question-circle"></app-draw-icon> {{ row.scope.rfi }} open RFIs</span> }
+                        @if (row.scope.findings > 0) { <span class="flag flag--finding"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon> {{ row.scope.findings }} findings</span> }
+                      </div>
+                    }
+                    @for (job of row.scope.jobs; track job.id) {
+                      <div class="job-row">
+                        <div class="job-row__main">
+                          <span class="job-row__code">{{ jobRef(row.scope, job) }}</span>
+                          <span class="job-row__title">{{ job.name }}</span>
+                          @if (job.auditor) { <span class="job-row__who">{{ job.auditor }}</span> }
+                        </div>
+                        <div class="job-row__meta">
+                          <span class="job-row__hours">{{ job.hrs }}h</span>
+                          <span [class]="instanceClass(job.status)">{{ instanceLabel(job.status) }}</span>
+                        </div>
+                      </div>
+                    }
+                    @if (row.scope.findings > 0) {
+                      <div class="finding-rows">
+                        @for (f of findingsArray(row.scope.findings); track f) {
+                          <div class="finding-row">
+                            <span class="finding-row__badge">{{ row.scope.code }}-F{{ findingRefBase + f }}</span>
+                            <span class="finding-row__text">Finding observation {{ f }} — awaiting management action plan</span>
+                            <span class="finding-row__state">Open</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    @if (subDivisionCards().length > 0) {
+      <p-paginator styleClass="dept-pgr"
+        [first]="subDivisionFirstClamped()" [rows]="subDivisionRows()" [totalRecords]="subDivisionCards().length"
+        [rowsPerPageOptions]="rowsPerPageOptions"
+        [showFirstLastIcon]="false"
+        currentPageReportTemplate="Sub-Divisions {first}–{last} of {totalRecords}"
+        [showCurrentPageReport]="true"
+        (onPageChange)="onSubDivisionPage($event)" />
+    }
+
+  </div>
+</div>
+} @else {
+  <div class="ep-loading">
+    <app-draw-icon icon="pi pi-spin pi-spinner"></app-draw-icon>
+    <span>Loading audit plan…</span>
+  </div>
+}

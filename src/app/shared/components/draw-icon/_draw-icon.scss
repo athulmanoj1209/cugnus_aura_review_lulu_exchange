@@ -1,0 +1,128 @@
+// Shared "draw-in" hover animation for <app-draw-icon>.
+// Lives globally (not per-component) so every page using the shared
+// DrawIcon component gets the same icon set + animation without duplicating
+// SVG markup or keyframes in each component's stylesheet.
+
+@keyframes icon-draw-in {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+// Identical keyframes under a second name — used on icon-btn's own :hover so
+// entering a button re-triggers the draw-in even when its ancestor card is
+// already hovered (a repeated `animation-name` value doesn't restart).
+@keyframes icon-draw-in-btn {
+  from { stroke-dashoffset: 100; }
+  to   { stroke-dashoffset: 0; }
+}
+
+.icon-draw {
+  display: inline-flex;
+  overflow: visible;
+
+  path, circle, rect, line, polyline, polygon, ellipse {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+  }
+}
+
+// Generic hover roots used across the app's cards/buttons/menu items —
+// hovering any of these animates every <app-draw-icon> nested inside it.
+// Add more selectors here as new contexts adopt <app-draw-icon>.
+@each $root in (
+  '.stat-card', '.kpi-card', '.summary-card', '.stat-card-pg', '.rfi-stat-card', '.icon-btn', '.view-btn',
+  'button', 'a', '.p-button', 'th'
+) {
+  #{$root}:hover > .icon-draw,
+  #{$root}:hover .icon-draw {
+    path, circle, rect, line, polyline, polygon, ellipse {
+      animation: icon-draw-in 0.6s ease;
+    }
+
+    > :not(:first-child) {
+      animation-delay: 0.35s;
+    }
+  }
+}
+
+// Card/row content icons react to a whole-box hover; action-button icons
+// (row-actions in table rows, card-actions/__actions in cards) are excluded
+// so each one only plays its own draw-in via its own :hover (see the
+// .icon-btn rules below) — not all together the instant any part of the
+// box, including one of those buttons, gets hovered.
+.company-card:hover .icon-draw:not(.company-card__actions .icon-draw),
+.company-row:hover .icon-draw:not(.row-actions .icon-draw),
+.branch-row:hover .icon-draw:not(.row-actions .icon-draw),
+.dept-row:hover .icon-draw:not(.row-actions .icon-draw),
+.scope-req-row:hover .icon-draw:not(.row-actions .icon-draw),
+.lib-req-row:hover .icon-draw:not(.row-actions .icon-draw),
+.rfi-row:hover .icon-draw:not(.row-actions .icon-draw),
+.org-req-row:hover .icon-draw:not(.row-actions .icon-draw),
+.csl-row:hover .icon-draw,
+.wp-row:hover .icon-draw:not(.row-actions .icon-draw),
+.drl-row:hover .icon-draw:not(.row-actions .icon-draw),
+.pa-row:hover .icon-draw:not(.row-actions .icon-draw),
+.rpa-row:hover .icon-draw:not(.row-actions .icon-draw),
+.rec-row:hover .icon-draw:not(.row-actions .icon-draw),
+.ev-row:hover .icon-draw:not(.row-actions .icon-draw),
+.users-row:hover .icon-draw:not(.row-actions .icon-draw),
+.plan-row:hover .icon-draw:not(.row-actions .icon-draw),
+.member-row:hover .icon-draw:not(.row-actions .icon-draw),
+.ap-row:hover .icon-draw:not(.row-actions .icon-draw),
+.obs-row:hover .icon-draw:not(.row-actions .icon-draw),
+.reg-row:hover .icon-draw:not(.row-actions .icon-draw),
+.risk-row:hover .icon-draw:not(.row-actions .icon-draw),
+.library-row:hover .icon-draw:not(.row-actions .icon-draw),
+.findings-row:hover .icon-draw:not(.row-actions .icon-draw),
+.branch-card:hover .icon-draw:not(.card-actions .icon-draw),
+.dept-card:hover .icon-draw:not(.card-actions .icon-draw),
+.scope-card-grid:hover .icon-draw:not(.card-actions .icon-draw),
+.scope-card:hover .icon-draw:not(.scope-card-actions .icon-draw),
+.ap-card-item:hover .icon-draw,
+.rfi-card:hover .icon-draw:not(.card-actions .icon-draw),
+.library-card:hover .icon-draw:not(.card-actions .icon-draw),
+.plan-card:hover .icon-draw:not(.plan-card__actions .icon-draw),
+.org-req-card-item:hover .icon-draw:not(.org-req-card-item__actions .icon-draw),
+.pa-card:hover .icon-draw:not(.pa-card__foot .icon-draw),
+.member-card:hover .icon-draw:not(.member-card__actions .icon-draw),
+.fcard:hover .icon-draw:not(.card-actions .icon-draw),
+.wp-card-item:hover .icon-draw:not(.card-actions .icon-draw),
+.user-card:hover .icon-draw:not(.card-actions .icon-draw),
+.sj-card:hover .icon-draw:not(.card-actions .icon-draw),
+.reg-library__card:hover .icon-draw:not(.card-actions .icon-draw),
+.rec-card-item:hover .icon-draw:not(.card-actions .icon-draw),
+.obs-card-item:hover .icon-draw:not(.card-actions .icon-draw),
+.ev-card-item:hover .icon-draw:not(.card-actions .icon-draw),
+.em-card:hover .icon-draw:not(.card-actions .icon-draw),
+.rpa-card:hover .icon-draw:not(.card-actions .icon-draw),
+.risk-card-item:hover .icon-draw:not(.card-actions .icon-draw),
+tr:hover .icon-draw:not(.row-actions .icon-draw) {
+  path, circle, rect, line, polyline, polygon, ellipse {
+    animation: icon-draw-in 0.6s ease;
+  }
+
+  > :not(:first-child) {
+    animation-delay: 0.35s;
+  }
+}
+
+// Only the interactive "view"/icon buttons shift color on hover — stat/KPI
+// card icons keep their status color (warning/danger/etc.) on hover.
+.icon-btn:hover .icon-draw,
+.view-btn:hover .icon-draw {
+  color: var(--p-blue-600);
+}
+
+// Re-trigger the draw-in specifically when the pointer is over the button
+// itself (same specificity as the loop above, later in source order — wins
+// even while an ancestor card is already in its own hovered state).
+.icon-btn:hover > .icon-draw,
+.icon-btn:hover .icon-draw {
+  path, circle, rect, line, polyline, polygon, ellipse {
+    animation: icon-draw-in-btn 0.6s ease;
+  }
+
+  > :not(:first-child) {
+    animation-delay: 0.35s;
+  }
+}

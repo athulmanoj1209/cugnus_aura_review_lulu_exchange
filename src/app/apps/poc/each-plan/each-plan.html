@@ -1,0 +1,176 @@
+ <!-- Tabs -->
+  <p-tabs [value]="activeTabIndex" (valueChange)="activeTabIndex = $event" class="audit-tabs">
+    <p-tablist>
+      @for (tab of tabs; track tab; let i = $index) {
+        <p-tab [value]="i">{{ tab }}</p-tab>
+      }
+    </p-tablist>
+
+    <!--
+      main-grid lives INSIDE p-tabs but OUTSIDE p-tabpanels.
+      Stat column and pagination stay fixed across all tabs.
+      Only the p-tabpanels content (center cards) changes.
+    -->
+    <div class="main-grid">
+
+      <!-- LEFT: tab content + fixed pagination -->
+      <div class="content-column">
+
+        <p-tabpanels>
+
+          <!-- Overview -->
+          <p-tabpanel [value]="0">
+            <p-card header="Plan Objectives" class="content-card">
+              <p class="objective-text">{{ planObjective }}</p>
+            </p-card>
+
+            <div class="two-col-row">
+              <p-card header="Plan Details" class="content-card">
+                <div class="detail-list">
+                  @for (detail of planDetails; track detail.label) {
+                    <div class="detail-row">
+                      <span class="detail-label">{{ detail.label }}</span>
+                      <span class="detail-colon">:</span>
+                      <span class="detail-value">{{ detail.value }}</span>
+                    </div>
+                  }
+                </div>
+              </p-card>
+
+              <p-card header="Risk Coverage" class="content-card">
+                <div class="risk-list">
+                  @for (risk of riskItems; track risk.label) {
+                    <div class="risk-row">
+                      <span class="risk-label">{{ risk.label }}</span>
+                      <p-tag [value]="risk.level" [ngClass]="getRiskSeverityClass(risk.level)"></p-tag>
+                    </div>
+                  }
+                </div>
+              </p-card>
+            </div>
+
+            <p-card header="Scope Progress Overview" class="content-card">
+              <div class="scope-list">
+                @for (scope of scopeItems; track scope.title) {
+                  <div class="scope-row">
+                    <div class="scope-header">
+                      <div class="scope-title-group">
+                        <span class="scope-title">{{ scope.title }}</span>
+                        <p-tag [value]="scope.status" [ngClass]="getStatusClass(scope.status)"></p-tag>
+                      </div>
+                      <span class="scope-percent">{{ scope.progress }}%</span>
+                    </div>
+                    <div class="scope-progress-wrap" [ngClass]="getStatusClass(scope.status)">
+                      <p-progressbar [value]="scope.progress" [showValue]="false"></p-progressbar>
+                    </div>
+                  </div>
+                }
+              </div>
+            </p-card>
+          </p-tabpanel>
+
+          <!-- Scopes -->
+          <p-tabpanel [value]="1">
+            <app-scope-audit-plan></app-scope-audit-plan>
+          </p-tabpanel>
+
+          <!-- Schedule -->
+          <p-tabpanel [value]="2">
+            <app-scheduled-scope-lists></app-scheduled-scope-lists>
+          </p-tabpanel>
+
+          <!-- Departments -->
+          <p-tabpanel [value]="3">
+            <p class="tab-placeholder">Departments content coming soon.</p>
+          </p-tabpanel>
+
+        </p-tabpanels>
+
+      </div>
+
+      <!-- RIGHT: Stat Cards — always visible across all tabs -->
+      <div class="stat-column">
+
+        <p-card class="stat-card-pg overdue-card">
+          <div class="stat-content">
+            <div class="stat-text">
+              <span class="stat-title">1 overdue scope</span>
+              <span class="stat-subtitle">Require immediate attention</span>
+            </div>
+            <div class="stat-icon-wrap" style="background: #fff3cd;">
+              <app-draw-icon icon="pi pi-exclamation-triangle" style="color: #f5a623;"></app-draw-icon>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="stat-card-pg">
+          <div class="stat-content">
+            <div class="stat-text">
+              <span class="stat-title">Plan Period</span>
+              <span class="stat-subtitle">Jan 1, 2026 – Mar 31, 2026</span>
+            </div>
+            <div class="stat-icon-wrap" style="background: #e8f4fd;">
+              <app-draw-icon icon="pi pi-calendar" style="color: #1f58c7;"></app-draw-icon>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="stat-card-pg">
+          <div class="stat-content">
+            <div class="stat-text">
+              <span class="stat-title">Total Scopes</span>
+              <div class="stat-badge-row">
+                <span class="scope-count-badge">5</span>
+                <span class="stat-subtitle inline-sub">1 completed</span>
+              </div>
+            </div>
+            <div class="stat-icon-wrap" style="background: #d4edda;">
+              <app-draw-icon icon="pi pi-list" style="color: #2ab57d;"></app-draw-icon>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="stat-card-pg">
+          <div class="stat-content">
+            <div class="stat-text">
+              <span class="stat-title">Total Budget</span>
+              <span class="stat-subtitle">$145,000</span>
+            </div>
+            <div class="stat-icon-wrap" style="background: #e8f4fd;">
+              <app-draw-icon icon="pi pi-wallet" style="color: #1f58c7;"></app-draw-icon>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="stat-card-pg">
+          <div class="stat-content">
+            <div class="stat-text">
+              <span class="stat-title">Departments</span>
+              <span class="stat-subtitle">5</span>
+            </div>
+            <div class="stat-icon-wrap" style="background: #f0e8fd;">
+              <app-draw-icon icon="pi pi-sitemap" style="color: #7c3aed;"></app-draw-icon>
+            </div>
+          </div>
+        </p-card>
+
+        <p-card class="stat-card-pg completion-stat-card">
+          <div class="stat-content">
+            <div class="stat-text">
+              <span class="stat-title">Completion</span>
+            </div>
+            <div class="stat-icon-wrap" style="background: #e8f4fd;">
+              <app-draw-icon icon="pi pi-chart-pie" style="color: #1f58c7;"></app-draw-icon>
+            </div>
+          </div>
+          <div class="completion-progress-row">
+            <div class="completion-progress-wrap">
+              <p-progressbar [value]="60" [showValue]="false"></p-progressbar>
+            </div>
+            <span class="completion-pct">60%</span>
+          </div>
+        </p-card>
+
+      </div>
+    </div>
+  </p-tabs>

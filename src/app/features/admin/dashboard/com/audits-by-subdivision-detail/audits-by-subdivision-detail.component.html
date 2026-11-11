@@ -1,0 +1,149 @@
+<div class="drawer-inner">
+
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-building"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title" i18n="@@dashboard.auditsBySubDivision.drawerTitle">Audits by <strong>Division / Sub-Division</strong></h2>
+        <p class="drawer-subtitle" i18n="@@dashboard.auditsBySubDivision.drawerSubtitle">
+          {{ data.orgBreakdown.length }} companies · {{ divisionCount }} divisions · {{ subDivisionCount }} sub-divisions —
+          one per page, every company shown
+        </p>
+      </div>
+    </div>
+    <button type="button"
+            class="close-btn"
+            (click)="close()"
+            aria-label="Close detailed view"
+            i18n-aria-label="@@common.closeDetailedView">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+  <!-- ============== Sub-Division pager — the page itself IS one sub-division ============== -->
+  <div class="subdivision-pager">
+    <span class="subdivision-pager__label">{{ unitLabel }}</span>
+    <button type="button"
+            class="subdivision-pager__arrow"
+            [disabled]="isFirstPage"
+            (click)="prevSubdivision()"
+            [attr.aria-label]="prevUnitAriaLabel">
+      <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon>
+    </button>
+    <div class="subdivision-pager__tabs">
+      <button type="button"
+              #tabBtn
+              *ngFor="let page of data.pages; let i = index"
+              class="subdivision-pager__tab"
+              [class.subdivision-pager__tab--division]="page.kind === 'division'"
+              [class.subdivision-pager__tab--sub]="page.kind === 'subDivision'"
+              [class.active]="i === subdivisionIndex"
+              [attr.title]="pageTitle(page)"
+              (click)="goToSubdivision(i)">
+        <app-draw-icon *ngIf="page.kind === 'division'" icon="pi pi-building"></app-draw-icon>
+        <span *ngIf="page.kind === 'subDivision'" class="subdivision-pager__branch" aria-hidden="true">↳</span>
+        {{ page.name }}
+      </button>
+    </div>
+    <button type="button"
+            class="subdivision-pager__arrow"
+            [disabled]="isLastPage"
+            (click)="nextSubdivision()"
+            [attr.aria-label]="nextUnitAriaLabel">
+      <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+    </button>
+    <span class="subdivision-pager__count" i18n="@@dashboard.auditsBySubDivision.pageOf">Page {{ subdivisionIndex + 1 }} of {{ totalPages }}</span>
+  </div>
+
+  <!-- ============== Sort + search within the current sub-division ============== -->
+  <div class="sub-controls">
+    <span class="control-label" i18n="@@dashboard.auditsBySubDivision.sortCompanies">Sort companies</span>
+    <div class="segmented">
+      <button type="button" [class.active]="sort === 'count'" (click)="setSort('count')" i18n="@@dashboard.auditsBySubDivision.sortByAudits">By audits</button>
+      <button type="button" [class.active]="sort === 'alpha'" (click)="setSort('alpha')" i18n="@@common.sortAZ">A–Z</button>
+    </div>
+    <div class="search-input">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input type="text"
+             [placeholder]="filterPlaceholder"
+             [value]="search"
+             (input)="onSearchChange($any($event.target).value)">
+    </div>
+  </div>
+
+  <!-- ============== Chart: ALL companies for the current sub-division ============== -->
+  <div class="chart-card">
+    <div class="chart-card__title-row">
+      <div>
+        <h3 class="chart-card__title" i18n="@@dashboard.auditsBySubDivision.chartTitle">{{ currentPage.name }} — audits by company</h3>
+        <p class="chart-card__context">
+          <ng-container *ngIf="currentPage.kind === 'subDivision'" i18n="@@dashboard.auditsBySubDivision.contextSubDivisionOf">Sub-division of {{ currentPage.division }}</ng-container>
+          <ng-container *ngIf="currentPage.kind === 'division'" i18n="@@dashboard.auditsBySubDivision.contextDivisionLevel">Division · audited at division level</ng-container>
+        </p>
+      </div>
+      <span class="chart-card__meta" i18n="@@dashboard.auditsBySubDivision.companiesShown">{{ rows.length }} of {{ data.orgBreakdown.length }} companies shown</span>
+    </div>
+    <div class="chart-scroll">
+      <div class="chart-wrap" [style.min-width.px]="chartMinWidthPx">
+        <p-chart type="bar"
+                 [data]="chartData"
+                 [options]="barOptions()">
+        </p-chart>
+      </div>
+    </div>
+    <p *ngIf="showScrollHint" class="chart-hint" i18n="@@dashboard.auditsBySubDivision.scrollHint">Scroll horizontally to see every company →</p>
+  </div>
+
+  <!-- ============== Table: same companies, current sub-division only ============== -->
+  <div class="table-card">
+    <div class="table-card__title-row">
+      <h3 class="table-card__title" i18n="@@dashboard.auditsBySubDivision.tableTitle">Same data, as a table</h3>
+      <span class="chart-card__meta" i18n="@@dashboard.auditsBySubDivision.tableMeta">Every company for this {currentPage.kind, select, division {division} other {sub-division}} · scrolls if long</span>
+    </div>
+    <div class="table-scroll">
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th i18n="@@common.company">Company</th>
+            <th i18n="@@dashboard.auditsBySubDivision.colUnitAudits">{{ currentPage.name }} audits</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows" [class.is-top]="isTop(row)">
+            <td class="name-cell">
+              <span class="swatch" [style.background]="colorFor(row.org)"></span>
+              <span>{{ row.org }}</span>
+            </td>
+            <td class="count-cell">{{ row.count }}</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td i18n="@@dashboard.auditsBySubDivision.total">Total</td>
+            <td>{{ totalForSubdivision }}</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    @if (currentPage.kind === 'division') {
+      <p class="footnote" i18n="@@dashboard.auditsBySubDivision.footnoteDivision">
+        Each company keeps the same color on every division page and in every sort order. The
+        leading company for this division is outlined rather than recolored, so its color still
+        identifies it correctly.
+      </p>
+    } @else {
+      <p class="footnote" i18n="@@dashboard.auditsBySubDivision.footnoteSubDivision">
+        Each company keeps the same color on every sub-division page and in every sort order. The
+        leading company for this sub-division is outlined rather than recolored, so its color still
+        identifies it correctly.
+      </p>
+    }
+  </div>
+
+  </div>
+
+</div>

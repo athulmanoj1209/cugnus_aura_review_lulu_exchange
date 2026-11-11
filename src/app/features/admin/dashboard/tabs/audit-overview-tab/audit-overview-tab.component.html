@@ -1,0 +1,253 @@
+<div class="overview">
+
+  <!-- ========================= KPI CARDS ========================= -->
+  <div class="kpi-grid">
+    <div *ngFor="let kpi of kpis"
+         class="kpi-card"
+         [class.kpi-card--clickable]="kpi.action"
+         [class.kpi-card--green]="kpi.variant === 'green'"
+         [class.kpi-card--red]="kpi.variant === 'red'"
+         [class.kpi-card--yellow]="kpi.variant === 'yellow'"
+         [attr.role]="kpi.action ? 'button' : null"
+         [attr.tabindex]="kpi.action ? 0 : null"
+         [attr.aria-label]="kpi.action ? kpiAriaLabel(kpi.label) : null"
+         (click)="onKpiClick(kpi.action)"
+         (keydown.enter)="onKpiClick(kpi.action)"
+         (keydown.space)="$event.preventDefault(); onKpiClick(kpi.action)">
+      <div class="kpi-card__header">
+        <span class="kpi-card__label">{{ kpi.label }}</span>
+        <span class="kpi-card__icon">
+          <app-draw-icon [icon]="kpi.icon" [size]="15"></app-draw-icon>
+        </span>
+      </div>
+      <div class="kpi-card__value">{{ kpi.value }}</div>
+      <div *ngIf="kpi.sub" class="kpi-card__sub"
+           [class.kpi-card__sub--up]="kpi.sub.startsWith('↑')">
+        {{ kpi.sub }}
+      </div>
+    </div>
+  </div>
+
+  <!-- =============== ROW 1: Status Pie + Division / Sub-Division Bar ================ -->
+  <div class="chart-row">
+
+    <div class="chart-card">
+      <h3 class="chart-card__title" i18n="@@dashboard.overview.auditStatusDistributionTitle">Audit Status Distribution</h3>
+      <div class="chart-wrap chart-wrap--donut">
+        <app-donut-status-chart [legend]="auditStatusLegend" [maxWidth]="240"></app-donut-status-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card__header-row">
+        <div>
+          @if (auditsByView === 'division') {
+            <h3 class="chart-card__title" i18n="@@dashboard.overview.auditsByDivisionTitle">Audits by Division</h3>
+          } @else {
+            <h3 class="chart-card__title" i18n="@@dashboard.overview.auditsBySubDivisionTitle">Audits by Sub-Division</h3>
+          }
+          <p *ngIf="hasMoreUnitData" class="chart-card__caption">
+            @if (auditsByView === 'division') {
+              <ng-container i18n="@@dashboard.overview.topDivisionsCaption">Top {{ auditsByUnitData.labels.length }} of {{ units.length }} divisions · {{ auditsByUnitData.datasets.length }} companies</ng-container>
+            } @else {
+              <ng-container i18n="@@dashboard.overview.topSubDivisionsCaption">Top {{ auditsByUnitData.labels.length }} of {{ units.length }} sub-divisions · {{ auditsByUnitData.datasets.length }} companies</ng-container>
+            }
+          </p>
+        </div>
+        <div class="chart-card__actions">
+          <div class="view-toggle" role="group" aria-label="View audits by" i18n-aria-label="@@dashboard.overview.viewAuditsByAriaLabel">
+            @for (view of auditsByViews; track view.key) {
+              <button type="button"
+                      class="view-toggle__btn"
+                      [class.view-toggle__btn--active]="auditsByView === view.key"
+                      [attr.aria-pressed]="auditsByView === view.key"
+                      (click)="setAuditsByView(view.key)">
+                {{ view.label }}
+              </button>
+            }
+          </div>
+          <button type="button"
+                  class="chart-card__expand"
+                  (click)="openUnitDetail()"
+                  aria-label="View full Audits by Division / Sub-Division breakdown"
+                  i18n-aria-label="@@dashboard.overview.viewFullUnitBreakdownAriaLabel">
+            <app-draw-icon icon="pi pi-external-link"></app-draw-icon> <ng-container i18n="@@common.viewAll">View all</ng-container>
+          </button>
+        </div>
+      </div>
+      <div class="chart-wrap chart-wrap--clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open full Audits by Division / Sub-Division breakdown"
+           i18n-aria-label="@@dashboard.overview.openFullUnitBreakdownAriaLabel"
+           (click)="openUnitDetail()"
+           (keydown.enter)="openUnitDetail()"
+           (keydown.space)="$event.preventDefault(); openUnitDetail()">
+        <p-chart #unitChart
+                 type="bar"
+                 [data]="auditsByUnitData"
+                 [options]="barOptions()"
+                 [plugins]="subDivisionChartPlugins">
+        </p-chart>
+        @if (!units.length) {
+          @if (auditsByView === 'division') {
+            <p class="chart-empty" i18n="@@dashboard.overview.noDivisionLevelAudits">No division-level audits</p>
+          } @else {
+            <p class="chart-empty" i18n="@@dashboard.overview.noSubDivisionAudits">No sub-division audits</p>
+          }
+        }
+      </div>
+
+      <div class="donut-legend">
+        @for (item of unitLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="unitHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="unitHidden[i]"
+               [attr.aria-label]="legendToggleAriaLabel(unitHidden[i], item.label)"
+               (click)="toggleUnitDataset(i)"
+               (keydown.enter)="toggleUnitDataset(i)"
+               (keydown.space)="$event.preventDefault(); toggleUnitDataset(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============= ROW 2: Risk Distribution + Upcoming =========== -->
+  <div class="chart-row">
+
+    <div class="chart-card">
+      <div class="chart-card__header-row">
+        <div>
+          <h3 class="chart-card__title" i18n="@@dashboard.overview.riskRatingDistributionTitle">Risk Rating Distribution</h3>
+          <p *ngIf="hasMoreRiskData" class="chart-card__caption" i18n="@@dashboard.overview.topCompaniesCaption">
+            Top {{ previewRiskOrgCount }} of {{ auditsByOrgRisk.length }} companies
+          </p>
+        </div>
+        <button type="button"
+                class="chart-card__expand"
+                (click)="openRiskDetail()"
+                aria-label="View full Risk Rating Distribution breakdown"
+                i18n-aria-label="@@dashboard.overview.viewFullRiskBreakdownAriaLabel">
+          <app-draw-icon icon="pi pi-external-link"></app-draw-icon> <ng-container i18n="@@common.viewAll">View all</ng-container>
+        </button>
+      </div>
+      <div class="chart-wrap chart-wrap--clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open full Risk Rating Distribution breakdown"
+           i18n-aria-label="@@dashboard.overview.openFullRiskBreakdownAriaLabel"
+           (click)="openRiskDetail()"
+           (keydown.enter)="openRiskDetail()"
+           (keydown.space)="$event.preventDefault(); openRiskDetail()">
+        <p-chart #riskChart
+                 type="bar"
+                 [data]="riskRatingData"
+                 [options]="hBarOptions()"
+                 [plugins]="riskChartPlugins">
+        </p-chart>
+      </div>
+
+      <div class="donut-legend">
+        @for (item of riskLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="riskHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="riskHidden[i]"
+               [attr.aria-label]="legendToggleAriaLabel(riskHidden[i], item.label)"
+               (click)="toggleRiskDataset(i)"
+               (keydown.enter)="toggleRiskDataset(i)"
+               (keydown.space)="$event.preventDefault(); toggleRiskDataset(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card__header-row">
+        <h3 class="chart-card__title">
+          <app-draw-icon icon="pi pi-calendar"></app-draw-icon> <ng-container i18n="@@dashboard.overview.upcomingAuditsTitle">Upcoming Audits</ng-container>
+        </h3>
+        <div class="view-toggle" role="group" aria-label="Upcoming audits view" i18n-aria-label="@@dashboard.overview.upcomingAuditsViewAriaLabel">
+          <button type="button"
+                  class="view-toggle__btn"
+                  [class.view-toggle__btn--active]="upcomingView === 'list'"
+                  [attr.aria-pressed]="upcomingView === 'list'"
+                  aria-label="List view"
+                  i18n-aria-label="@@common.listView"
+                  (click)="setUpcomingView('list')">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon> <ng-container i18n="@@common.listViewText">List</ng-container>
+          </button>
+          <button type="button"
+                  class="view-toggle__btn"
+                  [class.view-toggle__btn--active]="upcomingView === 'calendar'"
+                  [attr.aria-pressed]="upcomingView === 'calendar'"
+                  aria-label="Calendar view"
+                  i18n-aria-label="@@common.calendarView"
+                  (click)="setUpcomingView('calendar')">
+            <app-draw-icon icon="pi pi-calendar"></app-draw-icon> <ng-container i18n="@@common.calendar">Calendar</ng-container>
+          </button>
+        </div>
+      </div>
+
+      <div class="upcoming-list" *ngIf="upcomingView === 'list'">
+        <div *ngFor="let a of upcomingAudits" class="upcoming-item">
+          <div class="upcoming-item__info">
+            <span class="upcoming-item__name">{{ a.name }}</span>
+            <span class="upcoming-item__meta">{{ a.subDivision }} • {{ a.auditor }}</span>
+          </div>
+          <div class="upcoming-item__right">
+            <span class="upcoming-item__date">{{ a.date }}</span>
+            <span class="status-chip status-chip--{{ a.statusClass }}">{{ upcomingStatusLabel(a.status) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="upcoming-calendar" *ngIf="upcomingView === 'calendar'">
+        <div class="upcoming-calendar__nav">
+          <button type="button" class="icon-btn" aria-label="Previous month" i18n-aria-label="@@common.previousMonth" (click)="prevMonth()">
+            <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon>
+          </button>
+          <span class="upcoming-calendar__label">{{ calendarMonthLabel }}</span>
+          <button type="button" class="icon-btn" aria-label="Next month" i18n-aria-label="@@common.nextMonth" (click)="nextMonth()">
+            <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+          </button>
+        </div>
+
+        <div class="upcoming-calendar__weekdays">
+          <span *ngFor="let wd of weekDayLabels">{{ wd }}</span>
+        </div>
+
+        <div class="upcoming-calendar__grid">
+          <div *ngFor="let cell of calendarDays"
+               class="upcoming-calendar__cell"
+               [class.upcoming-calendar__cell--empty]="!cell.day">
+            <span *ngIf="cell.day" class="upcoming-calendar__day">{{ cell.day }}</span>
+            <div class="upcoming-calendar__dots" *ngIf="cell.audits.length">
+              <span *ngFor="let a of cell.audits"
+                    class="upcoming-calendar__dot"
+                    [class]="'status-dot--' + a.statusClass"
+                    [title]="upcomingDotTitle(a)"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

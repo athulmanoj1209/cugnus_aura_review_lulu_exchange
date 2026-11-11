@@ -1,0 +1,294 @@
+﻿<div class="drawer-inner" [formGroup]="auditPlanForm">
+
+      <!-- Header -->
+      <div class="drawer-header">
+        <div class="drawer-header-left">
+          <div class="drawer-icon-wrap">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon>
+          </div>
+
+          <div class="drawer-title-block">
+            <h2 class="drawer-title">
+              Add <strong>Audit Plan</strong>
+            </h2>
+            <p class="drawer-subtitle">Page To Add Audit Plan</p>
+          </div>
+        </div>
+
+        <button class="close-btn" type="button" (click)="onClose()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <p-tabs [value]="activeTabIndex" (valueChange)="activeTabIndex = $event" class="audit-plan-drawer-tabs">
+        <p-tablist>
+          <p-tab [value]="0">Plan Details</p-tab>
+          <p-tab [value]="1">Scope Coverage</p-tab>
+          <p-tab [value]="2">Departments Covered</p-tab>
+          <p-tab [value]="3">Plan Summary</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+          <!-- Tab 1: Current form fields -->
+          <p-tabpanel [value]="0">
+            <div class="tab-content">
+              <!-- Plan ID + Version -->
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Plan ID</label>
+                  <input pInputText type="text" formControlName="planId" class="form-input" readonly />
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">Version</label>
+                  <input pInputText type="text" formControlName="version" class="form-input" readonly />
+                </div>
+              </div>
+
+              <!-- Plan Name -->
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">
+                    Plan Name
+                    <span class="field-required">*</span>
+                  </label>
+
+                  <input pInputText type="text" formControlName="planName" placeholder="Enter plan name"
+                    class="form-input" [class.input-error]="isFieldInvalid('planName')" />
+
+                  <small class="error-hint" *ngIf="isFieldInvalid('planName')">
+                    {{ getErrorMessage('planName') }}
+                  </small>
+                </div>
+              </div>
+
+              <!-- Frequency + Status -->
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">
+                    Audit Frequency
+                    <span class="field-required">*</span>
+                  </label>
+
+                  <p-select formControlName="auditFrequency" [options]="auditFrequencyOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select frequency" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('auditFrequency')"></p-select>
+
+                  <small class="error-hint" *ngIf="isFieldInvalid('auditFrequency')">
+                    {{ getErrorMessage('auditFrequency') }}
+                  </small>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">
+                    Status
+                    <span class="field-required">*</span>
+                  </label>
+
+                  <p-select formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value"
+                    placeholder="Select status" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('status')"></p-select>
+
+                  <small class="error-hint" *ngIf="isFieldInvalid('status')">
+                    {{ getErrorMessage('status') }}
+                  </small>
+                </div>
+              </div>
+
+              <!-- Audit Period -->
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">
+                    Start Date
+                    <span class="field-required">*</span>
+                  </label>
+
+                  <p-datepicker formControlName="startDate" placeholder="Start Date" dateFormat="dd/mm/yy"
+                    [showIcon]="true" class="form-datepicker" [invalid]="isFieldInvalid('startDate')"></p-datepicker>
+
+                  <small class="error-hint" *ngIf="isFieldInvalid('startDate')">
+                    {{ getErrorMessage('startDate') }}
+                  </small>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">
+                    End Date
+                    <span class="field-required">*</span>
+                  </label>
+
+                  <p-datepicker formControlName="endDate" placeholder="End Date" dateFormat="dd/mm/yy" [showIcon]="true"
+                    class="form-datepicker"
+                    [invalid]="isFieldInvalid('endDate') || (!!auditPlanForm.errors?.['endBeforeStart'] && f['endDate'].touched)"></p-datepicker>
+
+                  @if (auditPlanForm.errors?.['endBeforeStart'] && f['endDate'].touched) {
+                  <small class="error-hint">End date must be after start date.</small>
+                  }
+
+                  @if (f['endDate'].hasError('required') && f['endDate'].touched) {
+                  <small class="error-hint">End date is required.</small>
+                  }
+                </div>
+              </div>
+
+              <!-- Plan Owner -->
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">
+                    Plan Owner
+                    <span class="field-required">*</span>
+                  </label>
+
+                  <p-select formControlName="planOwner" [options]="planOwnerOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select plan owner" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('planOwner')"></p-select>
+
+                  <small class="error-hint" *ngIf="isFieldInvalid('planOwner')">
+                    {{ getErrorMessage('planOwner') }}
+                  </small>
+                </div>
+              </div>
+
+              <!-- Objectives -->
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Objectives</label>
+
+                  <textarea pTextarea formControlName="objectives" rows="4" placeholder="Enter objectives"
+                    class="form-textarea" [class.input-error]="!!f['objectives'].errors?.['maxlength']"></textarea>
+
+                  <div class="char-counter" [class.char-over]="objectivesLength > 500">
+                    {{ objectivesLength }} / 500
+                  </div>
+
+                  <small class="error-hint" *ngIf="isFieldInvalid('objectives')">
+                    {{ getErrorMessage('objectives') }}
+                  </small>
+                </div>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div class="drawer-footer">
+              <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+
+              <p-button *ngIf="activeTabIndex < 3" label="Next" icon="pi pi-arrow-right" iconPos="right"
+                styleClass="next-btn" (onClick)="goToNextTab()"></p-button>
+
+              <p-button *ngIf="activeTabIndex === 3" label="Submit" icon="pi pi-check" styleClass="submit-btn"
+                (onClick)="onSubmit()"></p-button>
+            </div>
+          </p-tabpanel>
+
+          <!-- Tab 2: Scope Coverage -->
+          <p-tabpanel [value]="1">
+            <div class="scope-coverage-list">
+              @for (item of scopeItems; track item.id) {
+              <div class="scope-item" [class.scope-item--selected]="isSelected(item.id)" (click)="selectScope(item.id)">
+                <div class="scope-item-header">
+                  <div class="scope-radio-wrap" (click)="$event.stopPropagation()">
+                    <p-checkbox [binary]="true" [ngModel]="isSelected(item.id)" [ngModelOptions]="{standalone: true}"
+                      (ngModelChange)="selectScope(item.id)"></p-checkbox>
+                  </div>
+                  <div class="scope-item-body">
+                    <span class="scope-item-title">{{ item.title }}</span>
+                    <span class="scope-item-desc">{{ item.description }}</span>
+                  </div>
+                </div>
+
+                @if (isSelected(item.id)) {
+                <div class="scope-item-meta">
+                  <div class="meta-chip">
+                    <div class="meta-chip-icon">
+                      <app-draw-icon icon="pi pi-clock"></app-draw-icon>
+                    </div>
+                    <div class="meta-chip-info">
+                      <span class="meta-chip-label">Time Period :</span>
+                      <span class="meta-chip-value">{{ item.timePeriod }}</span>
+                    </div>
+                  </div>
+
+                  <div class="meta-chip">
+                    <div class="meta-chip-icon">
+                      <app-draw-icon icon="pi pi-users"></app-draw-icon>
+                    </div>
+                    <div class="meta-chip-info">
+                      <span class="meta-chip-label">Auditors :</span>
+                      <span class="meta-chip-value">{{ item.auditors }}</span>
+                    </div>
+                  </div>
+
+                  <div class="meta-chip">
+                    <div class="meta-chip-icon">
+                      <app-draw-icon icon="pi pi-tag"></app-draw-icon>
+                    </div>
+                    <div class="meta-chip-info">
+                      <span class="meta-chip-label">Budget :</span>
+                      <span class="meta-chip-value">{{ item.budget }}</span>
+                    </div>
+                  </div>
+
+                  <div class="meta-chip">
+                    <div class="meta-chip-icon">
+                      <app-draw-icon icon="pi pi-cog"></app-draw-icon>
+                    </div>
+                    <div class="meta-chip-info">
+                      <span class="meta-chip-label">Model :</span>
+                      <span class="meta-chip-value">{{ item.model }}</span>
+                    </div>
+                  </div>
+                </div>
+                }
+              </div>
+              }
+            </div>
+            <!-- Footer -->
+            <div class="drawer-footer">
+              <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+
+              <p-button *ngIf="activeTabIndex < 3" label="Next" icon="pi pi-arrow-right" iconPos="right"
+                styleClass="next-btn" (onClick)="goToNextTab()"></p-button>
+
+              <p-button *ngIf="activeTabIndex === 3" label="Submit" icon="pi pi-check" styleClass="submit-btn"
+                (onClick)="onSubmit()"></p-button>
+            </div>
+          </p-tabpanel>
+
+          <!-- Tab 3: Departments Covered -->
+          <p-tabpanel [value]="2">
+            <div class="dept-list">
+              @for (dept of departmentItems; track dept.id) {
+              <div class="dept-item" [class.dept-item--selected]="isDeptSelected(dept.id)"
+                (click)="toggleDept(dept.id)">
+                <div class="dept-checkbox-wrap" (click)="$event.stopPropagation()">
+                  <p-checkbox [binary]="true" [ngModel]="isDeptSelected(dept.id)" [ngModelOptions]="{standalone: true}"
+                    (ngModelChange)="toggleDept(dept.id)"></p-checkbox>
+                </div>
+                <span class="dept-label">{{ dept.label }}</span>
+              </div>
+              }
+            </div>
+            <!-- Footer -->
+            <div class="drawer-footer">
+              <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+
+              <p-button *ngIf="activeTabIndex < 3" label="Next" icon="pi pi-arrow-right" iconPos="right"
+                styleClass="next-btn" (onClick)="goToNextTab()"></p-button>
+
+              <p-button *ngIf="activeTabIndex === 3" label="Submit" icon="pi pi-check" styleClass="submit-btn"
+                (onClick)="onSubmit()"></p-button>
+            </div>
+          </p-tabpanel>
+
+          <!-- Tab 4: Empty -->
+          <p-tabpanel [value]="3">
+            <div class="empty-tab-state">
+              <app-draw-icon icon="pi pi-file" class="empty-tab-icon"></app-draw-icon>
+              <h3>Plan Summary</h3>
+              <p>Coming soon.</p>
+            </div>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+
+    </div>

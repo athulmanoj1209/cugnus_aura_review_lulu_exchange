@@ -1,0 +1,176 @@
+<div class="report-template">
+
+  <!-- ═══════════════════ Phase: upload form ═══════════════════ -->
+  @if (phase() === ReportTemplateUploadPhases.Form) {
+    <form [formGroup]="uploadForm" (ngSubmit)="onSubmit()" class="report-template__form">
+
+      <div class="report-template__field">
+        <label class="report-template__label"><span i18n="@@common.company">Company</span> *</label>
+        <p-select formControlName="company" [options]="companyOptions" optionLabel="label" optionValue="value"
+          placeholder="Select company" i18n-placeholder="@@audit.reportTemplate.selectCompany" styleClass="report-template__input" [filter]="true" filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search"
+          [showClear]="true" [invalid]="isFieldInvalid('company')" (onChange)="onCompanyChange()"></p-select>
+        @if (isFieldInvalid('company')) {
+          <small class="report-template__field-error" i18n="@@audit.reportTemplate.companyRequired">Company is required.</small>
+        }
+      </div>
+
+      <div class="report-template__field">
+        <label class="report-template__label"><span i18n="@@common.division">Division</span> *</label>
+        <p-select formControlName="division" [options]="divisionOptions" optionLabel="label" optionValue="value"
+          placeholder="Select division" i18n-placeholder="@@audit.reportTemplate.selectDivision" styleClass="report-template__input" [filter]="true" filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search"
+          [showClear]="true" [disabled]="!uploadForm.value.company" [invalid]="isFieldInvalid('division')"
+          (onChange)="onDivisionChange()"></p-select>
+        @if (isFieldInvalid('division')) {
+          <small class="report-template__field-error" i18n="@@audit.reportTemplate.divisionRequired">Division is required.</small>
+        }
+      </div>
+
+      <div class="report-template__field">
+        <label class="report-template__label"><span i18n="@@audit.reportTemplate.templateNameRequired">Template Name</span> *</label>
+        <input pInputText type="text" formControlName="templateName" placeholder="e.g. Internal Audit Report" i18n-placeholder="@@audit.reportTemplate.templateNamePlaceholder"
+          [invalid]="isFieldInvalid('templateName')" class="report-template__input" />
+        @if (isFieldInvalid('templateName')) {
+          <small class="report-template__field-error" i18n="@@audit.reportTemplate.templateNameRequiredMessage">Template name is required.</small>
+        }
+      </div>
+
+      <div class="report-template__field">
+        <label class="report-template__label" i18n="@@audit.reportTemplate.templateDescription">Template Description</label>
+        <textarea pTextarea rows="3" formControlName="templateDescription"
+          placeholder="Optional description of this template" i18n-placeholder="@@audit.reportTemplate.templateDescriptionPlaceholder" class="report-template__textarea"></textarea>
+      </div>
+
+      <div class="report-template__field">
+        <label class="report-template__label"><span i18n="@@audit.reportTemplate.industryType">Industry Type</span> *</label>
+        <p-select formControlName="industryType" [options]="industryTypeOptions" placeholder="Select industry type" i18n-placeholder="@@audit.reportTemplate.selectIndustryType"
+          styleClass="report-template__input" [filter]="true" filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search" [showClear]="true"
+          [invalid]="isFieldInvalid('industryType')"></p-select>
+        <small class="report-template__hint" i18n="@@audit.reportTemplate.industryAutoSelected">Auto-selected based on the division — you can still change it.</small>
+        @if (isFieldInvalid('industryType')) {
+          <small class="report-template__field-error" i18n="@@audit.reportTemplate.industryTypeRequired">Industry type is required.</small>
+        }
+      </div>
+
+      <div class="report-template__field">
+        <label class="report-template__label"><span i18n="@@audit.reportTemplate.reportTemplateFile">Report Template File</span> @if (mode === ReportTemplateDialogModes.Create) { * }</label>
+
+        @if (mode === ReportTemplateDialogModes.Edit && !fileUnlocked()) {
+          <div class="report-template__file-locked">
+            <app-draw-icon icon="pi pi-file"></app-draw-icon>
+            <span class="report-template__file-locked-name">{{ editTemplate?.templateFileName }}</span>
+            <button type="button" class="report-template__replace-btn" [disabled]="checkingUsage()"
+              (click)="attemptUnlockFile()">
+              @if (checkingUsage()) {
+                <app-draw-icon icon="pi pi-spin pi-spinner"></app-draw-icon> <span i18n="@@audit.reportTemplate.checking">Checking…</span>
+              } @else {
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon> <span i18n="@@audit.reportTemplate.replaceFile">Replace File</span>
+              }
+            </button>
+          </div>
+        } @else {
+          <p-fileupload #fileUp mode="advanced" [accept]="FILE_EXTENSION" [maxFileSize]="MAX_FILE_SIZE_BYTES" [auto]="false"
+            [customUpload]="true" (onSelect)="onFileSelected($event)" [showUploadButton]="false"
+            [showCancelButton]="false" styleClass="report-template__fileupload">
+            <ng-template pTemplate="content">
+              <div class="report-template__drop-zone">
+                <app-draw-icon icon="pi pi-cloud-upload" class="report-template__drop-zone-icon"></app-draw-icon>
+                @if (selectedFile()) {
+                  <p class="report-template__file-name">{{ selectedFile()!.name }}</p>
+                } @else {
+                  <p class="report-template__drop-zone-title" i18n="@@audit.reportTemplate.dragDropDocx">Drag &amp; drop your .docx file here</p>
+                  <span class="report-template__drop-zone-or" i18n="@@common.or">or</span>
+                  <button type="button" class="report-template__browse-btn" (click)="fileUp.choose()">
+                    <app-draw-icon icon="pi pi-folder-open"></app-draw-icon> <span i18n="@@audit.reportTemplate.browseFile">Browse File</span>
+                  </button>
+                }
+              </div>
+            </ng-template>
+          </p-fileupload>
+        }
+
+        @if (fileError()) {
+          <small class="report-template__field-error">{{ fileError() }}</small>
+        }
+      </div>
+
+      <div class="report-template__field">
+        <label class="report-template__label" i18n="@@common.status">Status</label>
+        <button type="button" class="status-pill"
+          [class.status-pill--active]="uploadForm.value.isActive"
+          [class.status-pill--inactive]="!uploadForm.value.isActive"
+          (click)="toggleStatus()">
+          {{ uploadForm.value.isActive ? activeLabel : inactiveLabel }}
+        </button>
+      </div>
+
+      @if (errorMessage()) {
+        <p-message severity="error" class="report-template__error">{{ errorMessage() }}</p-message>
+      }
+
+      <div class="report-template__actions">
+        @if (mode === ReportTemplateDialogModes.Edit) {
+          <p-button type="submit" label="Save Changes" i18n-label="@@audit.reportTemplate.saveChanges" icon="pi pi-check"></p-button>
+        } @else {
+          <p-button type="submit" label="Upload Template" i18n-label="@@audit.reportTemplate.uploadTemplate" icon="pi pi-upload" [loading]="uploading()"
+            [disabled]="uploading()"></p-button>
+        }
+      </div>
+    </form>
+  }
+
+  <!-- ═══════════════════ Phase: processing / SSE progress ═══════════════════ -->
+  @if (phase() === ReportTemplateUploadPhases.Processing) {
+    <div class="report-template__split">
+
+      <div class="report-template__accepted"
+        [class.report-template__accepted--success]="parsingFinished() && !parsingFailed()"
+        [class.report-template__accepted--failed]="parsingFailed()">
+        <i class="pi report-template__accepted-icon"
+          [class.pi-check-circle]="!parsingFailed()"
+          [class.pi-times-circle]="parsingFailed()"></i>
+        <p class="report-template__accepted-message">
+          @if (!parsingFinished()) {
+            {{ accepted()?.message }}
+          } @else if (parsingFailed()) {
+            <span i18n="@@audit.reportTemplate.parsingFailed">Parsing failed. Please review the errors below and re-upload the template.</span>
+          } @else {
+            <span i18n="@@audit.reportTemplate.parsingCompleted">Parsing completed successfully.</span>
+          }
+        </p>
+      </div>
+
+      <div class="report-template__notifications">
+        <h3 class="report-template__notifications-title" i18n="@@audit.reportTemplate.parsingProgress">Parsing Progress</h3>
+
+        @if (sseConnectionError()) {
+          <p-message severity="warn" class="report-template__connection-warning">
+            <span i18n="@@audit.reportTemplate.connectionInterrupted">Connection to live updates was interrupted. Reconnecting…</span>
+          </p-message>
+        }
+
+        <div class="report-template__notification-list">
+          <!-- A step is only still "in progress" while it's the latest one on screen -->
+          <!-- every earlier step is implicitly done once a later notification has arrived. -->
+          @for (n of notifications(); track $index) {
+            <div class="report-template__notification-card"
+              [class.report-template__notification-card--completed]="n.parsingStatus === ParsingStatus.Completed || (!$last && n.parsingStatus !== ParsingStatus.Failed)"
+              [class.report-template__notification-card--failed]="n.parsingStatus === ParsingStatus.Failed"
+              [class.report-template__notification-card--clickable]="n.parsingStatus === ParsingStatus.Completed"
+              (click)="onNotificationClick(n)">
+              <i class="pi report-template__notification-icon"
+                [class.pi-spin]="n.parsingStatus === ParsingStatus.InProgress && $last"
+                [class.pi-spinner]="n.parsingStatus === ParsingStatus.InProgress && $last"
+                [class.pi-check-circle]="n.parsingStatus === ParsingStatus.Completed || (!$last && n.parsingStatus !== ParsingStatus.Failed)"
+                [class.pi-times-circle]="n.parsingStatus === ParsingStatus.Failed"></i>
+              <span class="report-template__notification-message">{{ n.message }}</span>
+            </div>
+          } @empty {
+            <p class="report-template__notifications-empty" i18n="@@audit.reportTemplate.waitingForUpdates">Waiting for updates…</p>
+          }
+        </div>
+      </div>
+
+    </div>
+  }
+
+</div>

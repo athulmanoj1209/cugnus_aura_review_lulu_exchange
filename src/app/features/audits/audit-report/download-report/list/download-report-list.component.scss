@@ -1,0 +1,253 @@
+@use 'sass:color';
+
+// ── Tokens (matches auditor-assignment.component.scss) ─────────────────────────
+$primary:        var(--primary-color);
+$primary-light:  color-mix(in srgb, var(--primary-color) 16%, transparent);
+$accent-blue:    var(--primary-color);
+$accent-green:   var(--p-green-500);
+$surface:        var(--surface-card);
+$surface-alt:    var(--surface-ground);
+$border:         var(--surface-border);
+$text-primary:   var(--text-color);
+$text-secondary: var(--text-color-secondary);
+$error:          var(--p-red-500);
+$radius-sm:      6px;
+$radius-md:      10px;
+$radius-lg:      14px;
+$shadow-md:      0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.rd-card {
+  position: relative;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.rd-header {
+  display: flex; align-items: center; gap: 12px;
+
+  &__icon {
+    width: 34px; height: 34px;
+    background: $accent-blue;
+    border-radius: $radius-sm;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; flex-shrink: 0;
+    box-shadow: 0 2px 8px color-mix(in srgb, $accent-blue 30%, transparent);
+  }
+  &__title    { margin: 0; font-size: 15px; font-weight: 700; color: $primary; }
+  &__subtitle { margin: 1px 0 0; font-size: .78rem; color: $text-secondary; }
+}
+
+// ── Section (single box wrapping toolbar + results + footer) ──────────────────
+.rd-section {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  padding: 24px;
+}
+.rd-section__label {
+  font-size: 11px; font-weight: 700; letter-spacing: .7px;
+  text-transform: uppercase; color: $text-secondary; margin-bottom: 10px;
+}
+
+// ── Results (nested inside .rd-section, not its own box) ──────────────────────
+.rd-results {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid $border;
+}
+
+// ── Filters toolbar ─────────────────────────────────────────────────────────────
+.rd-toolbar {
+  display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px 16px;
+}
+
+.rd-field { display: flex; flex-direction: column; gap: 4px; }
+.rd-field--fixed { width: 170px; flex: 0 0 auto; }
+.rd-field--type  { flex: 1 1 260px; min-width: 220px; }
+
+.rd-label { font-size: 12px; font-weight: 600; color: $text-primary; white-space: nowrap;margin-bottom: 5px; }
+.rd-required { color: $error; font-weight: 700; }
+.error-text  { font-size: 11.5px; color: $error; }
+
+// ── Report type pills ────────────────────────────────────────────────────────
+.rd-pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.rd-pill {
+  height: 34px; padding: 0 14px; border-radius: 20px; font-size: 12.5px; font-weight: 600;
+  border: 1.5px solid $border; background: $surface; color: $text-secondary;
+  cursor: pointer; transition: all .15s; display: inline-flex; align-items: center;
+
+  &:hover:not(:disabled) { border-color: color-mix(in srgb, $border, black 10%); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+
+  &--active {
+    background: linear-gradient(135deg, $primary, $primary-light);
+    border-color: $primary; color: #fff;
+  }
+}
+
+.rd-pill__clear {
+  margin-inline-start: 6px; font-size: 15px; line-height: 1; font-weight: 700;
+  opacity: .8;
+  &:hover { opacity: 1; }
+}
+
+// ── Results table ─────────────────────────────────────────────────────────────
+.rd-table { border: 1px solid $border; border-radius: $radius-md; overflow: hidden;padding:20px; }
+
+.rd-table-head {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 96px;
+  gap: 8px; padding: 10px 14px;
+  background: $surface-alt; border-bottom: 1px solid $border;
+}
+
+.rd-th {
+  font-size: 11px; font-weight: 700; letter-spacing: .4px;
+  text-transform: uppercase; color: $text-secondary;
+  &--action { text-align: end; }
+}
+
+.rd-row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 96px;
+  gap: 8px; align-items: center; padding: 12px 14px;
+  border-bottom: 1px solid $border; font-size: 13px; color: $text-primary;
+  &:last-child { border-bottom: none; }
+  &:nth-child(even) { background: var(--surface-hover); }
+  &:hover { background: var(--surface-card); }
+}
+
+.rd-td--name { font-weight: 600; }
+.rd-td--action { display: flex; justify-content: end; gap: 6px; }
+
+.rd-filetag {
+  font-size: 10.5px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+  background: $surface-alt; border: 1px solid $border; color: $text-secondary;
+}
+
+.rd-icon-btn {
+  width: 30px; height: 30px; border-radius: $radius-sm;
+  border: 1.5px solid $border; background: $surface; color: $primary;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s;
+  &:hover { border-color: $accent-blue; background: color-mix(in srgb, $accent-blue 35%, transparent); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+
+  // Corrected-report action: green accent so it reads distinctly from the
+  // auto-generated download.
+  &--alt {
+    &:hover {
+      border-color: $accent-green;
+      background: color-mix(in srgb, $accent-green 35%, transparent);
+      color: $accent-green;
+    }
+  }
+}
+
+.rd-empty {
+  padding: 24px 14px; text-align: center; font-size: 13px; color: $text-secondary;
+  border: 1px dashed $border; border-radius: $radius-md;
+}
+
+// ── Skeleton loader ───────────────────────────────────────────────────────────
+@keyframes rd-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+.rd-skeleton__row {
+  display: grid; grid-template-columns: 2fr 1fr 1fr 96px;
+  gap: 8px; align-items: center; padding: 12px 14px;
+  border: 1px solid $border; border-radius: $radius-sm; margin-bottom: 8px;
+}
+
+.rd-skeleton__cell {
+  height: 30px; border-radius: $radius-sm;
+  background: linear-gradient(90deg, var(--surface-hover) 25%, var(--surface-card) 50%, var(--surface-card) 75%);
+  background-size: 400px 100%;
+  animation: rd-shimmer 1.4s infinite linear;
+  &--sm { height: 24px; }
+  &--xs { width: 30px; }
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+@keyframes rd-spin { to { transform: rotate(360deg); } }
+.rd-spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid rgba(0,0,0,.12); border-top-color: $text-secondary;
+  animation: rd-spin .7s linear infinite; display: inline-block;
+  &--light { border-color: rgba(255,255,255,.3); border-top-color: #fff; }
+}
+
+// ── Footer / buttons ──────────────────────────────────────────────────────────
+.rd-footer {
+  display: flex; justify-content: end;
+  margin-top: 24px;
+  padding-top: 18px; border-top: 1px solid $border;
+}
+
+.rd-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; font-size: 14px; font-weight: 600; height: 38px;
+  border-radius: $radius-sm; border: none; cursor: pointer; transition: all .18s ease;
+
+  &--primary {
+    background: linear-gradient(135deg, $primary, $primary-light);
+    color: #fff; box-shadow: 0 2px 8px color-mix(in srgb, $primary 28%, transparent);
+    &:hover:not(:disabled) { filter: brightness(1.08); }
+    &:disabled { opacity: .5; cursor: not-allowed; }
+  }
+  &--secondary {
+    background: $surface; color: $text-primary; border: 1.5px solid $border;
+    &:hover { border-color: color-mix(in srgb, $border, black 12%); background: $surface-alt; }
+  }
+  &--ghost {
+    background: transparent; color: $text-secondary; padding: 9px 12px;
+    &:hover { color: $text-primary; background: $border; }
+  }
+}
+
+// ── PrimeNG overrides ─────────────────────────────────────────────────────────
+:host {
+  p-select { width: 100%; }
+
+  .p-select {
+    height: 40px; padding: 5px; width: 100% !important;
+    border-radius: $radius-sm; border-color: $border; font-size: 13px;
+    &.p-invalid { border-color: $error; }
+    &:not(.p-disabled):hover { border-color: color-mix(in srgb, $border, black 10%); }
+    &.p-focus { border-color: $accent-blue; box-shadow: 0 0 0 3px color-mix(in srgb, $accent-blue 12%, transparent); }
+  }
+
+  .p-select-label {
+    padding: 0.5rem 0.65rem; font-size: 13px; color: $text-primary;
+    &.p-placeholder { color: var(--text-color-secondary); }
+  }
+
+  .rd-paginator.p-paginator {
+    margin-top: 12px; padding: 8px 4px; background: transparent;
+    border-top: 1px solid $border; border-radius: 0; font-size: 13px;
+
+    .p-paginator-page.p-highlight {
+      background: $primary; color: #fff; border-radius: $radius-sm;
+    }
+  }
+}
+::ng-deep .p-select-option-group {
+      background: var(--surface-hover) !important;
+    border-radius: 5px !important;
+        padding-top: 15px !important;
+    padding-bottom: 15px !important;
+}
+.p-paginator {
+      justify-content: end;
+}

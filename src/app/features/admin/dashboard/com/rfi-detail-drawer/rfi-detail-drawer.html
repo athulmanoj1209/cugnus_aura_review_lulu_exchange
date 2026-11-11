@@ -1,0 +1,232 @@
+@if (rfi) {
+<div class="profile-drawer">
+
+  <!-- ═══════════════ HERO HEADER (gradient) ═══════════════ -->
+  <header class="hero">
+    <div class="hero__avatar"><app-draw-icon icon="pi pi-file"></app-draw-icon></div>
+    <div class="hero__text">
+      <h2 class="hero__title">{{ rfi.description }}</h2>
+      <p class="hero__sub" i18n="@@dashboard.rfiDrawer.heroSub">{{ rfi.subDivision }} · Due {{ rfi.dueDate }}</p>
+    </div>
+    <span class="hero-badge" [ngClass]="getStatusBadgeClass(rfi.status)">{{ statusText(rfi.status) }}</span>
+    <button type="button" class="hero__close" pTooltip="Close" i18n-pTooltip="@@dashboard.rfiDrawer.close" tooltipPosition="bottom" (click)="close()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </header>
+
+  <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+  <div class="drawer-body">
+
+    <!-- ── stat cards (overlap the hero) ── -->
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-ic" [ngClass]="getPriorityIconClass(rfi.priority)"><app-draw-icon icon="pi pi-flag"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ priorityText(rfi.priority) }}</span>
+          <span class="stat-lbl" i18n="@@common.priority">Priority</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--blue"><app-draw-icon icon="pi pi-clock"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num" i18n="@@dashboard.rfiDrawer.slaTargetDays">{rfi.slaTargetDays, plural, =1 {1 day} other {{{ rfi.slaTargetDays }} days}}</span>
+          <span class="stat-lbl" i18n="@@dashboard.rfiDrawer.slaTarget">SLA Target</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic stat-ic--violet"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ rfi.dueDate }}</span>
+          <span class="stat-lbl" i18n="@@common.dueDate">Due Date</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-ic" [ngClass]="rfi.sla === 'Breach' ? 'stat-ic--red' : 'stat-ic--mint'">
+          <app-draw-icon [icon]="rfi.sla === 'Breach' ? 'pi pi-times-circle' : 'pi pi-check-circle'"></app-draw-icon>
+        </span>
+        <div class="stat-txt">
+          <span class="stat-num">{{ slaLabel(rfi.sla) }}</span>
+          <span class="stat-lbl" i18n="@@dashboard.rfiDrawer.slaStatus">SLA Status</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ RFI INFORMATION ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+        <h3 i18n="@@dashboard.rfiDrawer.rfiInformation">RFI Information</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k" i18n="@@dashboard.rfiDrawer.rfiId">RFI ID</span>
+          <span class="kv__v kv__v--accent"><strong>{{ rfi.id }}</strong></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.status">Status</span>
+          <span class="kv__v"><span class="type-badge" [ngClass]="getStatusBadgeClass(rfi.status)">{{ statusText(rfi.status) }}</span></span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@dashboard.rfiDrawer.category">Category</span>
+          <span class="kv__v">{{ rfi.category }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.subDivision">Sub-Division</span>
+          <span class="kv__v">{{ rfi.subDivision }}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.priority">Priority</span>
+          <span class="kv__v">
+            <span class="priority-pill" [ngClass]="getPriorityChipClass(rfi.priority)">{{ priorityText(rfi.priority) }}</span>
+          </span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@common.dueDate">Due Date</span>
+          <span class="kv__v" [ngClass]="rfi.status === 'Overdue' ? 'kv__v--danger' : ''">
+            <app-draw-icon icon="pi pi-calendar" class="kv-ic"></app-draw-icon>{{ rfi.dueDate }}
+          </span>
+        </div>
+      </div>
+
+      @if (rfi.description) {
+        <div class="notes">
+          <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> <ng-container i18n="@@common.description">Description</ng-container></span>
+          <p class="notes__v">{{ rfi.description }}</p>
+        </div>
+      }
+    </div>
+
+    <!-- ═══════════════ PEOPLE ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--violet"><app-draw-icon icon="pi pi-users"></app-draw-icon></span>
+        <h3 i18n="@@dashboard.rfiDrawer.people">People</h3>
+        <span class="sec-count">2</span>
+      </div>
+
+      <!-- submitted by — highlighted primary card -->
+      <div class="primary-card">
+        <span class="primary-card__avatar">{{ getInitials(rfi.submittedBy) }}</span>
+        <div class="primary-card__text">
+          <span class="primary-card__eyebrow" i18n="@@dashboard.rfiDrawer.submittedBy">Submitted By</span>
+          <span class="primary-card__name">{{ rfi.submittedBy }}</span>
+          <span class="primary-card__role">{{ rfi.submissionDate }}</span>
+        </div>
+        <span class="member-badge member-badge--organizer"><app-draw-icon icon="pi pi-user"></app-draw-icon> <ng-container i18n="@@dashboard.rfiDrawer.submitter">Submitter</ng-container></span>
+      </div>
+
+      <div class="member-rows">
+        <div class="member-row">
+          <span class="member-row__avatar">{{ getInitials(rfi.assignedTo) }}</span>
+          <div class="member-row__text">
+            <span class="member-row__name">{{ rfi.assignedTo }}</span>
+            <span class="member-row__role" i18n="@@dashboard.rfiDrawer.auditManager">Audit Manager</span>
+          </div>
+          <span class="member-badge member-badge--participant"><app-draw-icon icon="pi pi-user-edit"></app-draw-icon> <ng-container i18n="@@dashboard.rfiDrawer.assignee">Assignee</ng-container></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ TIMELINE ═══════════════ -->
+    <div class="sec-card">
+      <div class="sec-head">
+        <span class="sec-ic sec-ic--indigo"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+        <h3 i18n="@@dashboard.rfiDrawer.timeline">Timeline</h3>
+      </div>
+
+      <div class="timeline-wrap">
+        <div class="timeline-row">
+          <div class="timeline-point">
+            <span class="timeline-label" i18n="@@dashboard.rfiDrawer.submitted">Submitted</span>
+            <span class="timeline-date">{{ rfi.submissionDate }}</span>
+          </div>
+          <div class="timeline-bar">
+            <div class="timeline-bar__fill"
+                 [ngClass]="rfi.status === 'Overdue' || rfi.status === 'Escalated' ? 'fill--danger' : 'fill--normal'">
+            </div>
+          </div>
+          <div class="timeline-point">
+            <span class="timeline-label" i18n="@@common.dueDate">Due Date</span>
+            <span class="timeline-date" [ngClass]="rfi.status === 'Overdue' ? 'text-danger' : ''">{{ rfi.dueDate }}</span>
+          </div>
+        </div>
+        <p class="timeline-note" [ngClass]="rfi.responseDate !== '-' ? 'note--success' : 'note--pending'">
+          @if (rfi.responseDate !== '-') {
+            <app-draw-icon icon="pi pi-check-circle"></app-draw-icon><ng-container i18n="@@dashboard.rfiDrawer.respondedOn">Responded on <strong>&nbsp;{{ rfi.responseDate }}</strong></ng-container>
+          } @else {
+            <app-draw-icon icon="pi pi-clock"></app-draw-icon><ng-container i18n="@@dashboard.rfiDrawer.awaitingResponse">Awaiting response</ng-container>
+          }
+        </p>
+      </div>
+    </div>
+
+    <!-- ═══════════════ SLA DETAILS ═══════════════ -->
+    <div class="sec-card" [ngClass]="rfi.sla === 'Breach' ? 'sec-card--alert' : ''">
+      <div class="sec-head">
+        <span class="sec-ic" [ngClass]="rfi.sla === 'Breach' ? 'sec-ic--red' : 'sec-ic--teal'"><app-draw-icon icon="pi pi-shield"></app-draw-icon></span>
+        <h3 i18n="@@dashboard.rfiDrawer.slaDetails">SLA Details</h3>
+      </div>
+
+      <div class="kv-grid">
+        <div class="kv">
+          <span class="kv__k" i18n="@@dashboard.rfiDrawer.slaTarget">SLA Target</span>
+          <span class="kv__v" i18n="@@dashboard.rfiDrawer.slaTargetBusinessDays">{rfi.slaTargetDays, plural, =1 {1 business day} other {{{ rfi.slaTargetDays }} business days}}</span>
+        </div>
+        <div class="kv">
+          <span class="kv__k" i18n="@@dashboard.rfiDrawer.slaStatus">SLA Status</span>
+          <span class="kv__v">
+            @if (rfi.sla === 'Breach') {
+              <span class="sla-breach"><app-draw-icon icon="pi pi-times-circle"></app-draw-icon> {{ slaLabel(rfi.sla) }}</span>
+            } @else {
+              <span class="sla-met"><app-draw-icon icon="pi pi-check-circle"></app-draw-icon> {{ slaLabel(rfi.sla) }}</span>
+            }
+          </span>
+        </div>
+        <div class="kv kv--full">
+          <span class="kv__k" i18n="@@common.responseDate">Response Date</span>
+          <span class="kv__v">{{ rfi.responseDate }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ESCALATION (only if escalated) ═══════════════ -->
+    @if (rfi.status === 'Escalated' && rfi.escalationReason) {
+      <div class="sec-card sec-card--warning">
+        <div class="sec-head">
+          <span class="sec-ic sec-ic--amber"><app-draw-icon icon="pi pi-arrow-circle-up"></app-draw-icon></span>
+          <h3 i18n="@@dashboard.rfiDrawer.escalationDetails">Escalation Details</h3>
+        </div>
+
+        <div class="notes">
+          <span class="notes__k"><app-draw-icon icon="pi pi-flag"></app-draw-icon> <ng-container i18n="@@dashboard.rfiDrawer.escalationReason">Reason for Escalation</ng-container></span>
+          <p class="notes__v">{{ rfi.escalationReason }}</p>
+        </div>
+
+        @if (rfi.escalatedTo) {
+          <div class="kv-grid">
+            <div class="kv kv--full">
+              <span class="kv__k" i18n="@@dashboard.rfiDrawer.escalatedTo">Escalated To</span>
+              <span class="kv__v">{{ rfi.escalatedTo }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═══════════════ NOTES ═══════════════ -->
+    @if (rfi.notes) {
+      <div class="sec-card">
+        <div class="sec-head">
+          <span class="sec-ic sec-ic--teal"><app-draw-icon icon="pi pi-comment"></app-draw-icon></span>
+          <h3 i18n="@@dashboard.rfiDrawer.notes">Notes</h3>
+        </div>
+        <div class="notes notes--plain">
+          <p class="notes__v">{{ rfi.notes }}</p>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+}

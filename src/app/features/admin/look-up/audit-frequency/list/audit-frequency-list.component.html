@@ -1,0 +1,135 @@
+<div class="audit-frequency-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title" i18n="@@admin.auditFrequency.title">Audit Frequencies</h2>
+          <p class="page-subtitle" i18n="@@admin.auditFrequency.subtitle">Define and manage audit frequency schedules for engagement planning</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+        <p-button label="+ New Audit Frequency" i18n-label="@@admin.auditFrequency.newButton" styleClass="audit-frequency-btn" (onClick)="openAddDialog()"></p-button>
+      </div>
+    </div>
+    <div class="page-header__filters">
+      <span class="p-input-icon-left search-wrapper page-header__search relative">
+        <app-draw-icon icon="pi pi-search" class="start-3 top-[15.1px] absolute"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search by Audit Frequency" i18n-placeholder="@@admin.auditFrequency.searchPlaceholder" [(ngModel)]="searchQuery"
+          (input)="onSearch()" class="search-input" />
+      </span>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  @if (filteredFrequencies.length === 0) {
+    <div class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+      <span i18n="@@admin.auditFrequency.empty">No audit frequencies found.</span>
+      <button class="ev-empty__btn" (click)="openAddDialog()" i18n="@@admin.auditFrequency.addButton">+ Add Audit Frequency</button>
+    </div>
+  }
+
+  <!-- List -->
+  @if (filteredFrequencies.length > 0) {
+    <div class="it-list">
+      <div class="list-header">
+        <span class="list-header__cell col-id" i18n="@@common.number">#</span>
+        <span class="list-header__cell col-name sortable" (click)="toggleSort('name')" i18n="@@admin.auditFrequency.nameHeader">AUDIT FREQUENCY <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'name'" [class.pi-sort-amount-up-alt]="sortField === 'name' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'name' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-status" i18n="@@common.statusUppercase">STATUS</span>
+        <span class="list-header__cell col-date sortable" (click)="toggleSort('createdOn')" ><span i18n="@@common.createdOn">CREATED ON</span> <i class="sort-icon" [class.pi-sort-alt]="sortField !== 'createdOn'" [class.pi-sort-amount-up-alt]="sortField === 'createdOn' && sortDir === 'asc'" [class.pi-sort-amount-down-alt]="sortField === 'createdOn' && sortDir === 'desc'"></i></span>
+        <span class="list-header__cell col-actions" i18n="@@common.actionsUppercase">ACTIONS</span>
+      </div>
+
+      @for (frequency of pagedFrequencies; track frequency.id; let i = $index) {
+        <article class="it-row" [class.it-row--inactive]="frequency.status === 'inactive'">
+
+          <div class="col-id">
+            <span class="ev-id">{{ (currentPage * pageSize + i + 1).toString().padStart(2, '0') }}</span>
+          </div>
+
+          <div class="col-name">
+            <span class="ev-title">{{ frequency.name }}</span>
+            <span class="ev-uploader">{{ truncate(frequency.description, 100) }}</span>
+          </div>
+
+          <div class="col-status">
+            <span class="status-badge" [class.status-badge--active]="frequency.status === 'active'" [class.status-badge--inactive]="frequency.status === 'inactive'">
+              {{ frequency.status === 'active' ? activeLabel : inactiveLabel }}
+            </span>
+          </div>
+
+          <div class="col-date">{{ frequency.createdOn }}</div>
+
+          <div class="col-actions">
+            <div class="row-actions">
+              <button type="button" class="icon-btn" (click)="viewFrequency(frequency)" [pTooltip]="viewLabel" [attr.aria-label]="viewLabel" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn" (click)="editFrequency(frequency)" [pTooltip]="editLabel" [attr.aria-label]="editLabel" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+              <button type="button" class="icon-btn" [class.icon-btn--activate]="frequency.status === 'inactive'" [class.icon-btn--deactivate]="frequency.status === 'active'"
+                (click)="openConfirm(frequency)"
+                [pTooltip]="frequency.status === 'inactive' ? activateLabel : deactivateLabel" tooltipPosition="top"
+                [attr.aria-label]="frequency.status === 'inactive' ? activateLabel : deactivateLabel">
+                <app-draw-icon [icon]="frequency.status === 'inactive' ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+
+  @if (filteredFrequencies.length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize"
+      [totalRecords]="filteredFrequencies.length"
+      [currentPage]="currentPage"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [entityLabel]="entityLabel"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onRowsChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>
+
+<!-- Add / Edit Dialog -->
+<p-dialog
+  [(visible)]="showAddDialog"
+  [modal]="true" [draggable]="false" [resizable]="false" [closable]="false" [showHeader]="false"
+  [style]="{ width: '560px', padding: '0' }" styleClass="no-pad-dialog">
+  <app-audit-frequency
+    [mode]="dialogMode"
+    [editItem]="editingItem"
+    (submitted)="onFrequenciesSubmitted($event)"
+    (cancelled)="onDialogCancelled()">
+  </app-audit-frequency>
+</p-dialog>
+
+<!-- View Dialog -->
+@if (viewingItem) {
+  <app-lookup-view-dialog
+    [(visible)]="showViewDialog"
+    icon="pi pi-calendar"
+    [title]="viewingItem.name"
+    [subtitle]="detailsSubtitle"
+    [active]="viewingItem.status === 'active'"
+    [description]="viewingItem.description"
+    [createdOn]="viewingItem.createdOn">
+  </app-lookup-view-dialog>
+}
+
+<!-- Confirm Dialog -->
+<app-confirm-action-dialog
+  [visible]="showConfirmDialog"
+  [action]="confirmTarget && isBlocked(confirmTarget.id) ? 'Activate' : 'Deactivate'"
+  [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()"
+  (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>

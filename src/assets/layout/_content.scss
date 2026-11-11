@@ -1,0 +1,21 @@
+.layout-content-wrapper {
+    // padding-top: 2rem;
+    // padding-left: 2rem;
+    // padding-right: 2rem;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.layout-topbar {
+    flex-shrink: 0;
+}
+
+.layout-content {
+    flex: 1;
+    min-height: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}

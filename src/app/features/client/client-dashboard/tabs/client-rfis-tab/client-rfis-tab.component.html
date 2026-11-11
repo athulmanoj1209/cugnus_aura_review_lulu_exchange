@@ -1,0 +1,153 @@
+<div class="tab-canvas">
+
+  <div class="kpi-grid kpi-grid--6">
+    @for (kpi of kpis; track kpi.label) {
+      <div class="kpi-card"
+        [class.kpi-clickable]="kpi.clickable"
+        [class.kpi-accent--danger]="kpi.subColor === 'danger'"
+        [class.kpi-accent--success]="kpi.subColor === 'success'"
+        [class.kpi-accent--warning]="kpi.subColor === 'warning'"
+        [class.kpi-accent--muted]="kpi.subColor === 'muted'"
+        (click)="onKpiClick(kpi)"
+        (keydown.enter)="onKpiClick(kpi)"
+        (keydown.space)="onKpiClick(kpi)"
+        [attr.role]="kpi.clickable ? 'button' : null"
+        [attr.tabindex]="kpi.clickable ? 0 : null">
+        <div class="kpi-icon"><app-draw-icon [icon]="kpi.icon" [size]="18"></app-draw-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">{{ kpi.label }}</span>
+          <span class="kpi-value">{{ kpi.value }}</span>
+          <span class="kpi-sub"
+            [class.text-danger]="kpi.subColor === 'danger'"
+            [class.text-warning]="kpi.subColor === 'warning'"
+            [class.text-success]="kpi.subColor === 'success'"
+            [class.text-muted]="kpi.subColor === 'muted'">{{ kpi.sub }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="rfi-charts-grid" [class.single-col]="!isCfo">
+    <p-card styleClass="dash-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon>
+              <span i18n="@@client.clientDashboard.rfiStatusDistribution">RFI status distribution</span>
+            </span>
+            <span class="card-subtitle">{{ rfiOpenTotal }} <span i18n="@@client.clientDashboard.totalRfis">Total RFIs</span></span>
+          </div>
+        </div>
+      </ng-template>
+      <div class="chart-wrap chart-wrap--pie">
+        <app-donut-status-chart [legend]="rfiStatusLegend" [maxWidth]="180"></app-donut-status-chart>
+      </div>
+    </p-card>
+
+    @if (isCfo) {
+      <p-card styleClass="dash-card">
+        <ng-template pTemplate="header">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-title">
+                <app-draw-icon icon="pi pi-chart-bar"></app-draw-icon>
+                {{ rfisByLabel(rfisByView) }}
+              </span>
+              <span class="card-subtitle">
+                <span i18n="@@client.clientDashboard.openVsOverdueBreakdown">Open vs overdue breakdown</span>
+                @if (rfiUnitRows.length> PREVIEW_COUNT) { · {{ topPreviewLabel(PREVIEW_COUNT, rfiUnitRows.length) }} }
+              </span>
+            </div>
+            <div class="card-actions">
+              <div class="view-toggle" role="group" aria-label="View RFIs by" i18n-aria-label="@@client.clientDashboard.viewRfisBy">
+                @for (view of unitViews; track view.key) {
+                  <button type="button"
+                          class="view-toggle__btn"
+                          [class.view-toggle__btn--active]="rfisByView === view.key"
+                          [attr.aria-pressed]="rfisByView === view.key"
+                          (click)="setRfisByView(view.key)">
+                    {{ view.label }}
+                  </button>
+                }
+              </div>
+              <p-button [label]="viewAllLabel" icon="pi pi-external-link" [text]="true" size="small"
+                        [disabled]="!rfiUnitRows.length" (onClick)="openRfisDetail()" />
+            </div>
+          </div>
+        </ng-template>
+        <div class="chart-wrap chart-wrap--bar">
+          <p-chart #rfisBySubDivisionChart type="bar" [data]="rfisBySubDivisionChartData" [options]="rfisBySubDivisionChartOptions" [plugins]="rfisBySubDivisionHoverBandPlugins" />
+          @if (!rfiUnitRows.length) {
+            <p class="chart-empty">
+              {{ noRfisLabel(rfisByView) }}
+            </p>
+          }
+        </div>
+        <div class="donut-legend">
+          @for (item of rfisBySubDivisionLegend; track item.label; let i = $index) {
+            <div class="donut-legend__item"
+                 [class.donut-legend__item--disabled]="rfisBySubDivisionHidden[i]"
+                 role="button"
+                 tabindex="0"
+                 [attr.aria-pressed]="rfisBySubDivisionHidden[i]"
+                 [attr.aria-label]="legendVisibilityLabel(rfisBySubDivisionHidden[i], item.label)"
+                 (click)="toggleRfisBySubDivisionDataset(i)"
+                 (keydown.enter)="toggleRfisBySubDivisionDataset(i)"
+                 (keydown.space)="$event.preventDefault(); toggleRfisBySubDivisionDataset(i)">
+              <span class="donut-legend__left">
+                <span class="donut-legend__dot" [style.background]="item.color"></span>
+                <span class="donut-legend__label">{{ item.label }}</span>
+              </span>
+              <span class="donut-legend__value">{{ item.value }}</span>
+            </div>
+          }
+        </div>
+      </p-card>
+    }
+  </div>
+
+  <!-- RFI table -->
+  <p-card styleClass="dash-card">
+    <!-- Plain content (not an `ng-template pTemplate="header">` slot) so this always
+         renders regardless of PrimeNG version — the named "header" template wasn't being
+         projected at all in this app's build (no title/subtitle showed either, only the
+         table), which is what silently took the "View all" button with it. -->
+    <div class="card-header">
+      <div class="card-title-group">
+        <span class="card-title">
+          <app-draw-icon icon="pi pi-file-edit"></app-draw-icon>
+          {{ isCfo ? allOpenRfisLabel : myRfisLabel }}
+        </span>
+        <span class="card-subtitle"><span i18n="@@client.clientDashboard.openRfisSummary">{{ rfiOpenTotal }} open — showing 4 most urgent</span></span>
+      </div>
+      <p-button styleClass="view-all-btn" [label]="viewAllLabel" icon="pi pi-arrow-right" iconPos="right" [text]="true" size="small" (onClick)="viewAll.emit()" />
+    </div>
+    <div class="rfi-table">
+      <div class="rfi-table-head">
+        <span i18n="@@common.id">ID</span>
+        <span i18n="@@common.request">Request</span>
+        <span i18n="@@common.subDivision">Sub-Division</span>
+        <span i18n="@@common.dueDate">Due Date</span>
+        <span i18n="@@common.status">Status</span>
+      </div>
+      @for (rfi of rfis; track rfi.id) {
+        <div class="rfi-table-row" (click)="openRfi(rfi)" role="button" tabindex="0">
+          <span><span class="rfi-id-badge">{{ rfi.id }}</span></span>
+          <span class="rfi-col-title">
+            <span class="rfi-title">{{ rfi.title }}</span>
+            <span class="rfi-meta-sm">{{ rfi.assignee }}</span>
+          </span>
+          <span class="rfi-meta-sm">{{ rfi.subDivision }}</span>
+          <span class="rfi-meta-sm rfi-due">
+            <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+            {{ rfi.dueDate | date:'MMM d, yyyy' }}
+          </span>
+          <span>
+            <p-tag [value]="rfiStatusLabel(rfi.status)" [severity]="rfiSeverity[rfi.status]" styleClass="status-tag" />
+          </span>
+        </div>
+      }
+    </div>
+  </p-card>
+
+</div>

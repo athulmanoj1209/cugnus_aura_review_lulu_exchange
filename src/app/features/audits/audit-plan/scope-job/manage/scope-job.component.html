@@ -1,0 +1,653 @@
+<p-toast position="top-right" />
+
+<div class="drawer-inner" *ngIf="job">
+
+  <!-- ══════════════════════════ HEADER ══════════════════════════ -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ job.title }}</h2>
+        <p class="drawer-subtitle">{{ job.scopeId }} · {{ job.id }}</p>
+      </div>
+    </div>
+    <div class="dh-right">
+      <span class="status-pill status-pill--{{ job.status }}">
+        <span class="status-pill__dot"></span>{{ statusLabel(job.status) }}
+      </span>
+      <button type="button" class="close-btn" (click)="onCancel()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ TABS ════════════════════════════ -->
+  <div class="drawer-tab" [formGroup]="jobForm">
+    <p-tabs [(value)]="activeTabIndex" styleClass="scope-job-edit-tabs">
+
+      <p-tablist>
+        <p-tab [value]="0">
+          <app-draw-icon icon="pi pi-file-edit"></app-draw-icon> Job Information
+        </p-tab>
+        <p-tab [value]="1">
+          <app-draw-icon icon="pi pi-file-check"></app-draw-icon> Scope Details
+        </p-tab>
+        <p-tab [value]="2">
+          <app-draw-icon icon="pi pi-list-check"></app-draw-icon> Tasks
+          <span class="tab-badge">{{ tasks.length }}</span>
+        </p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+
+        <!-- ══════════════ TAB 0 — JOB INFORMATION ═══════════════ -->
+        <p-tabpanel [value]="0">
+          <div class="tab-content">
+
+            <!-- Card: Job Settings -->
+            <!-- <p class="card-section-label"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Job Settings</p>
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label">Job Status *</label>
+                <p-select
+                  formControlName="status"
+                  [options]="statusOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select status"
+                  styleClass="w-full"
+                  [invalid]="isFieldInvalid('status')"
+                ></p-select>
+                <small *ngIf="isFieldInvalid('status')" class="error-text">Status is required.</small>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Mode of Audit *</label>
+                <p-select
+                  formControlName="modeOfAudit"
+                  [options]="modeOfAuditOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select mode"
+                  styleClass="w-full"
+                  [invalid]="isFieldInvalid('modeOfAudit')"
+                ></p-select>
+                <small *ngIf="isFieldInvalid('modeOfAudit')" class="error-text">Mode of audit is required.</small>
+              </div>
+            </div> -->
+
+            <!-- Card: Audit Period -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-calendar-clock"></app-draw-icon> Audit Period</p>
+            <div class="form-grid">
+              <div class="form-field">
+                <label class="form-label">Period Start *</label>
+                <p-datepicker
+                  formControlName="periodStart"
+                  [showIcon]="true"
+                  dateFormat="dd M yy"
+                  placeholder="Select start date"
+                  styleClass="w-full"
+                  [invalid]="isFieldInvalid('periodStart')"
+                ></p-datepicker>
+                <small *ngIf="isFieldInvalid('periodStart')" class="error-text">Start date is required.</small>
+              </div>
+
+              <div class="form-field">
+                <label class="form-label">Period End *</label>
+                <p-datepicker
+                  formControlName="periodEnd"
+                  [showIcon]="true"
+                  dateFormat="dd M yy"
+                  placeholder="Select end date"
+                  styleClass="w-full"
+                  [invalid]="isFieldInvalid('periodEnd')"
+                ></p-datepicker>
+                <small *ngIf="isFieldInvalid('periodEnd')" class="error-text">End date is required.</small>
+              </div>
+
+              <small class="error-text" style="grid-column:1/-1"
+                     *ngIf="jobForm.hasError('dateRangeInvalid') && (submitted || jobForm.touched)">
+                End date must be after start date.
+              </small>
+            </div>
+
+            <!-- Card: Audit Team -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-users"></app-draw-icon> Audit Team</p>
+            <div class="form-grid">
+              <div class="form-field form-field--full">
+                <label class="form-label">Assigned Auditors *</label>
+                <p-multiselect
+                  formControlName="assignedAuditors"
+                  [options]="auditorOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select auditors"
+                  display="chip"
+                  styleClass="w-full"
+                  [invalid]="isFieldInvalid('assignedAuditors')"
+                ></p-multiselect>
+                <small *ngIf="isFieldInvalid('assignedAuditors')" class="error-text">At least one auditor is required.</small>
+              </div>
+
+              <div class="form-field form-field--full">
+                <label class="form-label">Assigned Reviewers</label>
+                <p-multiselect
+                  formControlName="assignedReviewers"
+                  [options]="reviewerOptions"
+                  optionLabel="label"
+                  optionValue="value"
+                  placeholder="Select reviewers"
+                  display="chip"
+                  styleClass="w-full"
+                ></p-multiselect>
+              </div>
+            </div>
+
+            <!-- Card: Notes -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-comment"></app-draw-icon> Notes</p>
+            <div class="form-grid">
+              <div class="form-field form-field--full">
+                <label class="form-label">Completion / Progress Note</label>
+                <textarea
+                  pTextarea
+                  formControlName="completionNote"
+                  rows="4"
+                  [autoResize]="false"
+                  placeholder="Add notes about progress, blockers, or completion remarks…"
+                  [class.ng-invalid]="isFieldInvalid('completionNote')"
+                  [class.ng-touched]="isFieldInvalid('completionNote')"
+                ></textarea>
+                <div class="field-footer-row">
+                  <small *ngIf="isFieldInvalid('completionNote')" class="error-text">Maximum 500 characters.</small>
+                  <span class="char-count">{{ completionNoteLength }} / {{ fieldLimits.CompletionNoteMax }}</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- ══════════════ TAB 1 — SCOPE DETAILS ═════════════════ -->
+        <p-tabpanel [value]="1">
+          <div class="tab-content">
+
+            <!-- Card: Scope Identification -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-id-card"></app-draw-icon> Scope Identification</p>
+            <div class="form-grid info-grid">
+              <div class="ig-field">
+                <span class="ig-label">Scope ID</span>
+                <span class="scope-id-pill scope-id-pill--lg">{{ job.scopeId }}</span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Job ID</span>
+                <span class="job-id-chip">{{ job.id }}</span>
+              </div>
+              <div class="ig-field ig-field--full">
+                <span class="ig-label">Scope Name</span>
+                <span class="ig-value ig-value--strong">{{ job.scopeName }}</span>
+              </div>
+              <div class="ig-field ig-field--full">
+                <span class="ig-label">Job Title</span>
+                <span class="ig-value ig-value--title">{{ job.title }}</span>
+              </div>
+            </div>
+
+            <!-- Card: Audit Period -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-calendar-clock"></app-draw-icon> Audit Period</p>
+            <div class="form-grid info-grid">
+              <div class="ig-field">
+                <span class="ig-label">Period</span>
+                <span class="period-badge"><app-draw-icon icon="pi pi-calendar"></app-draw-icon>{{ job.periodLabel }}</span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Frequency</span>
+                <span class="freq-chip freq-chip--{{ job.auditFrequency }}">
+                  <app-draw-icon icon="pi pi-refresh"></app-draw-icon>{{ frequencyLabel(job.auditFrequency) }}
+                </span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Start Date</span>
+                <span class="ig-value"><app-draw-icon icon="pi pi-calendar-plus" class="ig-icon"></app-draw-icon>{{ job.periodStart | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">End Date</span>
+                <span class="ig-value"><app-draw-icon icon="pi pi-calendar-minus" class="ig-icon"></app-draw-icon>{{ job.periodEnd | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Mode of Audit</span>
+                <span class="mode-badge"><app-draw-icon icon="pi pi-eye"></app-draw-icon>&nbsp;{{ modeLabel(job.modeOfAudit) }}</span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Duration</span>
+                <span class="duration-chip"><app-draw-icon icon="pi pi-hourglass"></app-draw-icon>&nbsp;{{ durationDays }} days</span>
+              </div>
+            </div>
+
+            <!-- Card: Organisation -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-building"></app-draw-icon> Organisation</p>
+            <div class="form-grid info-grid">
+              <div class="ig-field ig-field--full">
+                <span class="ig-label">Company</span>
+                <div class="org-block">
+                  <div class="org-block__avatar">{{ job.company.slice(0,2).toUpperCase() }}</div>
+                  <span class="org-block__name">{{ job.company }}</span>
+                </div>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Division / Location</span>
+                <span class="ig-value"><app-draw-icon icon="pi pi-map-marker" class="ig-icon"></app-draw-icon>{{ job.division }}</span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Sub-Division</span>
+                <span class="dept-badge">{{ job.subDivision }}</span>
+              </div>
+            </div>
+
+            <!-- Card: Audit Team (read-only) -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-users"></app-draw-icon> Audit Team</p>
+            <div class="form-grid">
+              <div class="ro-team__group">
+                <span class="ro-team__heading"><app-draw-icon icon="pi pi-shield"></app-draw-icon> Auditors</span>
+                <div class="ro-team__chips">
+                  <span *ngFor="let id of job.assignedAuditors" class="ro-member ro-member--auditor">
+                    <span class="ro-member__avatar">{{ auditorInitials(id) }}</span>
+                    {{ auditorName(id) }}
+                  </span>
+                </div>
+              </div>
+              <div class="ro-team__group" *ngIf="job.assignedReviewers?.length">
+                <span class="ro-team__heading"><app-draw-icon icon="pi pi-eye"></app-draw-icon> Reviewers</span>
+                <div class="ro-team__chips">
+                  <span *ngFor="let id of job.assignedReviewers" class="ro-member ro-member--reviewer">
+                    <span class="ro-member__avatar">{{ auditorInitials(id) }}</span>
+                    {{ auditorName(id) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card: Record Info -->
+            <p class="card-section-label"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> Record Info</p>
+            <div class="form-grid info-grid">
+              <div class="ig-field">
+                <span class="ig-label">Created On</span>
+                <span class="ig-value"><app-draw-icon icon="pi pi-calendar-plus" class="ig-icon"></app-draw-icon>{{ job.createdDate | date:'dd MMM yyyy' }}</span>
+              </div>
+              <div class="ig-field">
+                <span class="ig-label">Status</span>
+                <span class="active-chip" [class.active-chip--on]="job.isActive" [class.active-chip--off]="!job.isActive">
+                  <app-draw-icon [icon]="job.isActive ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+                  {{ job.isActive ? activeLabels.Active : activeLabels.Inactive }}
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- ══════════════ TAB 2 — TASKS ══════════════════════════ -->
+        <p-tabpanel [value]="2">
+          <div class="tab-content">
+
+            <!-- Task Summary Strip -->
+            <div class="task-summary">
+              <div class="ts-stat ts-stat--completed">
+                <span class="ts-stat__num">{{ taskCounts.completed }}</span>
+                <span class="ts-stat__lbl">Completed</span>
+              </div>
+              <div class="ts-stat ts-stat--progress">
+                <span class="ts-stat__num">{{ taskCounts.inProgress }}</span>
+                <span class="ts-stat__lbl">In Progress</span>
+              </div>
+              <div class="ts-stat ts-stat--open">
+                <span class="ts-stat__num">{{ taskCounts.open }}</span>
+                <span class="ts-stat__lbl">Open</span>
+              </div>
+              <div class="ts-stat ts-stat--overdue">
+                <span class="ts-stat__num">{{ taskCounts.overdue }}</span>
+                <span class="ts-stat__lbl">Overdue</span>
+              </div>
+              <div class="ts-progress">
+                <div class="ts-progress__bar">
+                  <div class="ts-progress__fill" [style.width.%]="taskCompletionPct"></div>
+                </div>
+                <span class="ts-progress__label">{{ taskCompletionPct }}% done</span>
+              </div>
+            </div>
+
+            <!-- Add Task Button -->
+            <div class="task-actions-bar">
+              <button type="button"
+                      class="add-task-btn"
+                      [class.add-task-btn--active]="showAddTaskForm && !isEditingTask"
+                      (click)="toggleAddTaskForm()">
+                <app-draw-icon [icon]="showAddTaskForm ? 'pi pi-times' : 'pi pi-plus'"></app-draw-icon>
+                {{ showAddTaskForm ? taskFormLabels.Cancel : taskFormLabels.AddTask }}
+              </button>
+            </div>
+
+            <!-- ── Add / Edit Task Form ────────────────────────── -->
+            <div class="add-task-panel" *ngIf="showAddTaskForm" [formGroup]="addTaskForm">
+              <p class="atp-header">
+                <app-draw-icon [icon]="isEditingTask ? 'pi pi-pencil' : 'pi pi-plus-circle'"></app-draw-icon>
+                {{ taskFormTitle }}
+                <span *ngIf="isEditingTask" class="atp-task-id">{{ editingTaskId }}</span>
+              </p>
+
+              <!-- Basic Info -->
+              <div class="form-grid">
+                <div class="form-field form-field--full">
+                  <label class="form-label">Task Name *</label>
+                  <span class="p-input-icon-left w-full">
+                    <app-draw-icon icon="pi pi-clipboard"></app-draw-icon>
+                    <input pInputText
+                           formControlName="title"
+                           class="w-full"
+                           placeholder="Enter task name"
+                           [invalid]="isTaskFieldInvalid('title')" />
+                  </span>
+                  <small *ngIf="isTaskFieldInvalid('title')" class="error-text">{{ taskTitleError }}</small>
+                </div>
+
+                <div class="form-field form-field--full">
+                  <label class="form-label">Objective <span class="form-label-opt">(optional)</span></label>
+                  <textarea pTextarea
+                            formControlName="objective"
+                            rows="4"
+                            [autoResize]="false"
+                            placeholder="Describe the task objective (max 500 characters)"
+                            [class.ng-invalid]="isTaskFieldInvalid('objective')"
+                            [class.ng-touched]="isTaskFieldInvalid('objective')"
+                  ></textarea>
+                  <div class="field-footer-row">
+                    <small *ngIf="isTaskFieldInvalid('objective')" class="error-text">Max 500 characters.</small>
+                    <span class="char-count">{{ objectiveLength }} / {{ fieldLimits.TaskObjectiveMax }}</span>
+                  </div>
+                </div>
+
+                <div class="form-field form-field--full">
+                  <label class="form-label">Checklist Items <span class="form-label-opt">(from Checklist Library)</span></label>
+                  <p-multiselect
+                    formControlName="checklistItems"
+                    [options]="checklistItemOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select checklist items"
+                    [filter]="true"
+                    styleClass="w-full"
+                  ></p-multiselect>
+                </div>
+              </div>
+
+              <!-- Assignment & Schedule -->
+              <p class="atp-section-label">Assignment &amp; Schedule</p>
+              <div class="form-grid">
+                <div class="form-field form-field--full">
+                  <label class="form-label">Assigned Auditor *</label>
+                  <p-select
+                    formControlName="assignedTo"
+                    [options]="auditorOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    placeholder="Select auditor"
+                    styleClass="w-full"
+                    [invalid]="isTaskFieldInvalid('assignedTo')"
+                  ></p-select>
+                  <small *ngIf="isTaskFieldInvalid('assignedTo')" class="error-text">Assigned auditor is required.</small>
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Start Date &amp; Time *</label>
+                  <p-datepicker
+                    formControlName="startDate"
+                    [showIcon]="true"
+                    [showTime]="true"
+                    hourFormat="12"
+                    dateFormat="dd M yy"
+                    placeholder="Select start date & time"
+                    styleClass="w-full"
+                    [invalid]="isTaskFieldInvalid('startDate')"
+                  ></p-datepicker>
+                  <small *ngIf="isTaskFieldInvalid('startDate')" class="error-text">Start date is required.</small>
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">End Date &amp; Time *</label>
+                  <p-datepicker
+                    formControlName="endDate"
+                    [showIcon]="true"
+                    [showTime]="true"
+                    hourFormat="12"
+                    dateFormat="dd M yy"
+                    placeholder="Select end date & time"
+                    styleClass="w-full"
+                    [invalid]="isTaskFieldInvalid('endDate')"
+                  ></p-datepicker>
+                  <small *ngIf="isTaskFieldInvalid('endDate')" class="error-text">End date is required.</small>
+                </div>
+
+                <!-- ── Duration summary (shows once both dates are picked) ── -->
+                <div class="form-field form-field--full"
+                     *ngIf="taskDurationValid || taskDurationInvalid">
+
+                  <!-- Valid range → total days & hours -->
+                  <div class="duration-estimate" *ngIf="taskDurationValid">
+                    <div class="de-left">
+                      <span class="de-icon"><app-draw-icon icon="pi pi-hourglass"></app-draw-icon></span>
+                      <div class="de-text">
+                        <span class="de-eyebrow">Total Duration</span>
+                        <span class="de-value">
+                          <ng-container *ngIf="taskDurationDays">
+                            {{ taskDurationDays }} {{ pluralize(taskDurationDays, 'day') }}
+                          </ng-container>
+                          <ng-container *ngIf="taskDurationHours">
+                            {{ taskDurationHours }} {{ pluralize(taskDurationHours, 'hour') }}
+                          </ng-container>
+                          <ng-container *ngIf="taskDurationMinutes && !taskDurationDays">
+                            {{ taskDurationMinutes }} min
+                          </ng-container>
+                          <ng-container *ngIf="!taskDurationDays && !taskDurationHours && !taskDurationMinutes">
+                            Less than a minute
+                          </ng-container>
+                        </span>
+                      </div>
+                    </div>
+                    <span class="de-chip">{{ taskDurationShort }}</span>
+                  </div>
+
+                  <!-- Invalid range → end not after start -->
+                  <div class="duration-estimate duration-estimate--error" *ngIf="taskDurationInvalid">
+                    <span class="de-icon de-icon--error"><app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon></span>
+                    <span class="de-error-text">End date &amp; time must be after the start date &amp; time.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Control & Observations -->
+              <p class="atp-section-label">Control &amp; Observations</p>
+              <div class="form-grid">
+                <div class="form-field form-field--full">
+                  <label class="form-label">Control Rating *</label>
+                  <div class="control-rating-group">
+                    <button *ngFor="let opt of controlRatingOptions"
+                            type="button"
+                            class="cr-btn cr-btn--{{ opt.value }}"
+                            [class.cr-btn--active]="addTaskForm.get('controlRating')?.value === opt.value"
+                            (click)="setControlRating(opt.value)">
+                      <i class="pi {{ opt.icon }}"></i>
+                      {{ opt.label }}
+                    </button>
+                  </div>
+                  <small *ngIf="isTaskFieldInvalid('controlRating')" class="error-text">Control rating is required.</small>
+                </div>
+
+                <div class="form-field form-field--full">
+                  <label class="form-label">Observations</label>
+                  <textarea pTextarea
+                            formControlName="observations"
+                            rows="4"
+                            [autoResize]="false"
+                            placeholder="Enter observations for this task…"
+                            [class.ng-invalid]="isTaskFieldInvalid('observations')"
+                            [class.ng-touched]="isTaskFieldInvalid('observations')"
+                  ></textarea>
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Priority</label>
+                  <p-select formControlName="priority" [options]="taskPriorityOptions"
+                            optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+
+                <div class="form-field">
+                  <label class="form-label">Status</label>
+                  <p-select formControlName="status" [options]="taskStatusOptions"
+                            optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+              </div>
+
+              <div class="atp-footer">
+                <button type="button" class="atp-cancel-btn" (click)="toggleAddTaskForm()">Cancel</button>
+                <button type="button" class="atp-save-btn" (click)="onSaveTask()">
+                  <app-draw-icon icon="pi pi-check"></app-draw-icon> {{ isEditingTask ? taskFormLabels.UpdateTask : taskFormLabels.SaveTask }}
+                </button>
+              </div>
+            </div>
+
+            <!-- ── Task List ──────────────────────────────────────── -->
+            <ng-container *ngIf="tasks.length; else noTasks">
+
+              <div class="task-list">
+                <div *ngFor="let task of pagedTasks"
+                     class="task-item"
+                     [attr.data-status]="task.status"
+                     [attr.data-priority]="task.priority">
+
+                  <div class="task-item__priority-bar"></div>
+
+                  <div class="task-item__body">
+                    <div class="task-item__top">
+                      <div class="task-item__title-row">
+                        <i class="pi task-status-icon" [ngClass]="taskStatusIcon(task.status)"></i>
+                        <span class="task-item__title">{{ task.title }}</span>
+                      </div>
+                      <div class="task-item__top-actions">
+                        <span class="task-status-pill task-status-pill--{{ task.status }}">
+                          {{ taskStatusLabel(task.status) }}
+                        </span>
+                        <button type="button"
+                                class="task-su-btn"
+                                (click)="openTaskStatusUpdate(task)"
+                                pTooltip="Update status with note" tooltipPosition="top">
+                          <app-draw-icon icon="pi pi-sync"></app-draw-icon>
+                        </button>
+                        <button type="button"
+                                class="task-edit-btn"
+                                [class.task-edit-btn--active]="editingTaskId === task.id"
+                                (click)="editTask(task)"
+                                pTooltip="Edit task" tooltipPosition="top">
+                          <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+                        </button>
+                        <button *ngIf="task.isNew"
+                                type="button"
+                                class="task-remove-btn"
+                                (click)="removeTask(task.id)"
+                                pTooltip="Delete task" tooltipPosition="top">
+                          <app-draw-icon icon="pi pi-trash"></app-draw-icon>
+                        </button>
+                      </div>
+                    </div>
+
+                    <p class="task-item__desc">{{ task.description }}</p>
+
+                    <div class="task-item__meta">
+                      <span class="task-assignee" [pTooltip]="auditorName(task.assignedTo)" tooltipPosition="top">
+                        <span class="task-assignee__avatar">{{ auditorInitials(task.assignedTo) }}</span>
+                        <span class="task-assignee__name">{{ auditorName(task.assignedTo) }}</span>
+                      </span>
+                      <span class="task-due" [class.task-due--overdue]="task.status === ScopeTaskStatuses.Overdue">
+                        <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+                        {{ (task.endDate || task.dueDate) | date:'dd MMM yyyy, h:mm a' }}
+                      </span>
+                      <span *ngIf="task.controlRating"
+                            class="cr-badge cr-badge--{{ task.controlRating }}">
+                        <i class="pi {{ controlRatingIcon(task.controlRating) }}"></i>
+                        {{ controlRatingLabel(task.controlRating) }}
+                      </span>
+                      <span class="task-priority-chip task-priority-chip--{{ task.priority }}">
+                        {{ taskPriorityLabel(task.priority) }}
+                      </span>
+                      <span class="task-id">{{ task.id }}</span>
+                    </div>
+
+                    <div *ngIf="task.checklistItems?.length" class="task-checklist-count">
+                      <app-draw-icon icon="pi pi-check-square"></app-draw-icon>
+                      {{ task.checklistItems!.length }} checklist {{ pluralize(task.checklistItems!.length, 'item') }}
+                    </div>
+
+
+
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pagination -->
+              <div class="task-pagination" *ngIf="taskPageCount > 1">
+                <span class="tp-info">
+                  {{ taskPageRange }} of {{ tasks.length }} tasks
+                </span>
+                <div class="tp-controls">
+                  <button type="button" class="tp-nav-btn"
+                          (click)="prevTaskPage()"
+                          [disabled]="taskPage === 0">
+                    <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon> Prev
+                  </button>
+
+                  <ng-container *ngFor="let p of visiblePages">
+                    <span *ngIf="p === -1" class="tp-ellipsis">…</span>
+                    <button *ngIf="p !== -1"
+                            type="button"
+                            class="tp-page-btn"
+                            [class.tp-page-btn--active]="taskPage === p"
+                            (click)="goToTaskPage(p)">
+                      {{ p + 1 }}
+                    </button>
+                  </ng-container>
+
+                  <button type="button" class="tp-nav-btn"
+                          (click)="nextTaskPage()"
+                          [disabled]="taskPage >= taskPageCount - 1">
+                    Next <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+                  </button>
+                </div>
+              </div>
+
+            </ng-container>
+
+            <ng-template #noTasks>
+              <div class="no-tasks">
+                <app-draw-icon icon="pi pi-inbox"></app-draw-icon>
+                <p>No tasks yet. Click <strong>Add New Task</strong> to create the first one.</p>
+              </div>
+            </ng-template>
+
+          </div>
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+  </div>
+
+  <!-- ══════════════════════════ FOOTER ══════════════════════════ -->
+  <div class="drawer-footer">
+    <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onCancel()"></p-button>
+    <p-button label="Save Changes"
+              styleClass="submit-btn"
+              icon="pi pi-check"
+              iconPos="right"
+              (onClick)="onSave()"></p-button>
+  </div>
+
+</div>

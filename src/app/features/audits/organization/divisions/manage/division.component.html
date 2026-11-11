@@ -1,0 +1,687 @@
+<div class="drawer-inner" [formGroup]="divisionForm">
+
+      <!-- Header -->
+      <div class="drawer-header">
+        <div class="drawer-header-left">
+          <div class="drawer-icon-wrap">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon>
+          </div>
+          <div class="drawer-title-block">
+            <h2 class="drawer-title">{{ drawerTitle }}</h2>
+            <p class="drawer-subtitle">{{ drawerSubtitle }}</p>
+          </div>
+        </div>
+        <button class="close-btn" type="button" (click)="onClose()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon>
+        </button>
+      </div>
+
+      <!-- Approval Banner -->
+      @if (approvalMode) {
+        <div class="approval-banner">
+          <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+          @if (canDecide) {
+            <span>You may view and edit the division details. Add your <strong>approver notes</strong> below and approve or reject.</span>
+          } @else {
+            <span>This request has already been <strong>{{ requestStatus }}</strong>. No further action is required.</span>
+          }
+        </div>
+      }
+
+      <!-- Tabs -->
+      <p-tabs [value]="activeTabIndex" (valueChange)="activeTabIndex = $event" class="division-drawer-tabs">
+        <p-tablist>
+          <p-tab [value]="0">Division Info</p-tab>
+          <p-tab [value]="1">Registration</p-tab>
+          <p-tab [value]="2">Location</p-tab>
+          <p-tab [value]="3">Contact</p-tab>
+          <p-tab [value]="4">Audit &amp; Risk</p-tab>
+          <p-tab [value]="5">Documents</p-tab>
+        </p-tablist>
+
+        <p-tabpanels>
+
+          <!-- ─── Tab 0: Company Information ─── -->
+          <p-tabpanel [value]="0">
+            <div class="tab-content">
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Company <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="company" [options]="companyOptions" optionLabel="label" optionValue="value"
+                    placeholder="Select company" styleClass="form-dropdown" [invalid]="isFieldInvalid('company')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('company')">
+                    {{ getErrorMessage('company') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Division Name <span class="field-required">*</span></label>
+                  <input pInputText type="text" formControlName="divisionName" placeholder="Enter division name"
+                    class="form-input" [class.input-error]="isFieldInvalid('divisionName')" [maxlength]="DIVISION_NAME_MAX_LENGTH" />
+                  <div class="char-counter">{{ divisionNameLength }} / {{ DIVISION_NAME_MAX_LENGTH }}</div>
+                  <small class="error-hint" *ngIf="isFieldInvalid('divisionName')">
+                    {{ getErrorMessage('divisionName') }}
+                  </small>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">Division Code <span class="field-required">*</span></label>
+                  <div class="input-with-action">
+                    <input pInputText type="text" formControlName="divisionCode" placeholder="e.g. CRW-1234"
+                      class="form-input" [class.input-error]="isFieldInvalid('divisionCode')" />
+                    <button type="button" class="generate-btn" (click)="generateDivisionCode()"
+                      title="Auto-generate code">
+                      <app-draw-icon icon="pi pi-refresh"></app-draw-icon>
+                    </button>
+                  </div>
+                  <small class="error-hint" *ngIf="isFieldInvalid('divisionCode')">
+                    {{ getErrorMessage('divisionCode') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Division Type <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="divisionType" [options]="divisionTypeOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select type" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('divisionType')" (onChange)="onDivisionTypeChange()">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('divisionType')">
+                    {{ getErrorMessage('divisionType') }}
+                  </small>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">
+                    Department Type
+                    @if (f['divisionType'].value === DivisionTypes.Department) {<span class="field-required">*</span>}
+                  </label>
+                  <p-select appendTo="body" formControlName="departmentType" [options]="departmentTypeOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select department type" styleClass="form-dropdown" [filter]="true"
+                    filterPlaceholder="Search type…" [invalid]="isFieldInvalid('departmentType')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('departmentType')">
+                    {{ getErrorMessage('departmentType') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Number of Employees</label>
+                  <p-inputnumber formControlName="numberOfEmployees" [min]="0" [useGrouping]="false"
+                    placeholder="e.g. 25" styleClass="form-inputnumber">
+                  </p-inputnumber>
+                </div>
+
+
+                <div class="form-col">
+                  <label class="field-label">Status <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value"
+                    placeholder="Select status" styleClass="form-dropdown" [invalid]="isFieldInvalid('status')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('status')">
+                    {{ getErrorMessage('status') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Currency</label>
+                  <p-select appendTo="body" formControlName="currency" [options]="currencyOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select currency" styleClass="form-dropdown"
+                    [filter]="true" filterPlaceholder="Search currency…">
+                  </p-select>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">Operational Since</label>
+                  <p-datepicker formControlName="operationalSince" placeholder="DD/MM/YYYY" dateFormat="dd/mm/yy"
+                    [showIcon]="true" class="form-datepicker">
+                  </p-datepicker>
+                </div>
+              </div>
+
+              <!-- Has Sub-Divisions: when No, no sub-division can be added under this division -->
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Has Sub-Divisions? <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="hasSubDivision" [options]="hasSubDivisionOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select yes / no" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('hasSubDivision')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('hasSubDivision')">
+                    {{ getErrorMessage('hasSubDivision') }}
+                  </small>
+                </div>
+              </div>
+
+            </div>
+          </p-tabpanel>
+
+          <!-- ─── Tab 1: Registration & Legal ─── -->
+          <p-tabpanel [value]="1">
+            <div class="tab-content">
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">License Number <span class="field-required">*</span></label>
+                  <input pInputText type="text" formControlName="licenseNumber" placeholder="Enter license number"
+                    class="form-input" [class.input-error]="isFieldInvalid('licenseNumber')" />
+                  <small class="error-hint" *ngIf="isFieldInvalid('licenseNumber')">
+                    {{ getErrorMessage('licenseNumber') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">License Authority <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="licenseAuthority" [options]="licenseAuthorityOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select authority" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('licenseAuthority')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('licenseAuthority')">
+                    {{ getErrorMessage('licenseAuthority') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">License Issue Date</label>
+                  <p-datepicker formControlName="licenseIssueDate" placeholder="DD/MM/YYYY" dateFormat="dd/mm/yy"
+                    [showIcon]="true" class="form-datepicker">
+                  </p-datepicker>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">License Expiry Date</label>
+                  <p-datepicker formControlName="licenseExpiryDate" placeholder="DD/MM/YYYY" dateFormat="dd/mm/yy"
+                    [showIcon]="true" class="form-datepicker" [invalid]="isExpiryInvalid()">
+                  </p-datepicker>
+                  @if (isExpiryInvalid()) {
+                  <small class="error-hint">Expiry date cannot be earlier than issue date.</small>
+                  }
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Tax Registration Number (TRN / VAT)</label>
+                  <input pInputText type="text" formControlName="taxRegistrationNumber"
+                    placeholder="Enter TRN / VAT number" class="form-input" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Commercial Registration Number</label>
+                  <input pInputText type="text" formControlName="commercialRegistrationNumber"
+                    placeholder="Enter CR number" class="form-input" />
+                </div>
+              </div>
+
+            </div>
+          </p-tabpanel>
+
+          <!-- ─── Tab 2: Location ─── -->
+          <p-tabpanel [value]="2">
+            <div class="tab-content">
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Country <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="country" [options]="countryOptions" optionLabel="label" optionValue="value"
+                    placeholder="Select country" styleClass="form-dropdown" [invalid]="isFieldInvalid('country')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('country')">
+                    {{ getErrorMessage('country') }}
+                  </small>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">State / Province <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="emirateState" [options]="emirateOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select State / Province" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('emirateState')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('emirateState')">
+                    {{ getErrorMessage('emirateState') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">City <span class="field-required">*</span></label>
+                  <input pInputText type="text" formControlName="city" placeholder="Enter city" class="form-input"
+                    [class.input-error]="isFieldInvalid('city')" />
+                  <small class="error-hint" *ngIf="isFieldInvalid('city')">
+                    {{ getErrorMessage('city') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">
+                    Division Time Zone <span class="field-required">*</span>
+                  </label>
+
+                  <p-select appendTo="body" formControlName="divisionTimezone" [options]="timezoneOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select time zone" styleClass="form-dropdown" [filter]="true"
+                    filterPlaceholder="Search time zone" [invalid]="isFieldInvalid('divisionTimezone')">
+                  </p-select>
+
+                  <small class="error-hint" *ngIf="isFieldInvalid('divisionTimezone')">
+                    {{ getErrorMessage('divisionTimezone') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Address Line 1 <span class="field-required">*</span></label>
+                  <input pInputText type="text" formControlName="addressLine1" placeholder="Building / Street"
+                    class="form-input" [class.input-error]="isFieldInvalid('addressLine1')" />
+                  <small class="error-hint" *ngIf="isFieldInvalid('addressLine1')">
+                    {{ getErrorMessage('addressLine1') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Address Line 2</label>
+                  <input pInputText type="text" formControlName="addressLine2" placeholder="Area / District (optional)"
+                    class="form-input" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Postal Code</label>
+                  <input pInputText type="text" formControlName="postalCode" placeholder="e.g. 00000"
+                    class="form-input" />
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">GPS Coordinates</label>
+                  <input pInputText type="text" formControlName="gpsCoordinates" placeholder="e.g. 25.2048, 55.2708"
+                    class="form-input" />
+                </div>
+              </div>
+
+            </div>
+          </p-tabpanel>
+
+          <!-- ─── Tab 3: Contact ─── -->
+          <p-tabpanel [value]="3">
+            <div class="tab-content">
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Division Manager <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="divisionManager" [options]="userOptions" optionLabel="label"
+                    optionValue="value" placeholder="Search user…" styleClass="form-dropdown" [filter]="true"
+                    filterPlaceholder="Search by name" [invalid]="isFieldInvalid('divisionManager')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('divisionManager')">
+                    {{ getErrorMessage('divisionManager') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Primary Contact Person <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="primaryContactPerson" [options]="userOptions" optionLabel="label"
+                    optionValue="value" placeholder="Search user…" styleClass="form-dropdown" [filter]="true"
+                    filterPlaceholder="Search by name" [invalid]="isFieldInvalid('primaryContactPerson')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('primaryContactPerson')">
+                    {{ getErrorMessage('primaryContactPerson') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Contact Email <span class="field-required">*</span></label>
+                  <input pInputText type="email" formControlName="contactEmail" placeholder="e.g. division@company.ae"
+                    class="form-input" [class.input-error]="isFieldInvalid('contactEmail')" />
+                  <small class="error-hint" *ngIf="isFieldInvalid('contactEmail')">
+                    {{ getErrorMessage('contactEmail') }}
+                  </small>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">Contact Phone <span class="field-required">*</span></label>
+                  <input pInputText type="tel" formControlName="contactPhone" placeholder="+971 4 000 0000"
+                    class="form-input" [class.input-error]="isFieldInvalid('contactPhone')" />
+                  <small class="error-hint" *ngIf="isFieldInvalid('contactPhone')">
+                    {{ getErrorMessage('contactPhone') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Alternate Phone</label>
+                  <input pInputText type="tel" formControlName="alternatePhone"
+                    placeholder="+971 50 000 0000 (optional)" class="form-input" />
+                </div>
+              </div>
+
+            </div>
+          </p-tabpanel>
+
+          <!-- ─── Tab 4: Audit & Risk ─── -->
+          <p-tabpanel [value]="4">
+            <div class="tab-content">
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Risk Rating <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="riskRating" [options]="riskRatingOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select rating" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('riskRating')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('riskRating')">
+                    {{ getErrorMessage('riskRating') }}
+                  </small>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">Risk Status <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="riskStatus" [options]="riskStatusOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select status" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('riskStatus')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('riskStatus')">
+                    {{ getErrorMessage('riskStatus') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Audit Status <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="auditStatus" [options]="auditStatusOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select audit status" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('auditStatus')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('auditStatus')">
+                    {{ getErrorMessage('auditStatus') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Last Audit Date</label>
+                  <p-datepicker formControlName="lastAuditDate" placeholder="DD/MM/YYYY" dateFormat="dd/mm/yy"
+                    [showIcon]="true" class="form-datepicker">
+                  </p-datepicker>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">Next Audit Due Date</label>
+                  <p-datepicker formControlName="nextAuditDueDate" placeholder="DD/MM/YYYY" dateFormat="dd/mm/yy"
+                    [showIcon]="true" class="form-datepicker">
+                  </p-datepicker>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Sector / Business Activity <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="sectorActivity" [options]="sectorOptions" optionLabel="label"
+                    optionValue="value" placeholder="Select sector" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('sectorActivity')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('sectorActivity')">
+                    {{ getErrorMessage('sectorActivity') }}
+                  </small>
+                </div>
+              </div>
+
+            </div>
+          </p-tabpanel>
+
+          <!-- ─── Tab 5: Org Structure & Attachments ─── -->
+          <p-tabpanel [value]="5">
+            <div class="tab-content">
+
+              <!-- <div class="section-heading">Organizational Structure</div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Parent Node <span class="field-required">*</span></label>
+                  <p-select appendTo="body" formControlName="parentNode" [options]="parentNodeOptions"
+                    optionLabel="label" optionValue="value"
+                    placeholder="Select parent sub-division / division" styleClass="form-dropdown"
+                    [invalid]="isFieldInvalid('parentNode')">
+                  </p-select>
+                  <small class="error-hint" *ngIf="isFieldInvalid('parentNode')">
+                    {{ getErrorMessage('parentNode') }}
+                  </small>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Sub-Division Head</label>
+                  <p-select appendTo="body" formControlName="subDivisionHead" [options]="userOptions"
+                    optionLabel="label" optionValue="value"
+                    placeholder="Search user… (optional)" styleClass="form-dropdown"
+                    [filter]="true" filterPlaceholder="Search by name">
+                  </p-select>
+                </div>
+              </div> -->
+
+              <!-- <div class="form-row">
+                <div class="form-col">
+                  <label class="field-label">Number of Employees</label>
+                  <p-inputnumber formControlName="numberOfEmployees"
+                    [min]="0" [useGrouping]="false"
+                    placeholder="e.g. 25" styleClass="form-inputnumber">
+                  </p-inputnumber>
+                </div>
+
+                <div class="form-col">
+                  <label class="field-label">Operational Since</label>
+                  <p-datepicker formControlName="operationalSince"
+                    placeholder="DD/MM/YYYY" dateFormat="dd/mm/yy"
+                    [showIcon]="true" class="form-datepicker">
+                  </p-datepicker>
+                </div>
+              </div> -->
+
+              <div class="section-heading" style="margin-top: 6px;">Attachments</div>
+
+              <!-- Trade License Copy -->
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Trade License Copy</label>
+                  <div class="file-upload-field">
+                    @if (!isViewMode) {
+                    <input type="file" id="tradeFile" class="hidden-file-input" (change)="onFileChange($event, DivisionDocTypes.Trade)"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    }
+                    @if (tradeLicenseFile) {
+                    <div class="file-selected">
+                      <app-draw-icon icon="pi pi-file-pdf" class="file-icon"></app-draw-icon>
+                      <span class="file-name">{{ tradeLicenseFile.name }}</span>
+                      <button type="button" class="remove-file-btn" (click)="removeFile(DivisionDocTypes.Trade)">
+                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                      </button>
+                    </div>
+                    } @else if (existingTradeLicenseFile) {
+                    <div class="file-selected">
+                      <app-draw-icon icon="pi pi-file" class="file-icon"></app-draw-icon>
+                      <a [href]="existingTradeLicenseFile.url" target="_blank" class="file-name">{{
+                        existingTradeLicenseFile.name }}</a>
+                      @if (!isViewMode) {
+                      <button type="button" class="remove-file-btn" (click)="clearExistingFile(DivisionDocTypes.Trade)">
+                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                      </button>
+                      }
+                    </div>
+                    } @else if (!isViewMode) {
+                    <label for="tradeFile" class="upload-trigger">
+                      <app-draw-icon icon="pi pi-upload"></app-draw-icon>
+                      <span>Choose File</span>
+                      <span class="upload-hint">.pdf, .doc, .jpg &mdash; max 5 MB</span>
+                    </label>
+                    } @else {
+                    <span class="upload-hint" style="padding: 8px 0; display:block;">No file attached</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- VAT Certificate -->
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">VAT Certificate</label>
+                  <div class="file-upload-field">
+                    @if (!isViewMode) {
+                    <input type="file" id="vatFile" class="hidden-file-input" (change)="onFileChange($event, DivisionDocTypes.Vat)"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    }
+                    @if (vatCertificateFile) {
+                    <div class="file-selected">
+                      <app-draw-icon icon="pi pi-file-pdf" class="file-icon"></app-draw-icon>
+                      <span class="file-name">{{ vatCertificateFile.name }}</span>
+                      <button type="button" class="remove-file-btn" (click)="removeFile(DivisionDocTypes.Vat)">
+                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                      </button>
+                    </div>
+                    } @else if (existingVatCertificateFile) {
+                    <div class="file-selected">
+                      <app-draw-icon icon="pi pi-file" class="file-icon"></app-draw-icon>
+                      <a [href]="existingVatCertificateFile.url" target="_blank" class="file-name">{{
+                        existingVatCertificateFile.name }}</a>
+                      @if (!isViewMode) {
+                      <button type="button" class="remove-file-btn" (click)="clearExistingFile(DivisionDocTypes.Vat)">
+                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                      </button>
+                      }
+                    </div>
+                    } @else if (!isViewMode) {
+                    <label for="vatFile" class="upload-trigger">
+                      <app-draw-icon icon="pi pi-upload"></app-draw-icon>
+                      <span>Choose File</span>
+                      <span class="upload-hint">.pdf, .doc, .jpg &mdash; max 5 MB</span>
+                    </label>
+                    } @else {
+                    <span class="upload-hint" style="padding: 8px 0; display:block;">No file attached</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Organizational Documents -->
+              <div class="form-row">
+                <div class="form-col full">
+                  <label class="field-label">Organizational Documents</label>
+                  <div class="file-upload-field">
+                    @if (!isViewMode) {
+                    <input type="file" id="orgFile" class="hidden-file-input" (change)="onFileChange($event, DivisionDocTypes.Org)"
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                    }
+                    @if (orgDocumentsFile) {
+                    <div class="file-selected">
+                      <app-draw-icon icon="pi pi-file-pdf" class="file-icon"></app-draw-icon>
+                      <span class="file-name">{{ orgDocumentsFile.name }}</span>
+                      <button type="button" class="remove-file-btn" (click)="removeFile(DivisionDocTypes.Org)">
+                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                      </button>
+                    </div>
+                    } @else if (existingOrgDocumentsFile) {
+                    <div class="file-selected">
+                      <app-draw-icon icon="pi pi-file" class="file-icon"></app-draw-icon>
+                      <a [href]="existingOrgDocumentsFile.url" target="_blank" class="file-name">{{
+                        existingOrgDocumentsFile.name }}</a>
+                      @if (!isViewMode) {
+                      <button type="button" class="remove-file-btn" (click)="clearExistingFile(DivisionDocTypes.Org)">
+                        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+                      </button>
+                      }
+                    </div>
+                    } @else if (!isViewMode) {
+                    <label for="orgFile" class="upload-trigger">
+                      <app-draw-icon icon="pi pi-upload"></app-draw-icon>
+                      <span>Choose File</span>
+                      <span class="upload-hint">.pdf, .doc, .jpg &mdash; max 5 MB</span>
+                    </label>
+                    } @else {
+                    <span class="upload-hint" style="padding: 8px 0; display:block;">No file attached</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </p-tabpanel>
+
+        </p-tabpanels>
+      </p-tabs>
+
+      <!-- Approver Notes -->
+      @if (canDecide) {
+        <div class="approver-notes-section" style="margin: 0 16px 0;">
+          <div class="approver-notes-header">
+            <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+            <span class="approver-notes-title">Approver Notes</span>
+            <span class="approver-notes-required">Required when rejecting</span>
+          </div>
+          <textarea pTextarea formControlName="approverNotes"
+            placeholder="Add your approver notes here..."
+            [rows]="3" class="field-textarea approver-notes-textarea"
+            [class.input-error]="isInvalidApproverNotes()"></textarea>
+          @if (isInvalidApproverNotes()) {
+            <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Approver notes are required when rejecting</span>
+          }
+        </div>
+      }
+
+      <!-- Footer -->
+      <div class="drawer-footer">
+        @if (isViewMode) {
+        <p-button label="Close" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+        } @else {
+        <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+
+        <p-button *ngIf="activeTabIndex < LAST_TAB" label="Next" icon="pi pi-arrow-right" iconPos="right"
+          styleClass="next-btn" (onClick)="goToNextTab()">
+        </p-button>
+
+        @if (activeTabIndex === LAST_TAB) {
+          @if (canDecide) {
+            <button type="button" class="btn-reject" (click)="onReject()">
+              <app-draw-icon icon="pi pi-times"></app-draw-icon> Reject
+            </button>
+            <button type="button" class="btn-approve" (click)="onApprove()">
+              <app-draw-icon icon="pi pi-check"></app-draw-icon> Approve
+            </button>
+          } @else if (!approvalMode && mode === DivisionDrawerModes.Edit) {
+            <p-button label="Save Changes" icon="pi pi-check" styleClass="submit-btn" (onClick)="onSave()">
+            </p-button>
+          } @else if (!approvalMode) {
+            <p-button label="Submit" icon="pi pi-check" styleClass="submit-btn" (onClick)="onSubmit()">
+            </p-button>
+          }
+        }
+        }
+      </div>
+
+    </div>

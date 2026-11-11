@@ -1,0 +1,29 @@
+<div class="donut-wrap">
+  <div class="chart-wrap chart-wrap--donut" [style.max-width.px]="maxWidth">
+    <p-chart #chartRef type="doughnut" [data]="chartData" [options]="chartOptions"></p-chart>
+    <div class="donut-center">
+      <span class="donut-center__value">{{ visibleTotal }}{{ valueSuffix }}</span>
+      <span class="donut-center__label">{{ centerLabel }}</span>
+    </div>
+  </div>
+
+  <div class="donut-legend">
+    @for (item of legend; track item.label; let i = $index) {
+      <div class="donut-legend__item"
+           [class.donut-legend__item--disabled]="hidden[i]"
+           role="button"
+           tabindex="0"
+           [attr.aria-pressed]="hidden[i]"
+           [attr.aria-label]="(hidden[i] ? 'Show ' : 'Hide ') + item.label"
+           (click)="toggleSegment(i)"
+           (keydown.enter)="toggleSegment(i)"
+           (keydown.space)="$event.preventDefault(); toggleSegment(i)">
+        <span class="donut-legend__left">
+          <span class="donut-legend__dot" [style.background]="item.color"></span>
+          <span class="donut-legend__label">{{ item.label }}</span>
+        </span>
+        <span class="donut-legend__value">{{ item.value }}{{ valueSuffix }}</span>
+      </div>
+    }
+  </div>
+</div>

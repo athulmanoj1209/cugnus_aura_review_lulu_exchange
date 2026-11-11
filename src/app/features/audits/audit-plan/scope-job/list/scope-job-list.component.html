@@ -1,0 +1,435 @@
+<section class="sj-page">
+
+  <!-- ======================== PAGE HEADER ======================== -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <div class="page-header__eyebrow"><app-draw-icon icon="pi pi-briefcase"></app-draw-icon> Audit Management</div>
+        <h1 class="page-header__title">Scope Jobs</h1>
+        <p class="page-header__subtitle">Auto-generated audit jobs based on scope frequency settings</p>
+      </div>
+    </div>
+    <div class="page-header__actions">
+      <div class="view-toggle" role="group">
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === ScopeJobViewModes.List"
+                (click)="setViewMode(ScopeJobViewModes.List)"
+                pTooltip="List view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+        <button type="button" class="view-toggle__btn"
+                [class.is-active]="viewMode() === ScopeJobViewModes.Grid"
+                (click)="setViewMode(ScopeJobViewModes.Grid)"
+                pTooltip="Grid view" tooltipPosition="top">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================== SUMMARY STATS ======================= -->
+  <div class="sj-stats">
+    <div class="stat-card stat-card--total">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ stats().total }}</span>
+        <span class="stat-card__label">Total Jobs</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--pending">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-clock"></app-draw-icon></div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ stats().pending }}</span>
+        <span class="stat-card__label">Pending</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--inprogress">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-spinner"></app-draw-icon></div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ stats().inProgress }}</span>
+        <span class="stat-card__label">In Progress</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--completed">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-check-circle"></app-draw-icon></div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ stats().completed }}</span>
+        <span class="stat-card__label">Completed</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--overdue">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon></div>
+      <div class="stat-card__content">
+        <span class="stat-card__value">{{ stats().overdue }}</span>
+        <span class="stat-card__label">Overdue</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== TOOLBAR ============================= -->
+  <div class="sj-toolbar">
+    <div class="toolbar-left">
+      <button type="button" class="filter-trigger" (click)="filterPanel.toggle($event)">
+        <app-draw-icon icon="pi pi-sliders-h"></app-draw-icon>
+        <span>Filters</span>
+        <span *ngIf="activeFilterCount() > 0" class="filter-badge">{{ activeFilterCount() }}</span>
+      </button>
+
+      <div *ngIf="hasActiveFilters()" class="chip-row">
+        <span *ngFor="let chip of activeFilterChips()" class="filter-chip">
+          {{ chip.label }}
+          <button type="button" (click)="removeFilter(chip.key)"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+        </span>
+        <button type="button" class="chip-clear" (click)="clearFilters()">
+          <app-draw-icon icon="pi pi-times-circle"></app-draw-icon> Clear all
+        </button>
+      </div>
+    </div>
+
+    <div class="toolbar-right">
+      <div class="search-box">
+        <app-draw-icon icon="pi pi-search" class="search-box__icon"></app-draw-icon>
+        <input pInputText type="text"
+               [ngModel]="searchQuery()"
+               (ngModelChange)="onSearchChange($event)"
+               placeholder="Search jobs, scopes, periods…" />
+        <button *ngIf="searchQuery()" type="button" class="search-box__clear" (click)="onSearchChange('')">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== FILTER OVERLAY ====================== -->
+  <p-popover #filterPanel styleClass="sj-filter-panel">
+    <div class="fp-header">
+      <span class="fp-title"><app-draw-icon icon="pi pi-sliders-h"></app-draw-icon> Filter Jobs</span>
+      <button type="button" class="fp-reset" *ngIf="hasActiveFilters()" (click)="clearFilters()">Reset all</button>
+    </div>
+    <div class="fp-grid">
+      <div class="fp-field">
+        <label class="fp-label">Scope</label>
+        <p-multiSelect [options]="scopeFilterOptions()" [ngModel]="selectedScopes()" (ngModelChange)="onScopesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All scopes" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} scopes" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">Status</label>
+        <p-multiSelect [options]="statusOptions" [ngModel]="selectedStatuses()" (ngModelChange)="onStatusesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All statuses" display="chip"
+          [maxSelectedLabels]="1" selectedItemsLabel="{0} statuses" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">Frequency</label>
+        <p-multiSelect [options]="frequencyOptions" [ngModel]="selectedFrequencies()" (ngModelChange)="onFrequenciesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All frequencies" display="chip"
+          [maxSelectedLabels]="1" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">Company</label>
+        <p-multiSelect [options]="companyFilterOptions()" [ngModel]="selectedCompanies()" (ngModelChange)="onCompaniesChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All companies" display="chip"
+          [maxSelectedLabels]="1" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">Division</label>
+        <p-multiSelect [options]="divisionFilterOptions()" [ngModel]="selectedDivisions()" (ngModelChange)="onDivisionsChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All divisions" display="chip"
+          [maxSelectedLabels]="1" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field">
+        <label class="fp-label">Sub-Division</label>
+        <p-multiSelect [disabled]="!subDivisionFilterVisible()" [options]="subDivisionFilterOptions()" [ngModel]="selectedSubDivisions()" (ngModelChange)="onSubDivisionsChange($event)"
+          optionLabel="label" optionValue="value" [placeholder]="subDivisionFilterVisible() ? subDivisionPlaceholders.All : subDivisionPlaceholders.None" display="chip"
+          [maxSelectedLabels]="1" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field fp-field--full">
+        <label class="fp-label">Auditor</label>
+        <p-multiSelect [options]="auditorFilterOptions()" [ngModel]="selectedAuditors()" (ngModelChange)="onAuditorsChange($event)"
+          optionLabel="label" optionValue="value" placeholder="All auditors" display="chip"
+          [filter]="true" [maxSelectedLabels]="1" selectedItemsLabel="{0} auditors" styleClass="fp-select"></p-multiSelect>
+      </div>
+      <div class="fp-field fp-field--full">
+        <label class="fp-label">Period Start Range</label>
+        <p-datepicker [ngModel]="periodRange()" (ngModelChange)="onPeriodRangeChange($event)"
+          selectionMode="range" placeholder="Select period range" dateFormat="dd M y"
+          [showIcon]="true" [readonlyInput]="true" styleClass="fp-date"></p-datepicker>
+      </div>
+    </div>
+    <div class="fp-footer">
+      <button type="button" class="fp-btn fp-btn--ghost" (click)="clearFilters(); filterPanel.hide()">Reset</button>
+      <button type="button" class="fp-btn fp-btn--primary" (click)="filterPanel.hide()">
+        Apply<span *ngIf="activeFilterCount() > 0"> ({{ activeFilterCount() }})</span>
+      </button>
+    </div>
+  </p-popover>
+
+  <!-- ======================== LIST VIEW ========================== -->
+  <div *ngIf="viewMode() === ScopeJobViewModes.List" class="sj-list-wrap">
+
+    <div *ngIf="paginated().length === 0" class="sj-empty">
+      <div class="sj-empty__icon"><app-draw-icon icon="pi pi-calendar-times"></app-draw-icon></div>
+      <p class="sj-empty__title">No scope jobs found</p>
+      <p class="sj-empty__sub">Try adjusting your filters or search query</p>
+      <button *ngIf="hasActiveFilters()" type="button" class="sj-empty__btn" (click)="clearFilters()">Clear filters</button>
+    </div>
+
+    <!-- Table header -->
+    <div *ngIf="paginated().length > 0" class="sj-list-header">
+      <div></div><!-- accent-bar spacer -->
+      <div class="lh-cell lh-id sortable" (click)="onSort(ScopeJobSortColumns.Id)" [class.is-sorted]="sortColumn() === ScopeJobSortColumns.Id">
+        Job ID <i class="pi sortable__arrow" [ngClass]="sortIconFor(ScopeJobSortColumns.Id)"></i>
+      </div>
+      <div class="lh-cell lh-title sortable" (click)="onSort(ScopeJobSortColumns.Title)" [class.is-sorted]="sortColumn() === ScopeJobSortColumns.Title">
+        Job Title <i class="pi sortable__arrow" [ngClass]="sortIconFor(ScopeJobSortColumns.Title)"></i>
+      </div>
+      <div class="lh-cell lh-period sortable" (click)="onSort(ScopeJobSortColumns.PeriodStart)" [class.is-sorted]="sortColumn() === ScopeJobSortColumns.PeriodStart">
+        Period <i class="pi sortable__arrow" [ngClass]="sortIconFor(ScopeJobSortColumns.PeriodStart)"></i>
+      </div>
+      <div class="lh-cell lh-freq">Frequency</div>
+      <div class="lh-cell lh-org sortable" (click)="onSort(ScopeJobSortColumns.Company)" [class.is-sorted]="sortColumn() === ScopeJobSortColumns.Company">
+        Organisation <i class="pi sortable__arrow" [ngClass]="sortIconFor(ScopeJobSortColumns.Company)"></i>
+      </div>
+      <div class="lh-cell lh-dept sortable" (click)="onSort(ScopeJobSortColumns.SubDivision)" [class.is-sorted]="sortColumn() === ScopeJobSortColumns.SubDivision">
+        Sub-Division <i class="pi sortable__arrow" [ngClass]="sortIconFor(ScopeJobSortColumns.SubDivision)"></i>
+      </div>
+      <div class="lh-cell lh-auditors">Team</div>
+      <div class="lh-cell lh-status sortable" (click)="onSort(ScopeJobSortColumns.Status)" [class.is-sorted]="sortColumn() === ScopeJobSortColumns.Status">
+        Status <i class="pi sortable__arrow" [ngClass]="sortIconFor(ScopeJobSortColumns.Status)"></i>
+      </div>
+      <div class="lh-cell lh-actions">Actions</div>
+    </div>
+
+    <!-- Table rows -->
+    <div *ngFor="let j of paginated(); trackBy: trackById"
+         class="sj-row"
+         [class.sj-row--inactive]="!j.isActive"
+         [attr.data-status]="j.status">
+
+      <!-- status accent bar -->
+      <div class="row-accent"></div>
+
+      <div class="row-cell rc-id">
+        <span class="sj-id">{{ j.id }}</span>
+      </div>
+
+      <div class="row-cell rc-title">
+        <span class="job-title"
+              [pTooltip]="j.title" tooltipPosition="top"
+              [tooltipOptions]="{ showDelay: 600 }">{{ j.title }}</span>
+        <span class="job-scope-meta"
+              [pTooltip]="j.scopeId + ' · ' + j.scopeName" tooltipPosition="bottom"
+              [tooltipOptions]="{ showDelay: 600 }">
+          <span class="scope-id-pill">{{ j.scopeId }}</span>{{ j.scopeName }}
+        </span>
+      </div>
+
+      <div class="row-cell rc-period">
+        <span class="period-badge">
+          <app-draw-icon icon="pi pi-calendar"></app-draw-icon>{{ j.periodLabel }}
+        </span>
+        <span class="period-dates">{{ j.periodStart | date:'dd MMM' }} – {{ j.periodEnd | date:'dd MMM y' }}</span>
+      </div>
+
+      <div class="row-cell rc-freq">
+        <span class="freq-chip freq-chip--{{ j.auditFrequency }}">
+          <app-draw-icon icon="pi pi-refresh"></app-draw-icon>{{ frequencyLabel(j.auditFrequency) }}
+        </span>
+      </div>
+
+      <div class="row-cell rc-org">
+        <span class="org-name">{{ j.company }}</span>
+        <span class="org-branch"><app-draw-icon icon="pi pi-map-marker"></app-draw-icon>{{ j.division }}</span>
+      </div>
+
+      <div class="row-cell rc-dept">
+        <span class="dept-badge">{{ j.subDivision }}</span>
+      </div>
+
+      <div class="row-cell rc-auditors">
+        <div class="avatar-stack">
+          <span *ngFor="let a of j.assignedAuditors.slice(0, avatarStackMax.List); let i = index"
+                class="avatar"
+                [style.z-index]="10 - i"
+                [pTooltip]="a" tooltipPosition="top">
+            {{ a.slice(0, 2).toUpperCase() }}
+          </span>
+          <span *ngIf="j.assignedAuditors.length > avatarStackMax.List"
+                class="avatar avatar--more"
+                [pTooltip]="'+' + (j.assignedAuditors.length - avatarStackMax.List) + ' more'" tooltipPosition="top">
+            +{{ j.assignedAuditors.length - avatarStackMax.List }}
+          </span>
+        </div>
+      </div>
+
+      <div class="row-cell rc-status">
+        <span class="status-pill status-pill--{{ j.status }}">
+          <span class="status-pill__dot"></span>
+          {{ statusLabel(j.status) }}
+        </span>
+      </div>
+
+      <div class="row-cell rc-actions">
+        <div class="row-actions">
+          <button type="button" class="action-btn action-btn--view"
+                  pTooltip="View details" tooltipPosition="top"
+                  (click)="openProfile(j)">
+            <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          </button>
+          <button type="button" class="action-btn action-btn--edit"
+                  pTooltip="Edit" tooltipPosition="top" (click)="editJob(j)">
+            <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+          </button>
+          <button type="button" class="action-btn action-btn--status"
+                  pTooltip="Update status" tooltipPosition="top"
+                  (click)="openStatusUpdate(j)">
+            <app-draw-icon icon="pi pi-sync"></app-draw-icon>
+          </button>
+          <!-- <button type="button" class="action-btn"
+                  [class.action-btn--activate]="!j.isActive"
+                  [class.action-btn--deactivate]="j.isActive"
+                  [pTooltip]="j.isActive ? ScopeJobBlockActions.Deactivate : ScopeJobBlockActions.Activate"
+                  tooltipPosition="top"
+                  (click)="openConfirmation(j)">
+            <app-draw-icon [icon]="j.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+          </button> -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== GRID VIEW ========================== -->
+  <div *ngIf="viewMode() === ScopeJobViewModes.Grid">
+    <div *ngIf="paginated().length === 0" class="sj-empty sj-empty--standalone">
+      <div class="sj-empty__icon"><app-draw-icon icon="pi pi-calendar-times"></app-draw-icon></div>
+      <p class="sj-empty__title">No scope jobs found</p>
+      <p class="sj-empty__sub">Try adjusting your filters or search query</p>
+      <button *ngIf="hasActiveFilters()" type="button" class="sj-empty__btn" (click)="clearFilters()">Clear filters</button>
+    </div>
+
+    <div class="sj-grid">
+      <article *ngFor="let j of paginated(); trackBy: trackById"
+               class="sj-card"
+               [attr.data-status]="j.status"
+               [class.sj-card--inactive]="!j.isActive">
+
+        <p-tag [value]="statusLabel(j.status)" [severity]="statusSeverity(j.status)" class="status-tag status-tag--corner"></p-tag>
+
+        <!-- Card header -->
+        <div class="card-header">
+          <div class="sj-avatar-wrap">
+            <div class="sj-badge"><app-draw-icon icon="pi pi-briefcase"></app-draw-icon></div>
+            <svg class="sj-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+              <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+            </svg>
+          </div>
+          <h3 class="sj-card__title"
+              [pTooltip]="j.title" tooltipPosition="top"
+              [tooltipOptions]="{ showDelay: 600 }">{{ j.title }}</h3>
+          <span class="sj-card__scope">
+            <span class="sj-id">{{ j.id }}</span>
+            <span class="scope-id-pill">{{ j.scopeId }}</span>
+            <span class="sj-card__scope-name">{{ j.scopeName }}</span>
+          </span>
+        </div>
+
+        <!-- 2-column detail grid -->
+        <div class="info-grid">
+
+          <!-- Period -->
+          <div class="info-item" pTooltip="Period" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+            <div class="detail-stack">
+              <span class="period-badge period-badge--sm">{{ j.periodLabel }}</span>
+              <span class="detail-sub">{{ j.periodStart | date:'dd MMM' }} – {{ j.periodEnd | date:'dd MMM y' }}</span>
+            </div>
+          </div>
+
+          <!-- Frequency -->
+          <div class="info-item" pTooltip="Frequency" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-refresh"></app-draw-icon></span>
+            <div class="info-content">
+              <span class="freq-chip freq-chip--{{ j.auditFrequency }} freq-chip--sm">
+                {{ frequencyLabel(j.auditFrequency) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Company / Division -->
+          <div class="info-item" pTooltip="Company / Division" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-building"></app-draw-icon></span>
+            <div class="detail-stack">
+              <span class="org-name org-name--sm">{{ j.company }}</span>
+              <span class="org-branch"><app-draw-icon icon="pi pi-map-marker"></app-draw-icon>{{ j.division }}</span>
+            </div>
+          </div>
+
+          <!-- Sub-Division -->
+          <div class="info-item" pTooltip="Sub-Division" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></span>
+            <div class="info-content"><span class="dept-badge">{{ j.subDivision }}</span></div>
+          </div>
+
+          <!-- Audit Team — full width -->
+          <div class="info-item info-item--full" pTooltip="Audit Team" tooltipPosition="top">
+            <span class="info-icon"><app-draw-icon icon="pi pi-users"></app-draw-icon></span>
+            <div class="avatar-stack">
+              <span *ngFor="let a of j.assignedAuditors.slice(0, avatarStackMax.Grid); let i = index"
+                    class="avatar" [style.z-index]="10 - i"
+                    [pTooltip]="a" tooltipPosition="top">
+                {{ a.slice(0, 2).toUpperCase() }}
+              </span>
+              <span *ngIf="j.assignedAuditors.length > avatarStackMax.Grid"
+                    class="avatar avatar--more"
+                    [pTooltip]="'+' + (j.assignedAuditors.length - avatarStackMax.Grid) + ' more'" tooltipPosition="top">
+                +{{ j.assignedAuditors.length - avatarStackMax.Grid }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Actions footer -->
+        <footer class="card-footer">
+          <span class="company-label">
+            <app-draw-icon icon="pi pi-building"></app-draw-icon>{{ j.company }}
+          </span>
+          <div class="card-actions">
+            <button type="button" class="action-btn action-btn--view"
+                    pTooltip="View details" tooltipPosition="top"
+                    (click)="openProfile(j)">
+              <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+            </button>
+            <button type="button" class="action-btn action-btn--edit"
+                    pTooltip="Edit" tooltipPosition="top"
+                    (click)="editJob(j)">
+              <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+            </button>
+            <button type="button" class="action-btn action-btn--status"
+                    pTooltip="Update status" tooltipPosition="top"
+                    (click)="openStatusUpdate(j)">
+              <app-draw-icon icon="pi pi-sync"></app-draw-icon>
+            </button>
+          </div>
+        </footer>
+      </article>
+    </div>
+  </div>
+
+  <!-- ======================== PAGINATION ========================= -->
+  <app-pagination-bar
+    *ngIf="filtered().length > 0"
+    [pageSize]="pageSize()"
+    [totalRecords]="filtered().length"
+    [currentPage]="currentPage() - 1"
+    [rowsPerPageOptions]="pageSizeOptions"
+    entityLabel="scope jobs"
+    (pageChange)="onPageChange($event)"
+    (rowsChange)="onPageSizeChange($event)">
+  </app-pagination-bar>
+
+  <!-- ======================== CONFIRM DIALOG ===================== -->
+
+
+</section>

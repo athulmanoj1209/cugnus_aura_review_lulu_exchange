@@ -1,0 +1,44 @@
+<div class="cw-panel">
+
+  <button type="button" class="cw-panel__header" (click)="expanded.set(!expanded())"
+          [attr.aria-expanded]="expanded()" [attr.aria-label]="expanded() ? collapseCompanyLabel : expandCompanyLabel">
+    <svg class="cw-panel__chevron" [class.cw-panel__chevron--expanded]="expanded()" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         [style.transform]="expanded() ? 'rotate(90deg)' : 'none'" style="transition:transform .15s">
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="cw-panel__icon">
+      <path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/>
+    </svg>
+    <span class="cw-panel__name">{{ company().companyName }}</span>
+    <span class="cw-panel__count">
+      {{ companyCountLabel(company().divisionCount, company().itemCount) }}
+    </span>
+  </button>
+
+  <div class="cw-panel__body" *ngIf="expanded()">
+    <ng-container *ngFor="let subDivision of company().subDivisions; trackBy: trackBySubDivision">
+
+      <div class="cw-dept">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+        </svg>
+        {{ subDivision.divisionName }} &middot; {{ subDivision.subDivisionName }}
+      </div>
+
+      <app-assignment-row *ngFor="let scope of subDivision.scopes; trackBy: trackByScope"
+        [scope]="scope"
+        [targetOptions]="targetOptions()"
+        [fromAuditor]="fromAuditor()"
+        [pending]="pending()"
+        [bulkMode]="bulkMode()"
+        [selectedIds]="selectedIds()"
+        [busyIds]="busyIds()"
+        (stage)="stage.emit($event)"
+        (unstage)="unstage.emit($event)"
+        (toggle)="toggle.emit($event)">
+      </app-assignment-row>
+
+    </ng-container>
+  </div>
+
+</div>

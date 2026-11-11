@@ -1,0 +1,10 @@
+/* Assignees Panel — container for preparer-reviewer blocks */
+
+:host {
+  display: block;
+}
+
+:host ::ng-deep .pers-divider {
+  margin: 0;
+  .p-divider-horizontal { margin: 0; border-top-color: var(--surface-border); }
+}

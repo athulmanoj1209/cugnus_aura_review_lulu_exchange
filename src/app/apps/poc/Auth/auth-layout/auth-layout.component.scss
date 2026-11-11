@@ -1,0 +1,248 @@
+/* ============================================================
+ *  Cygnus Audit — auth shell layout
+ *  Brand colors:
+ *    --cyg-navy-900: #1f2554   primary CTA + headings
+ *    --cyg-navy-800: #2a3370   hover
+ *    --cyg-blue-500: var(--p-blue-500)   accent links
+ *    --cyg-blue-700: var(--p-blue-900)   logo gradient end
+ *    --cyg-dark-900: #0a1126   marketing card base
+ * ============================================================ */
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--surface-card);
+}
+
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  width: 100%;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =====================================================================
+ *  Left column — brand + projected form + footer
+ * =================================================================== */
+.img
+{
+  height:61px;
+  width:159px;
+}
+ .auth-left {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 2.5rem;
+  background: var(--surface-card);
+}
+
+.auth-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+
+  &__mark {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  &__wordmark {
+    display: inline-flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  &__wordmark-line1 {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    letter-spacing: 0.08em;
+  }
+
+  &__wordmark-line2 {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    letter-spacing: 0.32em;
+    margin-top: 4px;
+  }
+}
+
+.auth-left__content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 0;
+  min-height: 0;
+}
+
+.auth-left__inner {
+  width: 100%;
+  //max-width: 360px;
+      padding-left: 60px;
+    padding-right: 45px;
+}
+
+/* ---- Footer --------------------------------------------------------- */
+.auth-footer {
+  display: flex;
+  gap: 2rem;
+  padding-top: 1rem;
+  flex-shrink: 0;
+
+  &__link {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    text-decoration: none;
+    transition: color 0.15s ease;
+
+    &:hover { color: var(--p-indigo-800); }
+  }
+}
+
+/* =====================================================================
+ *  Right column — dark marketing card
+ * =================================================================== */
+.auth-right {
+  padding: 1.5rem 1.5rem 1.5rem 0;
+  display: flex;
+  align-items: stretch;
+
+  @media (max-width: 960px) {
+    display: none;
+  }
+
+  &__card {
+    flex: 1;
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    color: #fff;
+    background:
+      url('/images/backgrounds/login_background.png');
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2.5rem;
+    min-height: 540px;
+  }
+
+  /* Decorative orbits — recreate the "AI hand" vibe without an asset.
+     Swap the background-image declaration below with a real hero image
+     when you have one. */
+  &__visual {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 50% 38%, rgba(59, 130, 246, 0.28), transparent 38%),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'><g fill='none' stroke='rgba(255,255,255,0.06)' stroke-width='1'><circle cx='300' cy='240' r='220'/><circle cx='300' cy='240' r='170'/><circle cx='300' cy='240' r='120'/><circle cx='300' cy='240' r='70'/></g><g fill='rgba(96,165,250,0.45)'><circle cx='180' cy='170' r='1.5'/><circle cx='420' cy='200' r='1.5'/><circle cx='250' cy='350' r='1.2'/><circle cx='380' cy='320' r='1.2'/><circle cx='150' cy='260' r='1.2'/><circle cx='450' cy='275' r='1.2'/></g></svg>") center 25% / 90% auto no-repeat;
+    pointer-events: none;
+  }
+
+  /* Real hero image (used when a slide provides imageUrl) */
+  &__hero-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  &__copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Each slide change re-renders this block with a fresh data-i attribute,
+     which restarts the fade-in animation. */
+  &__slide {
+    animation: cygSlideFade 0.4s ease;
+  }
+
+  &__tagline {
+    margin: 0 0 1.25rem;
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    white-space: pre-line;   /* respect the \n in the @Input() default */
+  }
+
+  &__author {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  &__author-role {
+    margin: 2px 0 1.5rem;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  &__nav {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  &__pages {
+    flex: 1;
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+
+    &-of {
+      color: rgba(255, 255, 255, 0.5);
+      margin: 0 0.25rem;
+      font-weight: 400;
+    }
+  }
+
+  &__arrows {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s ease;
+
+      &:hover:not(:disabled) { background: rgba(255, 255, 255, 0.1); }
+
+      &:disabled {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+
+      i { font-size: 0.85rem; }
+    }
+  }
+}
+
+/* ---------- Slide fade animation -------------------------------------- */
+@keyframes cygSlideFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

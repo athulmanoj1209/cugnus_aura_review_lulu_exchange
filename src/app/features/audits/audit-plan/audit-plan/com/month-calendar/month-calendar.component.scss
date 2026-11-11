@@ -1,0 +1,42 @@
+:host { display: block; }
+.back { border: none; background: none; color: var(--ap-brand); font-weight: 600; font-size: 12.5px;
+  cursor: pointer; padding: 0 0 12px; &:hover { text-decoration: underline; } }
+.panel { background: var(--ap-panel); border: 1px solid var(--ap-hairline); border-radius: var(--ap-radius); box-shadow: var(--ap-shadow); }
+.panel-head { padding: 18px 22px; border-bottom: 1px solid var(--ap-hairline);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  h2 { margin: 0; font-size: 16px; } .sub { margin: 3px 0 0; font-size: 12.5px; color: var(--ap-slate); }
+  .nav { display: flex; align-items: center; gap: 8px;
+    .title { font-weight: 600; font-size: 16px; min-width: 150px; text-align: center; } } }
+/* minmax(0,1fr) keeps all 7 columns identical — chip content can never widen a cell */
+.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.dow { padding: 10px 0; text-align: center; font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .07em; color: var(--ap-slate); font-weight: 700; background: #FBFCFE;
+  border-bottom: 1px solid var(--ap-hairline); }
+.day { min-height: 112px; min-width: 0; overflow: hidden;
+  border-right: 1px solid var(--ap-hairline); border-bottom: 1px solid var(--ap-hairline);
+  padding: 7px; &:nth-child(7n) { border-right: none; }
+  &.weekend { background: #FBFCFE; }
+  &.empty { background: #F6F8FB; } }
+.daynum { font-size: 12px; color: var(--ap-slate); font-weight: 600; }
+.more { margin-top: 4px; border: none; background: none; color: var(--ap-brand); font-size: 10.5px;
+  font-weight: 700; cursor: pointer; padding: 2px 0; font-family: inherit;
+  &:hover { text-decoration: underline; } }
+.day.today .daynum { background: var(--ap-sig); color: #fff; width: 20px; height: 20px;
+  border-radius: 5px; display: grid; place-items: center; }
+.chip { margin-top: 5px; font-size: 11px; padding: 4px 6px; border-radius: 6px; display: flex;
+  align-items: center; gap: 5px; cursor: pointer; border: none; border-left: 3px solid transparent;
+  font-weight: 500; line-height: 1.25; width: 100%; text-align: left;
+  &:hover { filter: brightness(.95); }
+  .mark { font-size: 10px; flex-shrink: 0; }
+  .job-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .run { font-size: 9px; opacity: .75; flex-shrink: 0; } }
+.st-completed { background: var(--st-completed-bg); color: var(--st-completed-tx); }
+.st-planned  { background: var(--st-planned-bg);  color: var(--st-planned-tx); }
+.st-inprog   { background: var(--st-inprog-bg);   color: var(--st-inprog-tx); }
+.st-overdue  { background: var(--st-overdue-bg);  color: var(--st-overdue-tx); }
+
+:host-context(.app-dark) {
+  .dow { background: var(--ap-hairline); }
+  .day.weekend { background: var(--ap-hairline); }
+  .day.empty { background: var(--surface-ground); }
+}

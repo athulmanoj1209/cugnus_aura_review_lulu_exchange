@@ -1,0 +1,171 @@
+<div class="add-rec-content">
+
+  <!-- HEADER -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <i class="pi" [ngClass]="isApprove ? drawerIcons.Approve : drawerIcons.Default"></i>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ headerTitle }}</h2>
+        <p class="drawer-subtitle">{{ headerSubtitle }}</p>
+      </div>
+    </div>
+    <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- APPROVE BANNER -->
+  <div *ngIf="isApprove" class="approve-banner">
+    <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+    <span i18n="@@audit.recommendations.approveBanner">You may edit the recommendation details. Add your <strong>approver notes</strong> below and approve or reject.</span>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="drawer-body">
+    <div class="form-grid">
+
+      <!-- Title -->
+      <div class="form-field form-field--full">
+        <label class="form-label"><span i18n="@@audit.recommendations.recommendationTitle">Recommendation Title</span> *</label>
+        <input pInputText formControlName="title" placeholder="Enter recommendation title…" i18n-placeholder="@@audit.recommendations.titlePlaceholder"
+               [invalid]="isInvalid('title')" />
+        <small *ngIf="getError('title',titleLabel) as e" class="error-text">{{ e }}</small>
+      </div>
+<!-- Company -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@common.company">Company</label>
+        <p-select formControlName="company" [options]="companyOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select company" i18n-placeholder="@@audit.recommendations.selectCompany"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Divisions -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@common.division">Division</label>
+        <p-select formControlName="division" [options]="divisionOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="form.get('company')?.value ? placeholders.Division : placeholders.CompanyFirst"
+                  [disabled]="!form.get('company')?.value"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Sub-Divisions -->
+      <div class="form-field">
+        <label class="form-label">
+          <span i18n="@@common.subDivision">Sub-Division</span>
+          <span *ngIf="subDivisionOptions().length"> *</span>
+        </label>
+        <p-select formControlName="subDivision" [options]="subDivisionOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="!form.get('division')?.value ? placeholders.DivisionFirst
+                                 : divisionHasSubDivision() ? placeholders.SubDivision : placeholders.NoSubDivisions"
+                  [disabled]="!form.get('division')?.value || !divisionHasSubDivision()"
+                  [invalid]="isInvalid('subDivision')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('subDivision',subDivisionLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Linked Finding -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.recommendations.linkedFinding">Linked Finding</span> *</label>
+        <p-select formControlName="findingId" [options]="findingOptions"
+                  optionLabel="label" optionValue="value"
+                  placeholder="Select finding" i18n-placeholder="@@audit.recommendations.selectFinding" [invalid]="isInvalid('findingId')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('findingId',findingLabel) as e" class="error-text">{{ e }}</small>
+      </div>
+
+      <!-- Priority -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.recommendations.priority">Priority</span> *</label>
+        <p-select formControlName="priority" [options]="priorityOptions"
+                  optionLabel="label" optionValue="value"
+                  placeholder="Select priority" i18n-placeholder="@@audit.recommendations.selectPriority" [invalid]="isInvalid('priority')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('priority',priorityLabel) as e" class="error-text">{{ e }}</small>
+      </div>
+
+      <!-- Status -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.status">Status</span> *</label>
+        <p-select formControlName="status" [options]="statusOptions"
+                  optionLabel="label" optionValue="value"
+                  placeholder="Select status" i18n-placeholder="@@audit.recommendations.selectStatus" [invalid]="isInvalid('status')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('status',statusLabel) as e" class="error-text">{{ e }}</small>
+      </div>
+
+      <!-- Assigned To -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.recommendations.assignedTo">Assigned To</span> *</label>
+        <p-select formControlName="assignedTo" [options]="assigneeOptions"
+                  optionLabel="label" optionValue="value"
+                  placeholder="Select assignee" i18n-placeholder="@@audit.recommendations.selectAssignee" [invalid]="isInvalid('assignedTo')"
+                  styleClass="w-full"></p-select>
+        <small *ngIf="getError('assignedTo',assignedToLabel) as e" class="error-text">{{ e }}</small>
+      </div>
+
+      <!-- Due Date -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.dueDate">Due Date</span> *</label>
+        <p-datepicker formControlName="dueDate" placeholder="Select due date" i18n-placeholder="@@audit.recommendations.selectDueDate"
+                      [dateFormat]="dueDateFormat" [showIcon]="true"
+                      [invalid]="isInvalid('dueDate')"
+                      styleClass="w-full" inputStyleClass="w-full"></p-datepicker>
+        <small *ngIf="getError('dueDate',dueDateLabel) as e" class="error-text">{{ e }}</small>
+      </div>
+
+      <!-- Description -->
+      <div class="form-field form-field--full">
+        <label class="form-label"><span i18n="@@audit.recommendations.recommendedAction">Recommended Action</span> *</label>
+        <textarea pTextarea formControlName="description"
+                  placeholder="Describe the recommended remediation action in detail…"
+                  i18n-placeholder="@@audit.recommendations.recommendedActionPlaceholder"
+                  [autoResize]="true" rows="6"
+                  [class.ng-invalid]="isInvalid('description')"
+                  [class.ng-touched]="isInvalid('description')"></textarea>
+        <small *ngIf="getError('description',descriptionLabel) as e" class="error-text">{{ e }}</small>
+      </div>
+
+    </div>
+
+    <!-- ── APPROVER NOTES (approve mode only) ─────────────────── -->
+    <div *ngIf="isApprove" class="approver-section">
+      <div class="approver-section__head">
+        <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+        <span i18n="@@common.approverNotes">Approver Notes</span>
+        <span class="approver-section__hint" i18n="@@common.requiredWhenRejecting">Required when rejecting</span>
+      </div>
+      <div class="form-field">
+        <textarea pTextarea formControlName="approverNotes"
+                  placeholder="Add your review notes here. Notes are mandatory when rejecting…"
+                  i18n-placeholder="@@audit.recommendations.approverNotesPlaceholder"
+                  [autoResize]="true" rows="4"
+                  [class.ng-invalid]="isInvalid('approverNotes')"
+                  [class.ng-touched]="isInvalid('approverNotes')"></textarea>
+        <small *ngIf="isInvalid('approverNotes')" class="error-text" i18n="@@audit.recommendations.approverNotesRequired">
+          {{ formErrors.ApproverNotesRequired }}
+        </small>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- FOOTER -->
+  <div class="drawer-footer">
+    <ng-container *ngIf="isApprove">
+      <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onCancel()" type="button"></p-button>
+      <div class="footer-approve-actions">
+        <p-button label="Reject" i18n-label="@@common.reject" icon="pi pi-times" styleClass="btn-reject"
+                  (onClick)="onReject()" type="button"></p-button>
+        <p-button label="Approve" i18n-label="@@common.approve" icon="pi pi-check" styleClass="btn-approve"
+                  (onClick)="onApprove()" type="button"></p-button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!isApprove">
+      <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onCancel()" type="button"></p-button>
+      <p-button [label]="submitLabel" styleClass="submit-btn" type="submit" (onClick)="onSubmit()"></p-button>
+    </ng-container>
+  </div>
+
+</div>

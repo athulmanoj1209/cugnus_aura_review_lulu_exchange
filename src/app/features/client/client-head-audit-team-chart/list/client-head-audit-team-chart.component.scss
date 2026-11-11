@@ -1,0 +1,726 @@
+/* ============================================================
+ *  CFO Audit Team Chart — matches client-org-chart design
+ * ============================================================ */
+
+:host {
+  display: block;
+  background: var(--surface-hover);
+  min-height: 100vh;
+  color: var(--text-color);
+}
+
+/* PrimeNG connector lines */
+:host ::ng-deep .p-organizationchart-connector-top    { border-top:   1px solid var(--surface-border) !important; }
+:host ::ng-deep .p-organizationchart-connector-left   { border-inline-end: 1px solid var(--surface-border) !important; }
+:host ::ng-deep .p-organizationchart-connector-right  { border-inline-start:  1px solid var(--surface-border) !important; }
+:host ::ng-deep .p-organizationchart-connector-down   { background: var(--surface-border) !important; width: 1px !important; }
+
+/* ── Page shell ─────────────────────────────────────────────────── */
+.chart-page {
+  padding: 1.5rem 2rem 2rem;
+  background: var(--surface-hover);
+}
+
+/* ── Header ─────────────────────────────────────────────────────── */
+.page-header {
+  &__lead { display: flex; align-items: flex-start; gap: 0.75rem; }
+
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+
+  /* Row 1 — title left, action buttons right */
+  &__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__text { flex-shrink: 0; }
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    line-height: 1.2;
+  }
+
+  &__subtitle {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+  }
+
+  /* Row 1 right — icon action buttons */
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  /* Row 2 — white filter card */
+  &__filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    background: var(--surface-card);
+    border-radius: 10px;
+    padding: 10px 14px;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
+    flex-wrap: wrap;
+  }
+
+  &__selects {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    flex: 1;
+  }
+
+  &__filter-end {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+}
+
+/* ── Role badge ─────────────────────────────────────────────────── */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+
+  &--cfo {
+    background: var(--p-orange-50);
+    color: var(--p-orange-700);
+    border: 1px solid var(--p-amber-100);
+  }
+}
+
+/* ── Filter selects ─────────────────────────────────────────────── */
+:host ::ng-deep .filter-select.p-select {
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  height: 44px;
+  min-width: 130px;
+
+  .p-select-label {
+    padding: 0 0.9rem;
+    font-size: 0.88rem;
+    color: var(--text-color);
+    line-height: 44px;
+  }
+
+  &.filter-select--branch .p-select-label { color: var(--primary-color); font-weight: 600; }
+  &.filter-select--dept   .p-select-label { color: var(--p-purple-700); font-weight: 600; }
+  &.filter-select--scope  .p-select-label { color: var(--p-green-600); font-weight: 600; }
+}
+
+/* ── Filter pills (inline in filter row) ────────────────────────── */
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+
+  &--division    { background: var(--p-blue-100); color: var(--primary-color); }
+  &--subdivision { background: var(--p-indigo-50); color: var(--p-purple-800); }
+  &--scope  { background: var(--p-green-50); color: var(--p-green-600); }
+}
+
+.filter-result-count {
+  font-size: 0.78rem;
+  color: var(--text-color-secondary);
+  font-weight: 500;
+}
+
+/* ── Clear button ───────────────────────────────────────────────── */
+.clear-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 36px;
+  padding: 0 0.8rem;
+  border: 1px solid var(--p-red-300);
+  border-radius: 8px;
+  background: var(--surface-card);
+  color: var(--p-red-600);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: var(--p-red-100); }
+
+  &__count {
+    background: var(--p-red-600);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 700;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── Header action buttons ──────────────────────────────────────── */
+.header-action-btn {
+  width: 38px;
+  height: 44px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: var(--surface-hover); color: var(--primary-color); }
+}
+
+/* Grab-to-pan toggle button */
+.header-action-btn--pan.is-active {
+  background: var(--primary-color);
+  color: #fff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 18%, transparent);
+
+  &:hover { background: var(--primary-color); color: #fff; }
+}
+
+.pan-hand-icon {
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+/* ── View toggle ────────────────────────────────────────────────── */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 10px;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  &__btn {
+    background: var(--surface-card);
+    border: none;
+    padding: 0.55rem 0.85rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    height: 44px;
+
+    &:first-child { border-start-start-radius: 9px; border-end-start-radius: 9px; }
+    &:last-child { border-start-end-radius: 9px; border-end-end-radius: 9px; }
+    &:hover { background: var(--surface-hover); }
+    &.is-active { background: var(--primary-color); color: #fff; }
+    & + .view-toggle__btn { border-inline-start: 1px solid var(--surface-border); }
+    &.is-active + .view-toggle__btn,
+    & + .view-toggle__btn.is-active { border-inline-start-color: var(--primary-color); }
+  }
+}
+
+/* ── Chart container ────────────────────────────────────────────── */
+.chart-wrap {
+  padding: 1.5rem 0;
+  overflow-x: auto;
+  min-height: 60vh;
+
+  /* Grab-to-pan: open hand while armed, closed fist while actively dragging.
+     Selection/drag-out is disabled so it can't hijack the gesture mid-pan. */
+  &.pan-mode-active {
+    cursor: grab;
+    user-select: none;
+
+    * {
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+  }
+
+  &.is-panning {
+    cursor: grabbing;
+  }
+}
+
+/*
+ * chart-inner mirrors the reference's centering approach:
+ * - width: max-content so the chart can grow wider than viewport
+ * - min-width: 100% centers narrow charts
+ * - display: flex + justify-content: center for the actual centering
+ * - [style.zoom] is applied here directly
+ */
+.chart-inner {
+  width: max-content;
+  min-width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 0 2rem;
+}
+
+/* PrimeNG chart node/connector overrides */
+:host ::ng-deep .cfo-org-chart.p-organizationchart {
+  .p-organizationchart-node-content {
+    border: none;
+    background: transparent;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .p-organizationchart-line-down { background: var(--surface-border); width: 2px; }
+  .p-organizationchart-line-left,
+  .p-organizationchart-line-right { border-color: var(--surface-border); }
+
+  .p-organizationchart-node-content .p-node-toggler {
+    bottom: -0.85rem;
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-inline-start: -0.75rem;
+
+    &:hover { background: color-mix(in srgb, var(--primary-color) 14%, transparent); color: var(--primary-color); }
+  }
+}
+
+/* ── Node card ──────────────────────────────────────────────────── */
+.node-card {
+  position: relative;
+  width: 260px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  padding: 0;
+  text-align: start;
+  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  }
+
+  /* Grab-to-pan travel highlight — lit up while the hand icon is over this card. */
+  &.node-card--pan-highlight {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 3px;
+    box-shadow: 0 8px 24px rgba(59, 91, 219, 0.35);
+    transform: scale(1.02);
+    z-index: 5;
+  }
+
+  /* CFO root card */
+  &--root {
+    border-color: var(--p-orange-500);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.18);
+  }
+
+  /* Level badge — top-right corner, absolute */
+  &__level-badge {
+    position: absolute;
+    top: 8px;
+    inset-inline-end: 8px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.55rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 0.12rem 0.5rem;
+    border-radius: 999px;
+    line-height: 1.5;
+    white-space: nowrap;
+    pointer-events: none;
+
+    &--cfo        { background: var(--p-orange-50); color: var(--p-orange-700); border: 1px solid var(--p-amber-100); }
+    &--manager    { background: var(--p-blue-100); color: var(--primary-color); }
+    &--senior     { background: var(--p-green-50); color: var(--p-green-600); }
+    &--staff      { background: var(--p-indigo-50); color: var(--p-purple-700); }
+  }
+
+  /* Risk badge — absolute top-left */
+  &__risk-badge {
+    position: absolute;
+    top: -6px;
+    inset-inline-start: -6px;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.18);
+    background: var(--surface-hover);
+
+    &.tier-critical { background: var(--p-orange-500); }
+    &.tier-high     { background: var(--p-red-500); }
+    &.tier-medium   { background: var(--p-violet-500); }
+    &.tier-low      { background: var(--p-green-500); }
+  }
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.85rem 0.9rem 0.6rem;
+  }
+
+  &__avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface-hover);
+    flex-shrink: 0;
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+
+  &__title-block { flex: 1; min-width: 0; }
+
+  &__name {
+    margin: 0 0 2px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__role {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0 0.9rem 0.5rem;
+  }
+
+  &__body {
+    border-top: 1px dashed var(--surface-border);
+    padding: 0.5rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    background: var(--surface-hover);
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    flex-wrap: wrap;
+  }
+
+  &__row-icon  { color: var(--primary-color); font-size: 0.78rem; flex-shrink: 0; }
+
+  &__row-label {
+    font-weight: 600;
+    min-width: 58px;
+    flex-shrink: 0;
+  }
+
+  &__row-chips {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  /* Workload bar */
+  &__workload {
+    display: flex;
+    flex-direction: column;
+    gap: 0.22rem;
+    margin-top: 0.25rem;
+
+    &-head {
+      display: flex;
+      justify-content: space-between;
+      .label { font-size: 0.7rem; color: var(--text-color-secondary); font-weight: 600; }
+      .value { font-size: 0.75rem; color: var(--text-color); font-weight: 700; }
+    }
+
+    &-bar {
+      width: 100%;
+      height: 5px;
+      background: var(--surface-border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    &-fill {
+      display: block;
+      height: 100%;
+      background: var(--p-green-500);
+      border-radius: inherit;
+      transition: width 0.25s ease;
+
+      &[data-tier='mid']  { background: var(--p-orange-500); }
+      &[data-tier='high'] { background: var(--p-red-500); }
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.4rem;
+    border-top: 1px dashed var(--surface-border);
+    padding: 0.4rem 0.9rem;
+    justify-content: center;
+    background: var(--surface-hover);
+  }
+}
+
+/* ── Chips ──────────────────────────────────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  line-height: 1;
+
+  &--division    { background: var(--p-blue-100); color: var(--primary-color); }
+  &--subdivision { background: var(--p-indigo-50); color: var(--p-purple-800); }
+  &--scope  { background: var(--p-green-50); color: var(--p-green-600); }
+  &--years  { background: var(--p-orange-50); color: var(--p-orange-600); }
+  &--exp    { background: var(--p-green-50); color: var(--p-green-600); }
+}
+
+/* ── Icon buttons ───────────────────────────────────────────────── */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.6rem;
+  border: none;
+  background: transparent !important;
+  border-radius: 8px;
+  color: var(--text-color-secondary) !important;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: var(--surface-hover); }
+  &--view:hover { color: var(--primary-color); }
+
+  &__label { font-size: 0.75rem; }
+}
+
+/* ── List view ──────────────────────────────────────────────────── */
+.list-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.list-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  flex-wrap: wrap;
+  margin-inline-start: calc(var(--depth, 0) * 28px);
+  transition: background 0.12s, margin-inline-start 0.15s ease;
+
+  &:hover { background: var(--surface-hover); }
+
+  /* Elbow connector for nested rows — indentation alone already conveys
+     parent → child → sub-child, this just makes the relationship explicit. */
+  &.is-child::before {
+    content: '';
+    position: absolute;
+    top: -0.75rem;
+    inset-inline-start: -16px;
+    width: 14px;
+    height: calc(50% + 0.75rem);
+    border-inline-start: 1px dashed var(--surface-border);
+    border-bottom: 1px dashed var(--surface-border);
+    border-end-start-radius: 8px;
+    pointer-events: none;
+  }
+
+  &__toggle {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s, color 0.15s;
+
+    &:hover:not(:disabled) { background: var(--surface-hover); color: var(--text-color); }
+
+    &.is-collapsed {
+      transform: rotate(-90deg);
+      &:dir(rtl) { transform: rotate(90deg); }
+    }
+
+    &.is-leaf {
+      visibility: hidden;
+      cursor: default;
+      background: transparent;
+    }
+
+    &:disabled { cursor: default; }
+  }
+
+  &__avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+    background: var(--surface-hover);
+
+    img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+    min-width: 140px;
+  }
+
+  &__name  { font-weight: 700; color: var(--text-color); font-size: 0.88rem; }
+  &__title { font-size: 0.75rem; color: var(--text-color-secondary); }
+
+  &__context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  &__expertise {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  &__workload {
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 120px;
+
+    .value { font-size: 0.75rem; font-weight: 600; color: var(--text-color-secondary); min-width: 34px; text-align: end; }
+
+    .bar {
+      flex: 1;
+      height: 5px;
+      background: var(--surface-border);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fill {
+      display: block;
+      height: 100%;
+      background: var(--p-green-500);
+      border-radius: inherit;
+
+      &[data-tier='mid']  { background: var(--p-orange-500); }
+      &[data-tier='high'] { background: var(--p-red-500); }
+    }
+  }
+
+  &__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-inline-start: 0.5rem;
+    border-inline-start: 1px solid var(--surface-border);
+    padding-inline-start: 0.65rem;
+  }
+}
+
+/* ── Empty state ────────────────────────────────────────────────── */
+.empty-state {
+  background: var(--surface-card);
+  border: 1px dashed var(--surface-border);
+  border-radius: 14px;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-color-secondary);
+
+  &__icon  { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
+  &__title { font-size: 1.05rem; font-weight: 600; color: var(--text-color-secondary); margin: 0 0 0.4rem; }
+  &__text  { margin: 0; font-size: 0.9rem; }
+
+  &__clear {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-weight: 600;
+    padding: 0;
+    text-decoration: underline;
+    font-size: inherit;
+
+    &:hover { color: var(--primary-color); }
+  }
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 960px) {
+  .page-header__top { flex-wrap: wrap; }
+  .page-header__actions { width: 100%; justify-content: end; }
+}
+
+@media (max-width: 640px) {
+  .chart-page { padding: 1rem; }
+  .node-card  { width: 220px; }
+}

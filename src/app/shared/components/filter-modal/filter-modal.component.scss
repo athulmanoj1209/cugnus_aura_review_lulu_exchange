@@ -1,0 +1,161 @@
+// ─── Filter Panel ────────────────────────────────────────────────────────────
+
+:host { display: contents; }
+
+.filter-wrap { position: relative; }
+
+.filters-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 38px;
+  padding: 0 0.875rem;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  background: var(--surface-card);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-color-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+
+  i { font-size: 0.875rem; }
+  &:hover, &.is-active { border-color: var(--primary-color); color: var(--primary-color); background: var(--surface-hover); }
+}
+
+.filters-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 999px;
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0 0.25rem;
+}
+
+.filter-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  // inset-inline-end: 0;
+  width: 540px;
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  z-index: 200;
+  padding: 1.25rem;
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    .pi { color: var(--text-color-secondary); }
+  }
+
+  &__close {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--surface-hover);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color-secondary);
+    margin-inline-start: auto;
+    &:hover { background: var(--surface-hover); }
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem 1.25rem;
+    margin-bottom: 0.85rem;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+
+    label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-color-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+  }
+
+  &__hint {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+    font-style: italic;
+  }
+
+  &__foot {
+    display: flex;
+    justify-content: end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--surface-border);
+  }
+}
+
+.fp-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &--reset {
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
+    &:hover { border-color: var(--surface-border); }
+  }
+
+  &--apply {
+    background: var(--primary-color);
+    border: 1px solid var(--primary-color);
+    color: #fff;
+    &:hover { opacity: 0.9; }
+  }
+}
+
+::ng-deep .fp-multiselect {
+  width: 100%;
+
+  .p-multiselect {
+    border-radius: 8px;
+    border-color: var(--surface-border);
+    font-size: 0.875rem;
+    width: 100%;
+    &:hover, &.p-focus { border-color: var(--primary-color); box-shadow: none; }
+  }
+
+  .p-multiselect-label { padding: 0.45rem 0.75rem; font-size: 0.875rem; color: var(--text-color); }
+  .p-multiselect-label-empty { color: var(--text-color-secondary); }
+
+  .p-chip {
+    font-size: 0.72rem;
+    padding: 0.1rem 0.4rem;
+    background: var(--surface-hover);
+    color: var(--primary-color);
+    border-radius: 4px;
+  }
+}

@@ -1,0 +1,419 @@
+.rfi-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+// ── Stat Cards ──────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  /* Cards drill into the RFI management list */
+  &--clickable {
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+      transform: translateY(-2px);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--p-blue-500);
+      outline-offset: 2px;
+    }
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.65rem;
+  }
+
+  &__label {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--text-color-secondary);
+  }
+
+  &__icon {
+    font-size: 14px;
+    color: var(--text-color-secondary);
+  }
+
+  &__value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1;
+    margin-bottom: 0.35rem;
+  }
+
+  &__sub {
+    font-size: 12px;
+    color: var(--text-color-secondary);
+  }
+
+  &.stat--warning  { background: color-mix(in srgb, var(--p-yellow-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-orange-500) 40%, transparent); .stat-card__icon { color: var(--p-orange-600); } }
+  &.stat--orange   { background: color-mix(in srgb, var(--p-orange-500) 6%, transparent); border-color: color-mix(in srgb, var(--p-orange-500) 30%, transparent); .stat-card__icon { color: var(--p-orange-600); } }
+  &.stat--success  { background: color-mix(in srgb, var(--p-green-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-green-500) 30%, transparent); .stat-card__icon { color: var(--p-green-500); } }
+  &.stat--danger   { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); border-color: color-mix(in srgb, var(--p-red-500) 30%, transparent); .stat-card__icon { color: var(--p-red-500); } }
+
+  :host-context(.app-dark) & {
+    &.stat--warning { background: rgba(217, 119, 6, 0.12); border-color: var(--surface-border); }
+    &.stat--orange  { background: rgba(234, 88, 12, 0.12); border-color: var(--surface-border); }
+    &.stat--success { background: rgba(22, 163, 74, 0.12); border-color: var(--surface-border); }
+    &.stat--danger  { background: rgba(220, 38, 38, 0.12); border-color: var(--surface-border); }
+  }
+}
+
+.sub-green { color: var(--p-green-500) !important; }
+.sub-gray  { color: var(--text-color-secondary) !important; }
+
+// ── Layout helpers ───────────────────────────────────────────
+.two-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  /* RFI Status Distribution + RFIs by Sub-Division + SLA Compliance by
+   * Sub-Division side by side. */
+  &--triple { grid-template-columns: 1fr 1.3fr 1.3fr; }
+
+  @media (max-width: 1200px) {
+    &--triple { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+    &--triple { grid-template-columns: 1fr; }
+  }
+}
+
+// ── Chart Cards ──────────────────────────────────────────────
+.chart-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.chart-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0 0 1rem 0;
+}
+
+/* Row that pairs the title with the "View all" button, used on charts
+ * (RFIs / SLA Compliance by Division / Sub-Division) that open a detailed drawer. */
+.chart-card__header-row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  .chart-title { margin: 0; }
+}
+
+/* Right side of the header row: "View by" toggle + "View all" button. */
+.chart-card__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: end;
+  gap: 0.5rem;
+}
+
+/* "View by" Division / Sub-Division toggle — same look as the audit
+ * overview / findings pages' view toggles. */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 0.65rem;
+    background: var(--surface-card);
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    transition: background 0.15s, color 0.15s;
+
+    &:not(:last-child) { border-inline-end: 1px solid var(--surface-border); }
+
+    &:hover { background: var(--surface-hover); }
+
+    &--active {
+      background: #1e3a8a;
+      color: #fff;
+    }
+  }
+}
+
+/* Shown over an empty chart when the current "View by" has no RFIs. */
+.chart-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+  pointer-events: none;
+}
+
+.chart-card__caption {
+  margin: 0.2rem 0 0;
+  font-size: 11.5px;
+  color: var(--text-color-secondary);
+}
+
+.chart-card__expand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: transparent;
+  border: 1px solid var(--surface-border);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--p-blue-600);
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  i { font-size: 10.5px; }
+
+  &:hover { background: var(--surface-hover); border-color: var(--surface-border); }
+  &:focus-visible { outline: 2px solid var(--p-blue-500); outline-offset: 2px; }
+}
+
+.chart-box {
+  position: relative;
+  height: 260px;
+
+  ::ng-deep p-chart {
+    display: block;
+    height: 100%;
+    height: stretch;
+    width: 100%;
+  }
+
+  ::ng-deep canvas {
+    height: 100% !important;
+    height: stretch !important;
+    max-height: 100%;
+  }
+
+  /* Centers the donut chart (circle + legend) inside the fixed-height box so
+   * it matches the sibling bar-chart card's height instead of top-aligning
+   * with empty space below it. */
+  &--donut {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Whole-chart click target that opens the detailed drawer view. No hover
+   * styling here on purpose — matches the Audits by Sub-Division chart, where
+   * a hover effect on the whole canvas fought with Chart.js's own per-bar
+   * hover highlight, so only keyboard focus gets a visible affordance. */
+  &--clickable {
+    cursor: pointer;
+    border-radius: 8px;
+
+    &:focus-visible {
+      outline: 2px solid var(--p-blue-500);
+      outline-offset: 2px;
+    }
+  }
+}
+
+/* Custom legend for the RFIs by Sub-Division / SLA Compliance by Sub-Division
+ * bar charts, rendered outside the canvas — styled to match the donut
+ * chart's legend (see shared donut-status-chart.scss) instead of Chart.js's
+ * built-in in-canvas legend. Same treatment as the Audits by Sub-Division /
+ * Risk Rating Distribution charts on the Audit Overview page. */
+.donut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  width: 100%;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--p-slate-500);
+    cursor: pointer;
+    border-radius: 6px;
+    user-select: none;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.75; }
+    &:focus-visible {
+      outline: 2px solid var(--p-blue-500);
+      outline-offset: 2px;
+    }
+
+    /* SLA Compliance's legend is a static color key (one dataset colored
+     * per-bar by threshold, not per-dataset) — not click-to-toggle. */
+    &--static {
+      cursor: default;
+      &:hover { opacity: 1; }
+    }
+
+    &--disabled {
+      opacity: 0.4;
+
+      .donut-legend__dot { background: var(--p-slate-500) !important; }
+      .donut-legend__label,
+      .donut-legend__value { text-decoration: line-through; }
+    }
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__value {
+    margin-inline-start: 0.35rem;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+// ── Table Card ───────────────────────────────────────────────
+.table-card {
+  background: var(--surface-card);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  &__title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+.header-icon {
+  font-size: 16px;
+  color: var(--p-red-500);
+}
+
+// ── Table row / cell overrides ────────────────────────────────
+.rfi-id {
+  font-weight: 600;
+  color: var(--p-blue-600);
+  font-size: 13px;
+}
+
+.row-alert td {
+  background: color-mix(in srgb, var(--p-red-500) 8%, transparent) !important;
+}
+
+:host-context(.app-dark) .row-alert td {
+  background: rgba(220, 38, 38, 0.12) !important;
+}
+
+.sla-breach {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--p-red-500);
+  font-size: 12.5px;
+  font-weight: 600;
+
+  i { font-size: 12px; }
+}
+
+.sla-met {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--p-green-500);
+  font-size: 12.5px;
+  font-weight: 500;
+
+  i { font-size: 12px; }
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-color-secondary);
+  font-size: 13px;
+}
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}

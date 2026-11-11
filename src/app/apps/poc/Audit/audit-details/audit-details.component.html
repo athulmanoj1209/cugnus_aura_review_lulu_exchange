@@ -1,0 +1,211 @@
+<form #auditForm="ngForm" (ngSubmit)="save(auditForm)">
+<div class="audit-page">
+  <p-card styleClass="audit-card">
+    <ng-template pTemplate="header">
+      <div class="page-header">
+        <div>
+          <h2>Audit Details</h2>
+          <p>Fill in the core details for the audit record.</p>
+        </div>
+
+        <div class="header-actions">
+          
+          <p-button label="Reset" severity="secondary" [outlined]="true" (onClick)="reset()"></p-button>
+          <p-button label="Save Audit" icon="pi pi-check" type="ngSubmit"></p-button>
+          <p-button label="Edit" severity="secondary" [outlined]="true" (onClick)="modify()"></p-button>
+          <p-button label="Remove" severity="secondary" [outlined]="true" (onClick)="remove()"></p-button>
+           <p-button label="Patch" severity="secondary" [outlined]="true" (onClick)="patch()"></p-button>
+            <p-toast />
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="content-grid">
+      <div class="main-column">
+        <div class="section-card">
+          <h3>Basic Information</h3>
+
+          <div class="form-grid">
+            <div class="field">
+              <label for="auditTitle">Audit Title</label>
+              <input id="auditTitle" pInputText type="text" name="auditTitle" [(ngModel)]="audit.auditTitle" placeholder="Enter audit title" required
+    minlength="3"
+    #auditTitleCtrl="ngModel"/>
+            <small class="error" *ngIf="auditTitleCtrl.invalid && (auditTitleCtrl.touched || auditTitleCtrl.dirty)">
+    <span *ngIf="auditTitleCtrl.errors?.['required']">Audit title is required.</span>
+    <span *ngIf="auditTitleCtrl.errors?.['minlength']">Minimum 3 characters required.</span>
+  </small>
+            </div>
+
+            <div class="field">
+              <label for="auditId">Audit ID</label>
+              <input id="auditId" name="auditId" pInputText type="text" [(ngModel)]="audit.auditId" placeholder="AUD-001" name="auditId" />
+            </div>
+
+            <div class="field">
+              <label for="auditor">Auditor</label>
+              <p-select
+              name="auditors"
+                inputId="auditor"
+                [options]="auditors"
+                optionLabel="name"
+                [(ngModel)]="audit.auditor"
+                placeholder="Select auditor"
+                [showClear]="true">
+              </p-select>
+            </div>
+
+            <div class="field">
+              <label for="auditDate">Audit Date</label>
+              <p-datepicker
+              name="auditDate"
+                inputId="auditDate"
+                [(ngModel)]="audit.auditDate"
+                dateFormat="dd/mm/yy"
+                [showIcon]="true"
+                placeholder="Select date">
+              </p-datepicker>
+            </div>
+
+            <div class="field">
+              <label>Audit Type</label>
+              <div class="inline-options">
+                <div class="option-item">
+                  <p-radiobutton inputId="typeInternal" name="auditType" value="Internal" [(ngModel)]="audit.auditType" required></p-radiobutton>
+                  <label for="typeInternal">Internal</label>
+                </div>
+                <div class="option-item">
+                  <p-radiobutton inputId="typeExternal" name="auditType" value="External" [(ngModel)]="audit.auditType" required></p-radiobutton>
+                  <label for="typeExternal">External</label>
+                </div>
+                 <small class="error" *ngIf="auditForm.submitted && !audit.auditType">
+      Audit type is required.
+    </small>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="location">Location</label>
+              <p-select
+              name="location"
+                inputId="location"
+                [options]="locations"
+                optionLabel="name"
+                [(ngModel)]="audit.location"
+                placeholder="Select location"
+                [showClear]="true" required>
+              </p-select>
+               <small class="error" *ngIf="auditForm.submitted && !audit.location">
+      Location is required.
+    </small>
+            </div>
+
+            <div class="field">
+              <label for="riskLevel">Risk Level</label>
+              <p-select
+              name="riskLevel"
+                inputId="riskLevel"
+                [options]="riskLevels"
+                optionLabel="name"
+                [(ngModel)]="audit.riskLevel"
+                placeholder="Select risk level"
+                [showClear]="true" required>
+              </p-select>
+              <small class="error" *ngIf="auditForm.submitted && !audit.riskLevel">
+      Risk level is required.
+    </small>
+            </div>
+
+            <div class="field full-width">
+              <label>Priority</label>
+              <div class="inline-options">
+                <div class="option-item" *ngFor="let p of priorityOptions">
+                  <p-radiobutton
+                    [inputId]="'priority_' + p.value"
+                    name="priority"
+                    [value]="p.value"
+                    [(ngModel)]="audit.priority" required>
+                  </p-radiobutton>
+                  <label [for]="'priority_' + p.value">{{ p.label }}</label>
+                </div>
+               
+              </div>
+            </div>
+
+            <div class="field full-width">
+              <label for="observations">Observations</label>
+              <textarea
+              name="observations"
+                id="observations"
+                pInputTextarea
+                [(ngModel)]="audit.observations"
+                rows="5"
+                placeholder="Enter audit observations..."
+                autoResize="true" required minlength="10"
+      maxlength="500">
+              </textarea>
+            </div>
+            <small class="error" *ngIf="auditForm.submitted && !audit.observations">
+      Observations are required.
+    </small>
+    <small class="error" *ngIf="auditForm.submitted && audit.observations&& audit.observations.length < 10">
+      Observations must be at least 10 characters.
+    </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="side-column">
+        <div class="section-card">
+          <h3>Departments Involved</h3>
+          <div class="checkbox-list">
+            <div class="checkbox-item" *ngFor="let dept of departmentOptions">
+              <p-checkbox
+                [inputId]="dept.value"
+                name="departments"
+                [value]="dept.value"
+                [(ngModel)]="audit.departments">
+              </p-checkbox>
+              <label [for]="dept.value">{{ dept.label }}</label>
+            </div>
+            <small class="error" *ngIf="auditForm.submitted && (!audit.departments || audit.departments.length === 0)">
+        Select at least one department.
+      </small>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3>Additional Flags</h3>
+          <div class="toggle-list">
+            <div class="toggle-item">
+              <p-checkbox inputId="isPlanned" name="isPlanned" [binary]="true" [(ngModel)]="audit.isPlanned"></p-checkbox>
+              <label for="isPlanned">Planned Audit</label>
+            </div>
+
+            <div class="toggle-item">
+              <p-checkbox inputId="needsFollowUp" name="needsFollowUp" [binary]="true" [(ngModel)]="audit.needsFollowUp" name="needsFollowUp"></p-checkbox>
+              <label for="needsFollowUp">Needs Follow-up</label>
+            </div>
+            <small class="error" *ngIf="auditForm.submitted && (!audit.isPlanned &&!audit.needsFollowUp)">
+        Select at least one flag.
+      </small>
+          </div>
+        </div>
+<div class="section-card">
+                
+                    
+                    <p-fileupload name="demo1[]" [customUpload]="true"
+  (uploadHandler)="onUploadHandler($event)"   accept="image/*" maxFileSize="1000000" mode="advanced" >
+                        <ng-template #empty>
+                            <div>Drag and drop files to here to upload.</div>
+                        </ng-template>
+                    </p-fileupload>
+                </div>
+            </div>
+        
+      
+    </div>
+     
+  </p-card>
+</div>
+</form>

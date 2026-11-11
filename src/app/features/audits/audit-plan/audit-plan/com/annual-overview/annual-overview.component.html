@@ -1,0 +1,112 @@
+<!-- legend: toggle first, then ONLY the active colour mode's legend
+     (showing both at once made clients read two competing colour systems) -->
+<div class="legend panelish">
+  <span class="leg-lbl">Colour by</span>
+  <span class="mode-seg">
+    <button class="mode-btn" [class.active]="colorMode() === ColorModes.Status" (click)="colorMode.set(ColorModes.Status)">Status</button>
+    <button class="mode-btn" [class.active]="colorMode() === ColorModes.Freq" (click)="colorMode.set(ColorModes.Freq)">Frequency</button>
+  </span>
+  <span class="leg-div"></span>
+
+  @if (colorMode() === ColorModes.Status) {
+    @for (st of statusKeys; track st) {
+      <span class="leg"><span class="sw st-{{ st }}"></span>{{ meta[st].label }}</span>
+    }
+    <span class="leg"><span class="sw ghost-sw"></span>Not scheduled</span>
+    <span class="leg-hint">Stripe on the scope name = frequency</span>
+  } @else {
+    @for (f of freqKeys; track f) {
+      <span class="leg"><span class="fq-dot bf-{{ f }}"></span><b>{{ f }}</b>&nbsp;{{ freqLabels[f] }}</span>
+    }
+    <span class="leg-hint">Marks inside pills: ✓ done · … running · ! overdue</span>
+  }
+</div>
+
+@for (subDivision of pagedLanes(); track subDivision.id) {
+  <section class="dept" [class.open]="!collapsed().has(subDivision.id)">
+    <header class="dept-hdr" (click)="toggle(subDivision.id)">
+      <span class="caret">▶</span>
+      <span class="dept-name">{{ subDivision.name }}</span>
+      <span class="dept-meta">{{ subDivision.isDivisionLevel ? 'Division · ' : '' }}{{ subDivision.scopes.length }} scopes · {{ subDivision.instances }} instances</span>
+      <span class="dept-track">
+        @for (st of subDivision.rollup; track $index) { <i class="{{ st ? 'r-' + st : '' }}"></i> }
+      </span>
+      <span class="dept-pct">{{ subDivision.pct }}% done</span>
+      <button class="open-dept" (click)="$event.stopPropagation(); store.drillToSubDivision(subDivision.id)"
+              [pTooltip]="subDivision.isDivisionLevel ? 'Open division view' : 'Open sub-division view'">›</button>
+    </header>
+
+    <div class="dept-body">
+      <div class="qstrip">
+        <div class="qlabel">Audit scope</div>
+        @for (q of quarters; track q) {
+          <div class="q">
+            <div class="qname">Q{{ q + 1 }}</div>
+            <div class="qmonths">
+              @for (m of quarterMonths(q); track m.mi) {
+                <span (click)="store.drillToMonth(m.mi)" pTooltip="Open {{ m.label }} calendar">{{ m.label }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      @for (row of subDivision.visibleScopes; track row.scope.id) {
+        <div class="scope">
+          <div class="scope-info">
+            <span class="scope-title" (click)="store.drillToScope(row.scope.id)">
+              <span class="stripe bf-{{ row.scope.freq }}"></span>{{ row.scope.name }}
+            </span>
+            <span class="scope-sub">{{ row.scope.code }} · {{ row.scope.auditor }}
+              <span class="fq pf-{{ row.scope.freq }}">{{ row.scope.freq }}</span>
+            </span>
+          </div>
+          @for (qp of row.quarters; track $index) {
+            <div class="qcell">
+              @for (p of qp; track p.monthIndex) {
+                @if (p.status === null) {
+                  <div class="pill ghost" (click)="store.drillToMonth(p.monthIndex)">·</div>
+                } @else {
+                  <div class="pill"
+                       [class]="colorMode() === ColorModes.Status ? 'pill st-' + p.status : 'pill pf-' + row.scope.freq"
+                       [pTooltip]="p.tooltip"
+                       (click)="openPill(subDivision.name, row.scope, p)">
+                    <span class="m">{{ p.monthLabel }}</span>
+                    @if (colorMode() === ColorModes.Freq) { <span class="stdot sd-{{ p.status }}"></span> }
+                    {{ p.mark }}
+                    @if (p.runs.length > 1) {
+                      <span class="runs">
+                        @for (r of p.runs; track $index; let ri = $index) {
+                          <i class="r-{{ r }}"
+                             (click)="$event.stopPropagation(); openPillRun(subDivision.name, row.scope, p, ri)"></i>
+                        }
+                      </span>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      }
+
+      @if (subDivision.scopes.length > scopeRowsPerPage) {
+        <p-paginator styleClass="scope-pgr"
+          [first]="subDivision.scopeFirst" [rows]="scopeRowsPerPage" [totalRecords]="subDivision.scopes.length"
+          [showFirstLastIcon]="false"
+          currentPageReportTemplate="Scopes {first}–{last} of {totalRecords}"
+          [showCurrentPageReport]="true"
+          (onPageChange)="onScopePage(subDivision.id, $event)" />
+      }
+    </div>
+  </section>
+}
+
+@if (lanes().length > subDivisionRows()) {
+  <p-paginator styleClass="dept-pgr"
+    [first]="subDivisionFirstClamped()" [rows]="subDivisionRows()" [totalRecords]="lanes().length"
+    [rowsPerPageOptions]="subDivisionRowsPerPageOptions"
+    currentPageReportTemplate="Sub-Divisions {first}–{last} of {totalRecords}"
+    [showCurrentPageReport]="true"
+    (onPageChange)="onSubDivisionPage($event)" />
+}

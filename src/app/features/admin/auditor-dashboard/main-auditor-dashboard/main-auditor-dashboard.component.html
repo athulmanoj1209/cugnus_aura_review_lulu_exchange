@@ -1,0 +1,119 @@
+<div class="dashboard-wrapper">
+
+  <!-- ── Tab Bar ─────────────────────────────────────────────── -->
+  <div class="tab-bar">
+    @for (tab of tabs; track tab.id) {
+      <button
+        class="tab-btn"
+        [ngClass]="{ 'tab-btn--active': activeTab === tab.id }"
+        (click)="activeTab = tab.id">
+        @switch (tab.icon) {
+          @case ('pi pi-home') {
+            <svg class="draw-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path pathLength="100" d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline pathLength="100" points="9 22 9 12 15 12 15 22"></polyline>
+            </svg>
+          }
+          @case ('pi pi-list') {
+            <svg class="draw-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line pathLength="100" x1="8" y1="6" x2="21" y2="6"></line>
+              <line pathLength="100" x1="8" y1="12" x2="21" y2="12"></line>
+              <line pathLength="100" x1="8" y1="18" x2="21" y2="18"></line>
+            </svg>
+          }
+          @case ('pi pi-file') {
+            <svg class="draw-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path pathLength="100" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline pathLength="100" points="14 2 14 8 20 8"></polyline>
+            </svg>
+          }
+          @case ('pi pi-play-circle') {
+            <svg class="draw-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+              <polygon pathLength="100" points="10 8 16 12 10 16 10 8"></polygon>
+            </svg>
+          }
+          @case ('pi pi-check-circle') {
+            <svg class="draw-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          }
+          @case ('pi pi-users') {
+            <svg class="draw-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path pathLength="100" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle pathLength="100" cx="9" cy="7" r="4"></circle>
+              <path pathLength="100" d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+          }
+          @default {
+            <i [class]="tab.icon"></i>
+          }
+        }
+        <span>{{ tab.label }}</span>
+      </button>
+    }
+  </div>
+
+  <!-- ── Tab Panels ──────────────────────────────────────────── -->
+  <div class="tab-content">
+
+    @if (activeTab === AuditorDashboardTabs.Overview) {
+      <div class="tab-panel">
+        <app-auditor-overview-tab [currentAuditor]="currentAuditor"></app-auditor-overview-tab>
+      </div>
+    }
+
+    @if (activeTab === AuditorDashboardTabs.TeamOverview) {
+      @defer (when activeTab === AuditorDashboardTabs.TeamOverview; prefetch on idle) {
+        <div class="tab-panel">
+          <app-auditor-team-overview-tab [currentAuditor]="currentAuditor"></app-auditor-team-overview-tab>
+        </div>
+      } @placeholder {
+        <div i18n="@@admin.auditorDashboard.preparingTeamOverview">Preparing team overview...</div>
+      }
+    }
+
+    @if (activeTab === AuditorDashboardTabs.ScopeManagement) {
+      @defer (when activeTab === AuditorDashboardTabs.ScopeManagement; prefetch on idle) {
+        <div class="tab-panel">
+          <app-auditor-my-audits-scopes-tab [currentAuditor]="currentAuditor"></app-auditor-my-audits-scopes-tab>
+        </div>
+      } @placeholder {
+        <div i18n="@@admin.auditorDashboard.preparingAuditsScopes">Preparing my audits & scopes...</div>
+      }
+    }
+
+    @if (activeTab === AuditorDashboardTabs.WorkingPapers) {
+      @defer (when activeTab === AuditorDashboardTabs.WorkingPapers; prefetch on idle) {
+        <div class="tab-panel">
+          <app-auditor-working-papers-rfis-tab [currentAuditor]="currentAuditor"></app-auditor-working-papers-rfis-tab>
+        </div>
+      } @placeholder {
+        <div i18n="@@admin.auditorDashboard.preparingWorkingPapersRfis">Preparing working papers & RFIs...</div>
+      }
+    }
+
+    @if (activeTab === AuditorDashboardTabs.Execution) {
+      @defer (when activeTab === AuditorDashboardTabs.Execution; prefetch on idle) {
+        <div class="tab-panel">
+          <app-auditor-execution-tab [currentAuditor]="currentAuditor"></app-auditor-execution-tab>
+        </div>
+      } @placeholder {
+        <div i18n="@@admin.auditorDashboard.preparingExecution">Preparing execution...</div>
+      }
+    }
+
+    @if (activeTab === AuditorDashboardTabs.Reviews) {
+      @defer (when activeTab === AuditorDashboardTabs.Reviews; prefetch on idle) {
+        <div class="tab-panel">
+          <app-auditor-reviews-tab [currentAuditor]="currentAuditor"></app-auditor-reviews-tab>
+        </div>
+      } @placeholder {
+        <div i18n="@@admin.auditorDashboard.preparingReviews">Preparing reviews...</div>
+      }
+    }
+
+  </div>
+
+</div>

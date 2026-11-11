@@ -1,0 +1,128 @@
+<div class="tab-canvas">
+
+  <!-- Scope summary stats -->
+  <div class="scope-summary-grid">
+    <div class="scope-stat scope-stat--clickable"
+      (click)="openScopeSummary.emit()"
+      (keydown.enter)="openScopeSummary.emit()"
+      (keydown.space)="openScopeSummary.emit()"
+      role="button"
+      tabindex="0">
+      <span class="scope-stat-value">{{ scopeStats.total }}</span>
+      <span class="scope-stat-label" i18n="@@client.clientDashboard.totalItems">Total items</span>
+    </div>
+    <div class="scope-stat scope-stat--success scope-stat--clickable"
+      (click)="openScopeSummary.emit('completed')"
+      (keydown.enter)="openScopeSummary.emit('completed')"
+      (keydown.space)="openScopeSummary.emit('completed')"
+      role="button"
+      tabindex="0">
+      <span class="scope-stat-value">{{ scopeStats.completed }}</span>
+      <span class="scope-stat-label" i18n="@@common.completed">Completed</span>
+    </div>
+    <div class="scope-stat scope-stat--info scope-stat--clickable"
+      (click)="openScopeSummary.emit('in-progress')"
+      (keydown.enter)="openScopeSummary.emit('in-progress')"
+      (keydown.space)="openScopeSummary.emit('in-progress')"
+      role="button"
+      tabindex="0">
+      <span class="scope-stat-value">{{ scopeStats.onTrack }}</span>
+      <span class="scope-stat-label" i18n="@@common.inProgressOnTrack">In progress / On track</span>
+    </div>
+    <!-- "At risk / Delayed" groups several ScopeStatus values, but the live source
+         (audit-scope-summary.component.ts) only ever produces 'not-started' among them —
+         'At risk'/'Delayed'/'Pending' never occur in real data — so 'not-started' is the
+         correct single-status filter for what this card actually shows. -->
+    <div class="scope-stat scope-stat--danger scope-stat--clickable"
+      (click)="openScopeSummary.emit('not-started')"
+      (keydown.enter)="openScopeSummary.emit('not-started')"
+      (keydown.space)="openScopeSummary.emit('not-started')"
+      role="button"
+      tabindex="0">
+      <span class="scope-stat-value">{{ scopeStats.atRisk }}</span>
+      <span class="scope-stat-label" i18n="@@common.atRiskDelayed">At risk / Delayed</span>
+    </div>
+    <!-- No single status filter maps to "average completion" on that page, so this opens
+         the full, unfiltered list rather than a specific status. -->
+    <div class="scope-stat scope-stat--primary scope-stat--clickable"
+      (click)="openScopeSummary.emit()"
+      (keydown.enter)="openScopeSummary.emit()"
+      (keydown.space)="openScopeSummary.emit()"
+      role="button"
+      tabindex="0">
+      <span class="scope-stat-value">{{ scopeStats.avgProgress }}%</span>
+      <span class="scope-stat-label" i18n="@@client.clientDashboard.averageCompletion">Avg. completion</span>
+    </div>
+  </div>
+
+  <p-card styleClass="dash-card">
+    <ng-template pTemplate="header">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-title">
+            <app-draw-icon icon="pi pi-list-check"></app-draw-icon>
+            @if (isCfo) {
+              {{ scopeSummaryLabel }}
+              {{ scopeListView === 'division' ? divisionsLabel : subDivisionsLabel }}
+            } @else {
+              {{ myScopeLabel }} — {{ itSecurityAssessmentLabel }}
+            }
+          </span>
+          <span class="card-subtitle">
+            <span>{{ listedScopes.length }} {{scopeItemsLabel}}</span>
+            @if (listedScopes.length > PREVIEW_COUNT) {
+              · <span i18n="@@client.clientDashboard.showingFirst">
+                showing first
+              </span>
+              {{ PREVIEW_COUNT }}
+            }
+          </span>
+        </div>
+        <div class="card-actions">
+          @if (isCfo) {
+            <div class="view-toggle" role="group" aria-label="View scopes by" i18n-aria-label="@@client.clientDashboard.viewScopesBy">
+              @for (view of unitViews; track view.key) {
+                <button type="button"
+                        class="view-toggle__btn"
+                        [class.view-toggle__btn--active]="scopeListView === view.key"
+                        [attr.aria-pressed]="scopeListView === view.key"
+                        (click)="setScopeListView(view.key)">
+                  {{ view.label }}
+                </button>
+              }
+            </div>
+          }
+          <p-button [label]="viewAllLabel" icon="pi pi-external-link" [text]="true" size="small"
+                    [disabled]="!listedScopes.length" (onClick)="openScopesDetail()" />
+        </div>
+      </div>
+    </ng-template>
+    <div class="scope-list">
+      @for (scope of previewScopes; track scope.name) {
+        <div class="scope-row">
+          <div class="scope-meta">
+            <span class="scope-name" [pTooltip]="scope.name" tooltipPosition="top">{{ scope.name }}</span>
+            @if (isCfo && scope.divisionLevel && scope.division) {
+              <span class="sub-division-tag" [pTooltip]="'Division-level scope'" i18n-pTooltip="@@client.clientDashboard.divisionLevelScope" tooltipPosition="top">{{ scope.division }}</span>
+            } @else if (isCfo && scope.ownSubDivision) {
+              <span class="sub-division-tag" [pTooltip]="scope.ownSubDivision + ' · ' + scope.division" tooltipPosition="top">{{ scope.ownSubDivision }} · {{ scope.division }}</span>
+            } @else if (isCfo && scope.subDivision) {
+              <span class="sub-division-tag" [pTooltip]="scope.subDivision" tooltipPosition="top">{{ scope.subDivision }}</span>
+            }
+          </div>
+          <div class="scope-progress">
+            <p-progressBar
+              [value]="scope.progress"
+              [showValue]="false"
+              styleClass="slim-bar"
+              [style]="{ '--bar-color': progressColor[scope.status] }"
+            />
+            <span class="pct">{{ scope.progress }}%</span>
+          </div>
+          <p-tag [value]="scope.status" [severity]="scopeSeverity[scope.status]" styleClass="status-tag" />
+        </div>
+      }
+    </div>
+  </p-card>
+
+</div>

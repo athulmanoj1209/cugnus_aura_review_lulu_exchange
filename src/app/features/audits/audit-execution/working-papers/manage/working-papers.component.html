@@ -1,0 +1,261 @@
+<div class="add-wp-content">
+
+  <!-- HEADER -->
+  <div class="drawer-header" [class.drawer-header--approve]="isApprove">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap" [class.drawer-icon-wrap--approve]="isApprove">
+        <i class="pi" [ngClass]="isApprove ? drawerIcons.Approve : drawerIcons.Default"></i>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ headerTitle }}</h2>
+        <p class="drawer-subtitle">{{ headerSubtitle }}</p>
+      </div>
+    </div>
+    <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- APPROVE BANNER -->
+  <div *ngIf="isApprove" class="approve-banner">
+    <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+    <span i18n="@@audit.workingPapers.reviewBanner">Review the working paper details. Add your <strong>reviewer notes</strong> below and approve or reject.</span>
+  </div>
+
+  <!-- BODY -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="drawer-body">
+    <div class="form-grid">
+
+      <!-- Title -->
+      <div class="form-field form-field--full">
+        <label for="wp-title" class="form-label"><span i18n="@@common.title">Title</span> *</label>
+        <input pInputText id="wp-title" formControlName="title"
+               placeholder="Enter working paper title" i18n-placeholder="@@audit.workingPapers.titlePlaceholder" [invalid]="isInvalid('title')" />
+        <small *ngIf="getError('title','Title') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Working Paper Type -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.workingPapers.workingPaperType">Working Paper Type</span> *</label>
+        <p-select formControlName="wpType" [options]="wpTypeOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select type" i18n-placeholder="@@audit.workingPapers.selectType"
+                  [invalid]="isInvalid('wpType')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('wpType','Type') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Company -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@common.company">Company</label>
+        <p-select formControlName="company" [options]="companyOptions()" optionLabel="label" optionValue="value" placeholder="Select company" i18n-placeholder="@@audit.workingPapers.selectCompany"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Division -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@common.division">Division</label>
+        <p-select formControlName="division" [options]="divisionOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="form.get('company')?.value ? placeholders.Division : placeholders.CompanyFirst"
+                  [disabled]="!form.get('company')?.value"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Sub-Division -->
+      <div class="form-field">
+        <label class="form-label">
+          <span i18n="@@common.subDivision">Sub-Division</span>
+          <span *ngIf="subDivisionOptions().length"> *</span>
+        </label>
+        <p-select formControlName="subDivision" [options]="subDivisionOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="!form.get('division')?.value ? placeholders.DivisionFirst
+                                 : divisionHasSubDivision() ? placeholders.SubDivision : placeholders.NoSubDivisions"
+                  [disabled]="!form.get('division')?.value || !divisionHasSubDivision()"
+                  [invalid]="isInvalid('subDivision')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('subDivision','Sub-Division') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Scope -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.scope">Scope</span> *</label>
+        <p-select formControlName="scope" [options]="scopeOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="scopeSelectable() ? placeholders.Scope : placeholders.SubDivisionFirst"
+                  [disabled]="!scopeSelectable()"
+                  [invalid]="isInvalid('scope')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('scope','Scope') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Subscope (optional when the selected scope has no sub-scopes defined) -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@common.subScope">Sub-Scope</label>
+        <p-select formControlName="subscope" [options]="subscopeOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="!form.get('scope')?.value ? placeholders.ScopeFirst : (subscopeOptions().length ? placeholders.Subscope : placeholders.NoSubscopes)"
+                  [disabled]="!form.get('scope')?.value || !subscopeOptions().length"
+                  [invalid]="isInvalid('subscope')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('subscope','Subscope') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Finding -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@audit.workingPapers.finding">Finding</label>
+        <p-select formControlName="findingId" [options]="findingOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select finding" i18n-placeholder="@@audit.workingPapers.selectFinding"
+                  [filter]="true" styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Assertion -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.workingPapers.assertion">Assertion</span> *</label>
+        <p-select formControlName="assertion" [options]="assertionOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select assertion" i18n-placeholder="@@audit.workingPapers.selectAssertion"
+                  [invalid]="isInvalid('assertion')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('assertion','Assertion') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Risk Level -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.workingPapers.riskLevel">Risk Level</span> *</label>
+        <p-select formControlName="riskLevel" [options]="riskOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select risk" i18n-placeholder="@@audit.workingPapers.selectRisk"
+                  [invalid]="isInvalid('riskLevel')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('riskLevel','Risk Level') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Status -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.status">Status</span> *</label>
+        <p-select formControlName="status" [options]="statusOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select status" i18n-placeholder="@@audit.workingPapers.selectStatus"
+                  [invalid]="isInvalid('status')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('status','Status') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Objective -->
+      <div class="form-field form-field--full">
+        <label for="wp-objective" class="form-label" i18n="@@audit.workingPapers.objectivePurpose">Objective / Purpose</label>
+        <textarea pTextarea id="wp-objective" formControlName="objective"
+                  placeholder="What this working paper sets out to test or confirm…"
+                  i18n-placeholder="@@audit.workingPapers.objectivePlaceholder"
+                  [autoResize]="true" rows="2"></textarea>
+        <small *ngIf="getError('objective','Objective') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Procedures -->
+      <div class="form-field form-field--full">
+        <label for="wp-procedures" class="form-label" i18n="@@audit.workingPapers.proceduresPerformed">Procedures Performed</label>
+        <textarea pTextarea id="wp-procedures" formControlName="procedures"
+                  placeholder="Audit procedures carried out…"
+                  i18n-placeholder="@@audit.workingPapers.proceduresPlaceholder"
+                  [autoResize]="true" rows="3"></textarea>
+        <small *ngIf="getError('procedures','Procedures') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Conclusion -->
+      <div class="form-field form-field--full">
+        <label for="wp-conclusion" class="form-label" i18n="@@audit.workingPapers.conclusionResults">Conclusion / Results</label>
+        <textarea pTextarea id="wp-conclusion" formControlName="conclusion"
+                  placeholder="Outcome and conclusion…"
+                  i18n-placeholder="@@audit.workingPapers.conclusionPlaceholder"
+                  [autoResize]="true" rows="2"></textarea>
+        <small *ngIf="getError('conclusion','Conclusion') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-field form-field--full">
+        <label for="wp-notes" class="form-label" i18n="@@audit.workingPapers.notesComments">Notes / Comments</label>
+        <textarea pTextarea id="wp-notes" formControlName="notes"
+                  placeholder="Additional notes…"
+                  i18n-placeholder="@@audit.workingPapers.notesPlaceholder"
+                  [autoResize]="true" rows="2"></textarea>
+        <small *ngIf="getError('notes','Notes') as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- File upload -->
+      <div class="form-field form-field--full">
+        <label class="form-label" i18n="@@audit.workingPapers.supportingDocuments">Supporting Documents</label>
+
+        <!-- Existing files (edit / review mode) -->
+        <ul *ngIf="(isEdit || isApprove) && existingFiles.length > 0" class="file-list file-list--existing">
+          <li *ngFor="let f of existingFiles; let i = index" class="file-list__item">
+            <i class="pi file-list__icon" [ngClass]="fileIcon(f.name)"></i>
+            <span class="file-list__name">{{ f.name }}</span>
+            <span class="file-list__size">{{ formatFileSize(f.size) }}</span>
+            <button type="button" class="file-list__remove" (click)="removeExistingFile(i)" *ngIf="!isApprove">
+              <app-draw-icon icon="pi pi-times"></app-draw-icon>
+            </button>
+          </li>
+        </ul>
+
+        <p-fileupload #fileUploader mode="advanced" [multiple]="true"
+          [accept]="upload.Accept"
+          [maxFileSize]="upload.MaxFileSizeBytes" [auto]="false" [customUpload]="true"
+          (onSelect)="onFilesSelected($event)" styleClass="custom-fileupload"
+          [showUploadButton]="false" [showCancelButton]="false">
+          <ng-template pTemplate="content">
+            <div class="upload-drop-zone">
+              <div class="upload-drop-zone__icon-wrap"><app-draw-icon icon="pi pi-cloud-upload"></app-draw-icon></div>
+              <p class="upload-drop-zone__title" i18n="@@audit.workingPapers.dragDropFiles">Drag &amp; drop files here</p>
+              <span class="upload-drop-zone__or" i18n="@@common.or">or</span>
+              <button type="button" class="upload-browse-btn" (click)="fileUploader.choose()">
+                <app-draw-icon icon="pi pi-upload"></app-draw-icon> <span i18n="@@audit.workingPapers.browseFiles">Browse files</span>
+              </button>
+              <p class="upload-drop-zone__hint" i18n="@@audit.workingPapers.fileUploadHint">PDF, Word, Excel, Images — max 10 MB each</p>
+            </div>
+          </ng-template>
+        </p-fileupload>
+        <ul *ngIf="uploadedFiles.length > 0" class="file-list">
+          <li *ngFor="let f of uploadedFiles; let i = index" class="file-list__item">
+            <i class="pi file-list__icon" [ngClass]="fileIcon(f.name)"></i>
+            <span class="file-list__name">{{ f.name }}</span>
+            <span class="file-list__size">{{ formatFileSize(f.size) }}</span>
+            <button type="button" class="file-list__remove" (click)="removeFile(i)">
+              <app-draw-icon icon="pi pi-times"></app-draw-icon>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- ── REVIEWER NOTES (approve mode only) ─────────────────── -->
+    <div *ngIf="isApprove" class="reviewer-section">
+      <div class="reviewer-section__head">
+        <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+        <span i18n="@@audit.workingPapers.reviewerNotes">Reviewer Notes</span>
+        <span class="reviewer-section__hint" i18n="@@common.requiredWhenRejecting">Required when rejecting</span>
+      </div>
+      <div class="form-field">
+        <textarea pTextarea formControlName="reviewerNotes"
+                  placeholder="Add your review notes here. Notes are mandatory when rejecting…"
+                  i18n-placeholder="@@audit.workingPapers.reviewerNotesPlaceholder"
+                  [autoResize]="true" rows="4"
+                  [class.ng-invalid]="isInvalid('reviewerNotes')"
+                  [class.ng-touched]="isInvalid('reviewerNotes')"></textarea>
+        <small *ngIf="isInvalid('reviewerNotes')" class="error-text" i18n="@@audit.workingPapers.reviewerNotesRequired">
+          {{ formErrors.ReviewerNotesRequired }}
+        </small>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- FOOTER -->
+  <div class="drawer-footer">
+    <ng-container *ngIf="isApprove">
+      <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onCancel()" type="button"></p-button>
+      <div class="footer-approve-actions">
+        <p-button label="Reject" i18n-label="@@common.reject" icon="pi pi-times" styleClass="btn-reject"
+                  (onClick)="onReject()" type="button"></p-button>
+        <p-button label="Approve" i18n-label="@@common.approve" icon="pi pi-check" styleClass="btn-approve"
+                  (onClick)="onApprove()" type="button"></p-button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!isApprove">
+      <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onCancel()" type="button"></p-button>
+      <p-button [label]="submitLabel" styleClass="submit-btn" type="submit" (onClick)="onSubmit()"></p-button>
+    </ng-container>
+  </div>
+
+</div>

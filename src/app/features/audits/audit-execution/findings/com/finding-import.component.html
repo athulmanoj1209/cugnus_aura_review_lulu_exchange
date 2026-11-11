@@ -1,0 +1,16 @@
+<p-dialog [(visible)]="visible" [modal]="true" [closable]="false" header="Import Findings" [style]="{width: 'min(700px, calc(100vw - 2rem))'}">
+  <p>Upload an Excel file to bulk-import findings.</p>
+  <button type="button" (click)="downloadTemplate()">Download Template</button>
+  <input #fileInput type="file" hidden accept=".csv,.xlsx,.xls" (change)="select($event)" />
+  <div class="dropzone" (dragover)="$event.preventDefault()" (drop)="drop($event)" (click)="fileInput.click()">
+    {{ file()?.name || 'Drag and drop a file here or click to browse' }}
+  </div>
+  <p class="error" *ngIf="error()">{{ error() }}</p>
+  <p class="success" *ngIf="resultMessage()">{{ resultMessage() }}</p>
+  <div *ngIf="previewRows().length" class="preview">
+    <strong>Preview ({{ previewRows().length }} rows)</strong>
+    <div class="preview-table"><table><thead><tr><th *ngFor="let header of headers">{{ header }}</th></tr></thead><tbody><tr *ngFor="let row of previewRows() | slice:0:5"><td *ngFor="let header of headers">{{ row[header] }}</td></tr></tbody></table></div>
+  </div>
+  <ul class="validation-errors" *ngIf="rowErrors().length"><li *ngFor="let item of rowErrors()">{{ item }}</li></ul>
+  <ng-template pTemplate="footer"><button type="button" (click)="close()">Cancel</button><button type="button" [disabled]="!file() || rowErrors().length > 0 || !previewRows().length" (click)="upload()">Upload Findings</button></ng-template>
+</p-dialog>

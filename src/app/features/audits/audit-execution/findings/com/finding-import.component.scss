@@ -1,0 +1,9 @@
+.dropzone { padding: 3rem 1rem; border: 2px dashed #aab8d0; border-radius: 8px; text-align: center; cursor: pointer; }
+.error { color: #c62828; }
+.success { color: #247a45; }
+.preview { margin-top: 1rem; }
+.preview-table { overflow: auto; max-height: 220px; margin-top: .5rem; }
+table { border-collapse: collapse; font-size: 12px; white-space: nowrap; }
+th, td { border: 1px solid #d8dee9; padding: 6px 8px; text-align: left; }
+th { background: #eef3f9; }
+.validation-errors { color: #c62828; margin: .75rem 0 0; padding-left: 1.25rem; font-size: 12px; }

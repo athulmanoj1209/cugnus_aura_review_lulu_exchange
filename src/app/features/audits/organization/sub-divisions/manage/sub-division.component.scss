@@ -1,0 +1,376 @@
+$primary: var(--primary-color);
+$primary-light: color-mix(in srgb, var(--primary-color) 16%, transparent);
+$border: var(--surface-border);
+$text-dark: var(--text-color);
+$text-muted: var(--text-color-secondary);
+$danger: var(--p-red-500);
+$success: var(--p-green-500);
+
+:host ::ng-deep .sub-division-drawer {
+  width: 720px !important;
+  .p-drawer-content {
+    padding: 0;
+    overflow: hidden;
+    // width: 720px !important;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.sub-division-drawer-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--surface-ground);
+}
+
+/* ── Header ──────────────────────────────── */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  background: var(--surface-card);
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+}
+
+.drawer-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--surface-hover);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 18px;
+    color: $primary;
+  }
+}
+
+.drawer-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.drawer-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-color);
+  margin: 0;
+
+  strong {
+    font-weight: 700;
+    color: $primary;
+  }
+}
+
+.drawer-subtitle {
+  font-size: 11px;
+  color: var(--text-color-secondary);
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: 1px solid $border;
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+
+  .pi { font-size: 13px; color: var(--text-color-secondary); }
+}
+
+/* ── Body ────────────────────────────────── */
+.sub-division-drawer-body {
+  flex: 1 1 0;
+  overflow-y: auto;
+  padding: 20px 24px 16px;
+  margin: 1.5rem;
+  background: var(--surface-card);
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 12px rgba(0, 0, 0, 0.04);
+  min-height: 0;
+
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-border) transparent;
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: var(--surface-border); border-radius: 4px; }
+}
+
+/* ── Section ─────────────────────────────── */
+.sub-division-section {
+  padding: 16px 0 4px;
+}
+
+.sub-division-section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $text-muted;
+  margin-bottom: 14px;
+}
+
+.sub-division-section-icon {
+  font-size: 13px;
+  color: $primary;
+}
+
+:host ::ng-deep .sub-division-divider {
+  margin: 0;
+  .p-divider-content { display: none; }
+}
+
+/* ── Form rows ───────────────────────────── */
+.sub-division-form-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.sub-division-form-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  &.full { flex: 0 0 100%; }
+}
+
+/* ── Labels ──────────────────────────────── */
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.field-required {
+  color: $danger;
+  margin-left: 2px;
+}
+
+.field-hint {
+  font-size: 11px;
+  color: $text-muted;
+  margin-top: 2px;
+}
+
+/* ── Inputs ──────────────────────────────── */
+.form-input {
+  width: 100%;
+  height: 40px;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  padding: 0 12px;
+  font-size: 13px;
+  color: $text-dark;
+  background: var(--surface-card);
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 10%, transparent);
+  }
+
+  &.input-error {
+    border-color: $danger;
+    &:focus { box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-red-500) 10%, transparent); }
+  }
+
+  &::placeholder { color: var(--text-color-secondary); }
+
+  &.sub-division-id-input {
+    background: var(--surface-hover);
+    color: $primary;
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: default;
+    border-style: dashed;
+    &:focus { border-color: var(--surface-border); box-shadow: none; }
+  }
+}
+
+.form-textarea {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--surface-border);
+  padding: 10px 12px;
+  font-size: 13px;
+  color: $text-dark;
+  background: var(--surface-card);
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.15s;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 10%, transparent);
+  }
+
+  &::placeholder { color: var(--text-color-secondary); }
+}
+
+:host ::ng-deep {
+  .form-dropdown {
+    width: 100%;
+
+    .p-select {
+      width: 100%;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--surface-border);
+      background: var(--surface-card);
+      font-size: 13px;
+    }
+  }
+
+  .form-datepicker {
+    width: 100%;
+
+    .p-datepicker-input {
+      width: 100%;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--surface-border);
+      font-size: 13px;
+    }
+  }
+
+  .form-inputnumber {
+    width: 100%;
+
+    .p-inputnumber-input {
+      width: 100%;
+      height: 40px;
+      border-radius: 8px;
+      border: 1px solid var(--surface-border);
+      font-size: 13px;
+    }
+  }
+}
+
+.error-hint {
+  font-size: 11px;
+  color: $danger;
+}
+
+/* ── Footer ──────────────────────────────── */
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid $border;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+:host ::ng-deep {
+  .cancel-btn.p-button {
+    background: var(--surface-hover) !important;
+    border: none !important;
+    color: var(--primary-color) !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    padding: 0.7rem 2.5rem;
+    min-width: unset;
+    height: auto;
+
+    &:hover { background: var(--surface-border) !important; }
+  }
+
+  .submit-btn.p-button {
+    background: var(--primary-color) !important;
+    border: none !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    font-weight: 600;
+    padding: 0.7rem 2.5rem;
+    min-width: unset;
+    height: auto;
+    margin-left: auto;
+
+    &:hover { opacity: 0.9; }
+  }
+}
+
+/* ── Approval ──────────────────────────────────────────────── */
+.approval-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px; background: var(--surface-hover);
+  border-top: 1px solid color-mix(in srgb, var(--p-blue-500) 30%, transparent); border-bottom: 1px solid color-mix(in srgb, var(--p-blue-500) 30%, transparent);
+  font-size: 13px; color: var(--p-blue-700); flex-shrink: 0;
+  .pi { font-size: 15px; color: var(--p-blue-500); }
+  strong { color: var(--primary-color); font-weight: 600; }
+}
+
+.approver-notes-section {
+  border-left: 3px solid var(--p-blue-500);
+  padding: 14px 16px;
+  background: color-mix(in srgb, var(--p-blue-500) 6%, transparent);
+  border-radius: 0 8px 8px 0;
+  .approver-notes-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    .pi { color: var(--p-blue-500); font-size: 14px; }
+    .approver-notes-title { font-weight: 600; font-size: 13.5px; color: var(--text-color); }
+    .approver-notes-required { margin-left: auto; font-size: 12px; color: var(--p-red-500); font-weight: 500; }
+  }
+  .approver-notes-textarea { width: 100%; border-color: color-mix(in srgb, var(--p-blue-500) 40%, transparent) !important; background: var(--surface-card);
+    &:focus { border-color: var(--p-blue-500) !important; }
+    &.input-error { border-color: var(--p-red-500) !important; }
+  }
+  .error-msg { font-size: 12px; color: var(--p-red-500); display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+}
+
+.btn-reject {
+  padding: 0.6rem 1.5rem; border-radius: 8px;
+  border: 1.5px solid var(--p-red-500); background: transparent; color: var(--p-red-500);
+  font-size: 13px; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: background 0.15s;
+  i { font-size: 12px; }
+  &:hover { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); }
+}
+
+.btn-approve {
+  padding: 0.6rem 1.5rem; border-radius: 8px;
+  border: none; background: var(--p-green-500); color: #fff;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; transition: background 0.15s;
+  i { font-size: 12px; }
+  &:hover { opacity: 0.9; }
+}

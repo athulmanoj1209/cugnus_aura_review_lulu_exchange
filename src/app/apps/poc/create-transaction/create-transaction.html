@@ -1,0 +1,67 @@
+<p-toast />
+
+<div class="card">
+    <div class="text-xl font-bold mb-6">Create Transaction</div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+
+        <div class="flex flex-col gap-1">
+            <label for="transactionType" class="font-medium">Transaction Type</label>
+            <p-select
+                inputId="transactionType"
+                formControlName="transactionType"
+                [options]="transactionTypes"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select transaction type"
+                class="w-full"
+            />
+            @if (form.get('transactionType')?.hasError('required') && form.get('transactionType')?.touched) {
+                <small class="text-red-500">Transaction type is required</small>
+            }
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="currency" class="font-medium">Currency</label>
+            <p-select
+                inputId="currency"
+                formControlName="currency"
+                [options]="currencies"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Select currency"
+                class="w-full"
+            />
+            @if (form.get('currency')?.hasError('required') && form.get('currency')?.touched) {
+                <small class="text-red-500">Currency is required</small>
+            }
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="amount" class="font-medium">Amount</label>
+            <p-inputnumber
+                inputId="amount"
+                formControlName="amount"
+                placeholder="Enter amount"
+                class="w-full"
+                mode="decimal"
+                [minFractionDigits]="2"
+                [maxFractionDigits]="2"
+            />
+            @if (form.get('amount')?.hasError('required') && form.get('amount')?.touched) {
+                <small class="text-red-500">Amount is required</small>
+            }
+            @if (form.get('amount')?.hasError('minAmount') && form.get('amount')?.touched) {
+                <small class="text-red-500">Amount must be greater than 0</small>
+            }
+        </div>
+
+        <button
+            pButton
+            type="submit"
+            label="Create Transaction"
+            class="w-full mt-2"
+        ></button>
+
+    </form>
+</div>

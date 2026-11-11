@@ -1,0 +1,253 @@
+<section class="companies-page">
+
+  <!-- =============================== HEADER =============================== -->
+  <header class="page-header" [formGroup]="filters">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title">Companies</h1>
+        <p class="page-header__subtitle">Manage all registered companies in scope of audit</p>
+      </div>
+    </div>
+
+    <div class="page-header__controls">
+
+      <!-- Search -->
+      <span class="search-input">
+        <app-draw-icon icon="pi pi-search" class="search-input__icon"></app-draw-icon>
+        <input pInputText type="text"
+               formControlName="search"
+               placeholder="Search by name, Location, Type etc..." />
+      </span>
+
+      <!-- Sort by -->
+      <p-select formControlName="sortBy"
+                [options]="sortOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="sort-select">
+        <ng-template pTemplate="selectedItem" let-selected>
+          <span class="sort-selected">
+            <app-draw-icon icon="pi pi-sort-alt"></app-draw-icon>
+            <span>Sort By: {{ selected?.label }}</span>
+          </span>
+        </ng-template>
+      </p-select>
+
+      <!-- Add Company -->
+      <p-button label="+ New Company"
+                styleClass="btn-add-company"
+                (onClick)="openAddCompany()"
+                type="button"></p-button>
+
+      <!-- View toggle -->
+      <div class="view-toggle" role="group" aria-label="View mode">
+        <button type="button"
+                class="view-toggle__btn"
+                [class.is-active]="viewMode() === 'list'"
+                (click)="setViewMode('list')"
+                aria-label="List view">
+          <app-draw-icon icon="pi pi-list"></app-draw-icon>
+        </button>
+        <button type="button"
+                class="view-toggle__btn"
+                [class.is-active]="viewMode() === 'grid'"
+                (click)="setViewMode('grid')"
+                aria-label="Grid view">
+          <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================== EMPTY STATE =========================== -->
+  <ng-container *ngIf="totalCount() === 0; else dataBlock">
+    <div class="empty-state">
+      <app-draw-icon icon="pi pi-inbox" class="empty-state__icon"></app-draw-icon>
+      <p class="empty-state__text">No companies match your filters.</p>
+    </div>
+  </ng-container>
+
+  <!-- ============================== DATA BLOCK ============================ -->
+  <ng-template #dataBlock>
+
+    <!-- ============================== GRID VIEW =========================== -->
+    <div *ngIf="viewMode() === 'grid'" class="companies companies--grid">
+      <article *ngFor="let company of pagedCompanies(); trackBy: trackById"
+               class="company-card"
+               [class.company-card--blocked]="company.blocked"
+               style="cursor:pointer"
+               (click)="viewOrgChart(company)">
+
+        <div class="company-card__avatar-row">
+          <div class="company-card__avatar">
+            {{ company.name | slice:0:1 | uppercase }}
+          </div>
+          <svg class="company-card__avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+            <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+          </svg>
+        </div>
+
+        <h3 class="company-card__title">{{ company.name }}</h3>
+        <p class="company-card__industry-text">{{ company.industry }}</p>
+
+        <div class="company-card__tags">
+          <span class="company-card__tag">{{ company.entityType }}</span>
+          <span class="company-card__tag">{{ company.location }}</span>
+        </div>
+
+        <div class="company-card__contact-panel">
+          <span class="company-card__contact-item">
+            <app-draw-icon icon="pi pi-envelope" class="company-card__row-icon"></app-draw-icon>
+            <span class="company-card__row-text">{{ company.primaryContact.name }}</span>
+          </span>
+          <span class="company-card__contact-item">
+            <app-draw-icon icon="pi pi-phone" class="company-card__row-icon"></app-draw-icon>
+            <span class="company-card__row-text">{{ company.primaryContact.phone }}</span>
+          </span>
+        </div>
+
+        <footer class="company-card__actions" (click)="$event.stopPropagation()">
+          <div class="company-card__actions-row">
+            <div class="company-card__actions-icons">
+              <button type="button" class="icon-btn icon-btn--edit"
+                      (click)="editCompany(company)" aria-label="Edit">
+                <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+              </button>
+
+              <button type="button" class="icon-btn icon-btn--block"
+                      [class.is-blocked]="company.blocked"
+                      (click)="openConfirmation(company)"
+                      [attr.aria-label]="company.blocked ? 'Activate' : 'Deactivate'">
+                <app-draw-icon icon="pi pi-ban"></app-draw-icon>
+              </button>
+            </div>
+
+            <button type="button" class="btn-view" (click)="viewCompany(company)">
+              View
+            </button>
+          </div>
+        </footer>
+      </article>
+    </div>
+
+    <!-- ============================== LIST VIEW =========================== -->
+    <div *ngIf="viewMode() === 'list'" class="companies companies--list">
+      <div class="list-header">
+        <span class="list-header__cell col-name">Company Name</span>
+        <span class="list-header__cell col-type">Type</span>
+        <span class="list-header__cell col-location">Location</span>
+        <span class="list-header__cell col-contact">Primary Contact</span>
+        <span class="list-header__cell col-actions">Action</span>
+      </div>
+
+      <article *ngFor="let company of pagedCompanies(); trackBy: trackById"
+               class="company-row"
+               [class.company-row--blocked]="company.blocked"
+               style="cursor:pointer"
+               (click)="viewOrgChart(company)">
+
+        <div class="col-name">
+          <div class="cell-name">
+            <div class="cell-badge">
+              <app-draw-icon icon="pi pi-home"></app-draw-icon>
+            </div>
+            <div class="cell-name__block">
+              <span class="cell-name__text">{{ company.name }}</span>
+              <span class="cell-name__type">{{ company.entityType }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-type">
+          <span class="cell-industry">{{ company.industry }}</span>
+        </div>
+
+        <div class="col-location">
+          <div class="cell-location-block">
+            <app-draw-icon icon="pi pi-map-marker" class="cell-icon"></app-draw-icon>
+            <span class="cell-location">{{ company.location }}</span>
+          </div>
+        </div>
+
+        <div class="col-contact">
+          <div class="cell-contact">
+            <span class="cell-contact__item">
+              <app-draw-icon icon="pi pi-envelope" class="cell-icon"></app-draw-icon>
+              <span class="cell-contact__name">{{ company.primaryContact.name }}</span>
+            </span>
+            <span class="cell-contact__item">
+              <app-draw-icon icon="pi pi-phone" class="cell-icon"></app-draw-icon>
+              <span class="cell-contact__phone">{{ company.primaryContact.phone }}</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="col-actions" (click)="$event.stopPropagation()">
+          <div class="row-actions">
+            <button type="button" class="btn-view" (click)="viewCompany(company)">
+              View
+            </button>
+            <button type="button" class="icon-btn icon-btn--edit"
+                    (click)="editCompany(company)" aria-label="Edit">
+              <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+            </button>
+            <button type="button" class="icon-btn icon-btn--block"
+                    [class.is-blocked]="company.blocked"
+                    (click)="openConfirmation(company)"
+                    [attr.aria-label]="company.blocked ? 'Activate' : 'Deactivate'">
+              <app-draw-icon icon="pi pi-ban"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- ============================ CONFIRMATION =========================== -->
+    <p-dialog
+      header="Confirmation"
+      [visible]="displayConfirmation()"
+      (visibleChange)="$event ? null : closeConfirmation()"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [closable]="false"
+      [style]="{ width: '420px' }"
+      styleClass="confirm-dialog"
+    >
+      <div class="confirm-body">
+        <app-draw-icon icon="pi pi-exclamation-triangle" class="confirm-body__icon"></app-draw-icon>
+        <span class="confirm-body__text">
+          Are you sure you want to
+          <strong>{{ confirmationAction() | lowercase }}</strong>
+          <strong>  {{ confirmationTarget()?.name }}</strong>?
+        </span>
+      </div>
+
+      <ng-template pTemplate="footer">
+        <p-button label="No"
+                  icon="pi pi-times"
+                  [text]="true"
+                  severity="secondary"
+                  (onClick)="closeConfirmation()"></p-button>
+        <p-button [label]="confirmationAction() === 'Deactivate' ? 'Yes, Deactivate' : 'Yes, Activate'"
+                  icon="pi pi-check"
+                  [severity]="confirmationAction() === 'Deactivate' ? 'danger' : 'success'"
+                  [outlined]="true"
+                  autofocus
+                  (onClick)="confirmToggleBlocked()"></p-button>
+      </ng-template>
+    </p-dialog>
+
+    <!-- ============================ PAGINATION ============================ -->
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="totalCount()"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="companies"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  </ng-template>
+</section>

@@ -1,0 +1,188 @@
+<div class="ra-card">
+
+  <!-- Header -->
+  <div class="ra-header">
+    <app-back-button></app-back-button>
+    <div class="ra-header__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+        <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="ra-header__title" i18n="@@audit.assignment.reassignAuditorWorkload">Reassign Auditor Workload</h2>
+      <p class="ra-header__subtitle" i18n="@@audit.assignment.reassignAuditorWorkloadSubtitle">Pick an auditor, then reassign their scopes &amp; jobs to someone else</p>
+    </div>
+  </div>
+
+  <!-- ── Auditor picker + summary ────────────────────────────────────────────── -->
+  <div class="ra-section">
+    <div class="ra-section__label" i18n="@@audit.assignment.auditor">Auditor</div>
+
+    <p-select [options]="auditorOptions()" optionLabel="label" optionValue="value"
+      [ngModel]="selectedAuditorId()" (ngModelChange)="onAuditorChange($event)"
+      [placeholder]="placeholders.Auditor" [filter]="true" [filterPlaceholder]="placeholders.SearchAuditor" i18n-filterPlaceholder="@@audit.assignment.searchAuditor"
+      styleClass="w-full" appendTo="body">
+      <ng-template pTemplate="selectedItem" let-opt>
+        <div class="ra-chip" *ngIf="opt">
+          <span class="ra-avatar">{{ opt.initials }}</span>
+          <div class="ra-chip__info"><span class="ra-chip__name">{{ opt.label }}</span><span class="ra-chip__role">{{ roleLabel(opt.role) }} &bull; {{ opt.email }}</span></div>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="item" let-opt>
+        <div class="ra-option">
+          <span class="ra-avatar">{{ opt.initials }}</span>
+          <div class="ra-option__info"><span class="ra-option__name">{{ opt.label }}</span><span class="ra-option__meta">{{ roleLabel(opt.role) }} &bull; {{ opt.email }}</span></div>
+        </div>
+      </ng-template>
+    </p-select>
+
+    <!-- Summary strip -->
+    <ng-container *ngIf="selectedAuditor() && hasWorkload()">
+      <div class="ra-summary">
+        <div class="ra-stat ra-stat--companies"><span class="ra-stat__label" i18n="@@audit.assignment.companies">Companies</span><span class="ra-stat__num">{{ summary().companies }}</span></div>
+        <div class="ra-stat ra-stat--scopes"><span class="ra-stat__label" i18n="@@audit.assignment.scopes">Scopes</span><span class="ra-stat__num">{{ summary().scopes }}</span></div>
+        <div class="ra-stat ra-stat--jobs"><span class="ra-stat__label" i18n="@@audit.assignment.jobs">Jobs</span><span class="ra-stat__num">{{ summary().jobs }}</span></div>
+        <div class="ra-stat ra-stat--preparer"><span class="ra-stat__label" i18n="@@audit.assignment.asPreparer">As preparer</span><span class="ra-stat__num">{{ summary().asPreparer }}</span></div>
+        <div class="ra-stat ra-stat--reviewer"><span class="ra-stat__label" i18n="@@audit.assignment.asReviewer">As reviewer</span><span class="ra-stat__num">{{ summary().asReviewer }}</span></div>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ── Toolbar ─────────────────────────────────────────────────────────────── -->
+  <div class="ra-toolbar" *ngIf="selectedAuditor() && hasWorkload()">
+ <button type="button" class="ra-btn ra-btn--secondary ra-handover" (click)="selectAllForHandover()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+      <span i18n="@@audit.assignment.reassignAllTo">Reassign all to…</span>
+    </button>
+
+    <button type="button" class="ra-toggle" [class.ra-toggle--on]="bulkMode()" (click)="toggleBulk()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <span i18n="@@audit.assignment.bulkSelect">Bulk select</span>
+    </button>
+    <div class="ra-searchbox">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" [placeholder]="placeholders.SearchWorkload"
+             [ngModel]="search()" (ngModelChange)="search.set($event)" />
+    </div>
+
+
+  </div>
+
+  <!-- ── Body ────────────────────────────────────────────────────────────────── -->
+  <div class="ra-body">
+
+    <!-- Empty: no auditor chosen -->
+    <div class="ra-placeholder" *ngIf="!selectedAuditor() && !loading()">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+      <p i18n="@@audit.assignment.selectAuditorToViewWorkload">Select an auditor to view and reassign their workload.</p>
+    </div>
+
+    <!-- Loading -->
+    <div class="ra-skeleton" *ngIf="loading()">
+      <div class="ra-skeleton__bar" *ngFor="let bar of skeletonBars"></div>
+    </div>
+
+    <!-- Empty: auditor has no work -->
+    <div class="ra-empty" *ngIf="selectedAuditor() && !loading() && !hasWorkload()">
+      <div class="ra-empty__art">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+          <rect x="9" y="3" width="6" height="4" rx="1"/>
+          <path d="M9 13l2 2 4-4"/>
+        </svg>
+        <span class="ra-empty__badge">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+      </div>
+      <h3 class="ra-empty__title" i18n="@@audit.assignment.noAssignments">No assignments to reassign</h3>
+      <p class="ra-empty__text" i18n="@@audit.assignment.noAssignmentsMessage">
+        <strong>{{ selectedAuditor()?.label }}</strong> has no scopes or jobs assigned right now, so there's nothing to hand over.
+      </p>
+      <button type="button" class="ra-btn ra-btn--secondary ra-empty__action" (click)="onAuditorChange(null)">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <span i18n="@@audit.assignment.chooseAnotherAuditor">Choose another auditor</span>
+      </button>
+    </div>
+
+    <!-- Company panels -->
+    <ng-container *ngIf="!loading() && hasWorkload()">
+      <app-company-workload-panel *ngFor="let company of companyGroups(); let first = index; trackBy: trackByCompany"
+        [company]="company"
+        [targetOptions]="targetOptions()"
+        [fromAuditor]="selectedAuditor()"
+        [pending]="pending()"
+        [bulkMode]="bulkMode()"
+        [selectedIds]="selectedIds()"
+        [busyIds]="busyIds()"
+        [startOpen]="first === 0"
+        (stage)="onStage($event)"
+        (unstage)="onUnstage($event)"
+        (toggle)="onToggle($event)">
+      </app-company-workload-panel>
+    </ng-container>
+  </div>
+
+  <!-- ── Sticky footer bars ──────────────────────────────────────────────────── -->
+  <div class="ra-footerbars" *ngIf="(bulkMode() && selectedCount() > 0) || pendingCount() > 0">
+
+    <!-- Bulk: stage many selected rows to one target -->
+    <div class="ra-bar ra-bar--bulk" *ngIf="bulkMode() && selectedCount() > 0">
+      <span class="ra-bar__label">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        {{ selectedCountLabel(selectedCount()) }}
+      </span>
+      <span class="ra-bar__spacer"></span>
+      <p-select [options]="targetOptions()" optionLabel="label" optionValue="value"
+        [ngModel]="bulkTargetId()" (ngModelChange)="bulkTargetId.set($event)"
+        placeholder="Reassign to" i18n-placeholder="@@audit.assignment.reassignTo" [filter]="true" filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search"
+        styleClass="ra-bulk-select" appendTo="body"></p-select>
+      <p-datepicker [ngModel]="bulkFrom()" (ngModelChange)="bulkFrom.set($event)"
+        [showTime]="true" [showIcon]="true" iconDisplay="input" [showButtonBar]="true" [hourFormat]="datePicker.HourFormat"
+        [dateFormat]="datePicker.DateFormat" [placeholder]="placeholders.BulkFrom" i18n-placeholder="@@audit.assignment.fromRequired" appendTo="body" styleClass="ra-bulk-dp"></p-datepicker>
+      <p-datepicker [ngModel]="bulkTo()" (ngModelChange)="bulkTo.set($event)"
+        [showTime]="true" [showIcon]="true" iconDisplay="input" [showButtonBar]="true" [hourFormat]="datePicker.HourFormat"
+        [minDate]="bulkFrom()" [dateFormat]="datePicker.DateFormat" [placeholder]="placeholders.BulkTo" i18n-placeholder="@@audit.assignment.toRequired" appendTo="body" styleClass="ra-bulk-dp"></p-datepicker>
+
+      <!-- Total days & hours (shows once both dates are picked) -->
+      <span class="ra-bulk-duration" *ngIf="bulkPeriodValid()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
+        {{ bulkPeriodShort() }}
+      </span>
+
+      <button type="button" class="ra-btn ra-btn--secondary" [disabled]="!bulkComplete()"
+              (click)="onBulkStage()" i18n="@@audit.assignment.stageSelected">Stage selected</button>
+    </div>
+
+    <!-- Single confirm: applies ALL staged reassignments at once -->
+    <div class="ra-bar ra-bar--confirm" *ngIf="pendingCount() > 0">
+      <span class="ra-bar__label ra-bar__label--strong">
+        <span class="ra-bar__badge">{{ pendingCount() }}</span>
+        {{ reassignmentsStagedLabel(pendingCount()) }}
+      </span>
+
+      <input type="text" class="ra-bar__reason" [placeholder]="placeholders.Reason" i18n-placeholder="@@audit.assignment.reasonForAllOptional"
+             [ngModel]="globalReason()" (ngModelChange)="globalReason.set($event)" />
+
+      <button type="button" class="ra-btn ra-btn--ghost" [disabled]="applying()" (click)="clearPending()" i18n="@@common.clearAll">Clear all</button>
+      <button type="button" class="ra-btn ra-btn--primary" [disabled]="applying()" (click)="confirmAll()">
+        <span class="ra-spinner ra-spinner--light" *ngIf="applying()"></span>
+        <svg *ngIf="!applying()" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        {{ applying() ? applyingLabel : confirmLabel(pendingCount()) }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Undo toast ──────────────────────────────────────────────────────────── -->
+  <div class="ra-toast" *ngIf="toast() as t">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+    <span>{{ t.msg }}</span>
+    <button type="button" class="ra-toast__undo" *ngIf="t.undo" (click)="t.undo!()" i18n="@@common.undo">Undo</button>
+    <button type="button" class="ra-toast__close" (click)="dismissToast()" aria-label="Dismiss" i18n-aria-label="@@common.dismiss">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+</div>

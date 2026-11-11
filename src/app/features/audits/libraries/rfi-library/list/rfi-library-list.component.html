@@ -1,0 +1,274 @@
+<div class="rfi-library-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="page-header__top">
+      <div class="page-header__title-group">
+        <app-back-button></app-back-button>
+        <div class="page-title-block">
+          <h2 class="page-title">RFI Management Library</h2>
+          <p class="page-subtitle">Manage reusable request for information templates and categories</p>
+        </div>
+      </div>
+      <div class="page-header__actions">
+
+        <!-- Add button -->
+        <p-button label="+ New RFI Library" styleClass="rfi-library-btn" (onClick)="onAddRfi()"></p-button>
+
+        <!-- View toggle -->
+        <div class="view-toggle" role="group" aria-label="View mode">
+          <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === RfiLibraryViewModes.List"
+            (click)="setViewMode(RfiLibraryViewModes.List)" aria-label="List view">
+            <app-draw-icon icon="pi pi-list"></app-draw-icon>
+          </button>
+          <button type="button" class="view-toggle__btn" [class.is-active]="viewMode === RfiLibraryViewModes.Grid"
+            (click)="setViewMode(RfiLibraryViewModes.Grid)" aria-label="Grid view">
+            <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Search toolbar (second row, right-aligned) -->
+    <div class="page-header__toolbar">
+      <app-filter-modal [showType]="false" [showRisk]="false" [showScope]="true" [showSubScope]="true"
+        [companyOptions]="companyOptions" [divisionOptions]="divisionOptions" [subDivisionOptions]="subDivisionOptions"
+        [scopeOptions]="scopeOptions" [subScopeOptions]="subScopeOptions" [selectedCompanies]="selectedCompanies"
+        [selectedDivisions]="selectedDivisions" [selectedSubDivisions]="selectedSubDivisions"
+        [selectedScopes]="selectedScopes" [selectedSubScopes]="selectedSubScopes"
+        [subDivisionDisabledMessage]="subDivisionDisabledMessage"
+        (companiesChange)="onCompaniesChange($event)"
+        (divisionsChange)="onDivisionsChange($event)"
+        (subDivisionsChange)="onSubDivisionsChange($event)"
+        (scopesChange)="onScopesChange($event)"
+        (subScopesChange)="selectedSubScopes=$event; applyFilters()" (filtersCleared)="clearFilters()">
+      </app-filter-modal>
+      <span class="search-wrapper">
+        <app-draw-icon icon="pi pi-search" class="search-icon"></app-draw-icon>
+        <input pInputText type="text" placeholder="Search RFI libraries..." class="search-input"
+          [(ngModel)]="searchQuery" (input)="onSearch()" />
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ GRID VIEW ═══════════════════════ -->
+  @if (viewMode === RfiLibraryViewModes.Grid) {
+  @if (pagedItems.length > 0) {
+  <div class="rfi-library-grid">
+    @for (item of pagedItems; track item.id) {
+    <div class="rfi-card" [class.rfi-card--inactive]="isBlocked(item.id)">
+
+      <!-- Card header: icon + priority tag -->
+      <div class="card-header">
+        <div class="rfi-icon-wrap">
+          <app-draw-icon icon="pi pi-envelope"></app-draw-icon>
+        </div>
+        <div class="card-header-tags">
+          <p-tag [value]="rfiLibraryStatusLabel[item.status]" [severity]="rfiLibraryStatusSeverity[item.status]"
+            class="status-tag"></p-tag>
+          <p-tag [value]="item.priority | titlecase" [severity]="prioritySeverity[item.priority]"
+            class="priority-tag"></p-tag>
+        </div>
+      </div>
+
+      <!-- ID + Title -->
+      <div class="card-title-block">
+        <span class="card-rfi-id"><app-draw-icon icon="pi pi-hashtag"></app-draw-icon>{{ item.id }}</span>
+        <h3 class="card-title">{{ item.title }}</h3>
+      </div>
+
+      <!-- Description -->
+      <p class="card-description">{{ truncate(item.description, DESCRIPTION_TRUNCATE.Grid) }}</p>
+
+      <!-- Category -->
+      <div class="info-item">
+        <span class="info-icon"><app-draw-icon icon="pi pi-tag"></app-draw-icon></span>
+        <div class="info-content">
+          <span class="info-label">Category</span>
+          <span class="info-value">{{ item.category }}</span>
+        </div>
+      </div>
+
+      <!-- Basis: division-level (no sub-division) vs sub-division-level item -->
+      <div class="info-item">
+        <span class="info-icon"><app-draw-icon [icon]="item.subDivision ? 'pi pi-sitemap' : 'pi pi-building'"></app-draw-icon></span>
+        <div class="info-content">
+          <span class="info-label">RFI Library Basis</span>
+          <span class="info-value">
+            <span class="basis-chip" [class.basis-chip--division]="!item.subDivision">{{ item.subDivision ? 'Sub-Divisional' : 'Divisional' }}</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Scope / Sub-Scope -->
+      @if (item.scopeTitle) {
+      <div class="info-item">
+        <span class="info-icon"><app-draw-icon icon="pi pi-folder"></app-draw-icon></span>
+        <div class="info-content">
+          <span class="info-label">{{ item.subScopeTitle ? 'Scope / Sub-Scope' : 'Scope' }}</span>
+          <span class="info-value">
+            {{ item.scopeTitle }}
+            @if (item.subScopeTitle) {
+            <span class="sub-scope-separator"> › </span>{{ item.subScopeTitle }}
+            }
+          </span>
+        </div>
+      </div>
+      }
+
+      <!-- Tags -->
+      @if (item.tags.length) {
+      <div class="tags-row">
+        @for (tag of item.tags; track tag) {
+        <span class="item-tag">{{ tag }}</span>
+        }
+      </div>
+      }
+
+      <!-- Footer -->
+      <div class="card-footer">
+        <div class="card-actions">
+          <button type="button" class="icon-btn" (click)="viewRfi(item)" [disabled]="isBlocked(item.id)" pTooltip="View"
+            tooltipPosition="top">
+            <i class="pi pi-eye" style="color:rgb(4,4,62)"></i>
+          </button>
+          <button type="button" class="icon-btn" (click)="editRfi(item)" [disabled]="isBlocked(item.id)" pTooltip="Edit"
+            tooltipPosition="top">
+            <i class="pi pi-pencil" style="color:#F59E0B"></i>
+          </button>
+          <button type="button" class="icon-btn" [class.icon-btn--activate]="isBlocked(item.id)"
+            [class.icon-btn--deactivate]="!isBlocked(item.id)"
+            [pTooltip]="isBlocked(item.id) ? 'Activate' : 'Deactivate'" tooltipPosition="top"
+            (click)="openConfirm(item.id, item.title)">
+            <app-draw-icon [icon]="isBlocked(item.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+
+    </div>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <app-draw-icon icon="pi pi-envelope" class="empty-icon"></app-draw-icon>
+    <h3>No RFI templates found</h3>
+    <p>Try adjusting your search or add a new RFI template.</p>
+  </div>
+  }
+  }
+
+  <!-- ═══════════════════════ LIST VIEW ═══════════════════════ -->
+  @if (viewMode === RfiLibraryViewModes.List) {
+  @if (pagedItems.length > 0) {
+  <div class="rfi-library-list">
+    <div class="list-header">
+      <span class="list-header__cell col-title">RFI Title</span>
+      <span class="list-header__cell col-category">Category</span>
+      <span class="list-header__cell col-priority">Priority</span>
+      <span class="list-header__cell col-basis">Basis</span>
+      <span class="list-header__cell col-scope">Scope / Sub-Scope</span>
+      <span class="list-header__cell col-tags">Tags</span>
+      <span class="list-header__cell col-actions">Actions</span>
+    </div>
+    @for (item of pagedItems; track item.id) {
+    <article class="rfi-row">
+
+      <div class="col-title">
+        <div class="cell-title">
+          <div class="rfi-icon-sm">
+            <app-draw-icon icon="pi pi-envelope"></app-draw-icon>
+          </div>
+          <div class="cell-title__text-group">
+            <span class="cell-title__id">{{ item.id }}</span>
+            <span class="cell-title__name">{{ item.title }}</span>
+            <span class="cell-title__desc">{{ truncate(item.description, DESCRIPTION_TRUNCATE.List) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-category">
+        <span class="cell-category">{{ item.category }}</span>
+      </div>
+
+      <td class="col-priority">
+        <p-tag [value]="item.priority | titlecase" [severity]="prioritySeverity[item.priority]"
+          class="priority-tag"></p-tag>
+      </td>
+
+      <div class="col-basis">
+        <span class="basis-chip" [class.basis-chip--division]="!item.subDivision">{{ item.subDivision ? 'Sub-Divisional' : 'Divisional' }}</span>
+      </div>
+
+      <div class="col-scope">
+        @if (item.scopeTitle) {
+        <div class="cell-scope">
+          <span class="scope-name">
+            <app-draw-icon icon="pi pi-folder"></app-draw-icon>
+            {{ item.scopeTitle }}
+          </span>
+          @if (item.subScopeTitle) {
+          <span class="subscope-name">
+            <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+            {{ item.subScopeTitle }}
+          </span>
+          }
+        </div>
+        } @else {
+        <span class="cell-empty">—</span>
+        }
+      </div>
+
+      <div class="col-tags">
+        <div class="cell-tags">
+          @for (tag of item.tags; track tag) {
+          <span class="item-tag">{{ tag }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="col-actions">
+        <div class="row-actions">
+          <button type="button" class="icon-btn" (click)="viewRfi(item)" [disabled]="isBlocked(item.id)" pTooltip="View"
+            tooltipPosition="top">
+            <i class="pi pi-eye" style="color:rgb(4,4,62)"></i>
+          </button>
+          <button type="button" class="icon-btn" (click)="editRfi(item)" [disabled]="isBlocked(item.id)" pTooltip="Edit"
+            tooltipPosition="top">
+            <i class="pi pi-pencil" style="color:#F59E0B"></i>
+          </button>
+          <button type="button" class="icon-btn" [class.icon-btn--activate]="isBlocked(item.id)"
+            [class.icon-btn--deactivate]="!isBlocked(item.id)"
+            [pTooltip]="isBlocked(item.id) ? 'Activate' : 'Deactivate'" tooltipPosition="top"
+            (click)="openConfirm(item.id, item.title)">
+            <app-draw-icon [icon]="isBlocked(item.id) ? 'pi pi-check-circle' : 'pi pi-ban'"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+
+    </article>
+    }
+  </div>
+  } @else {
+  <div class="empty-state">
+    <app-draw-icon icon="pi pi-envelope" class="empty-icon"></app-draw-icon>
+    <h3>No RFI templates found</h3>
+    <p>Try adjusting your search or add a new RFI template.</p>
+  </div>
+  }
+  }
+
+  <!-- Paginator -->
+  @if (filteredItems.length > 0) {
+  <app-pagination-bar [pageSize]="PAGE_SIZE" [totalRecords]="filteredItems.length" [currentPage]="currentPage"
+    [rowsPerPageOptions]="[6, 12, 18, 24, 40, 56]" (pageChange)="onPageChange($event)"
+    (rowsChange)="onRowsChange($event)">
+  </app-pagination-bar>
+  }
+
+</div>
+
+<app-confirm-action-dialog [visible]="showConfirmDialog"
+  [action]="isBlocked(confirmTarget?.id ?? '') ? 'Activate' : 'Deactivate'" [itemName]="confirmTarget?.name ?? ''"
+  (confirmed)="confirmToggle()" (cancelled)="closeConfirm()">
+</app-confirm-action-dialog>

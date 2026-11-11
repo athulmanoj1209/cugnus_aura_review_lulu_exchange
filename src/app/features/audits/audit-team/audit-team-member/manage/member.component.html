@@ -1,0 +1,290 @@
+<div class="add-member-content">
+
+  <!-- ============================= HEADER ============================= -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-building"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ headerTitle }}</h2>
+        <p class="drawer-subtitle">{{ headerSubtitle }}</p>
+      </div>
+    </div>
+    <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ============================= BODY =============================== -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="drawer-body">
+    <p-tabs [value]="activeTabIndex" (valueChange)="onTabChange($event)" styleClass="company-tabs">
+
+      <p-tablist>
+        <p-tab value="0" i18n="@@audit.auditTeam.createNewMember">Create New Member</p-tab>
+        <!-- <p-tab value="1">Link Existing Member</p-tab> -->
+      </p-tablist>
+
+      <p-tabpanels>
+
+        <!-- ================== TAB 1 – CREATE NEW MEMBER ================ -->
+        <p-tabpanel value="0">
+          <ng-container *ngIf="activeTabIndex === MemberFormTabs.Create" formGroupName="create">
+            <div class="form-grid">
+
+              <!-- Full Name -->
+              <div class="form-field form-field--full">
+                <label for="fullName" class="form-label" i18n="@@audit.auditTeam.fullNameRequired">Full Name *</label>
+                <input pInputText id="fullName" formControlName="fullName"
+                       placeholder="Full Name *"
+                       i18n-placeholder="@@audit.auditTeam.fullNameRequired"
+                       [invalid]="isInvalid('create.fullName')" />
+                <small *ngIf="getError('create.fullName','Full Name') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Designation -->
+              <div class="form-field">
+                 <label for="designation" class="form-label" i18n="@@audit.auditTeam.designationRequired">Designation *</label>
+                <p-select id="designation" formControlName="designation"
+                          [options]="designations" optionLabel="label" optionValue="value"
+                          placeholder="Designation *"
+                          i18n-placeholder="@@audit.auditTeam.designationRequired"
+                          [invalid]="isInvalid('create.designation')"
+                          styleClass="w-full"></p-select>
+                <small *ngIf="getError('create.designation','Designation') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Years of Experience -->
+              <div class="form-field">
+                <label for="yearsOfExperience" class="form-label" i18n="@@audit.auditTeam.yearsOfExperienceRequired">Years of Experience *</label>
+                <p-inputNumber id="yearsOfExperience" formControlName="yearsOfExperience"
+                               placeholder="Years of Experience *"
+                               i18n-placeholder="@@audit.auditTeam.yearsOfExperienceRequired"
+                               [min]="0" [max]="80" [useGrouping]="false"
+                               [invalid]="isInvalid('create.yearsOfExperience')"
+                               styleClass="w-full" inputStyleClass="w-full"></p-inputNumber>
+                <small *ngIf="getError('create.yearsOfExperience','Years of Experience') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Areas of Expertise -->
+              <div class="form-field form-field--full">
+                <span class="field-label" i18n="@@audit.auditTeam.areasOfExpertise">Areas of Expertise</span>
+                <div class="expertise-grid" formArrayName="expertise">
+                  <label *ngFor="let ctrl of expertiseArray.controls; let i = index"
+                         class="expertise-item">
+                    <p-checkbox [binary]="true"
+                                [formControlName]="i"
+                                [inputId]="'expertise-' + i"></p-checkbox>
+                    <span>{{ expertiseList[i] }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="form-field">
+                <label for="email" class="form-label" i18n="@@audit.auditTeam.emailRequired">Email *</label>
+                <input pInputText id="email" type="email"
+                       formControlName="email" placeholder="Email *" i18n-placeholder="@@audit.auditTeam.emailRequired"
+                       [invalid]="isInvalid('create.email')" />
+                <small *ngIf="getError('create.email','Email') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Phone -->
+              <div class="form-field">
+                <label for="phone" class="form-label" i18n="@@audit.auditTeam.phoneRequired">Phone *</label>
+                <input pInputText id="phone" formControlName="phone"
+                       placeholder="Phone *" i18n-placeholder="@@audit.auditTeam.phoneRequired"
+                       [invalid]="isInvalid('create.phone')" />
+                <small *ngIf="getError('create.phone','Phone') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Teams / Zoom ID -->
+              <div class="form-field form-field--full">
+                <label for="teamsZoomId" class="form-label" i18n="@@audit.auditTeam.teamsZoomId">Teams/Zoom ID</label>
+                <input pInputText id="teamsZoomId" formControlName="teamsZoomId"
+                       placeholder="Teams/Zoom ID"
+                       i18n-placeholder="@@audit.auditTeam.teamsZoomId"
+                       [invalid]="isInvalid('create.teamsZoomId')" />
+                <small *ngIf="getError('create.teamsZoomId','Teams/Zoom ID') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Company -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@common.company">Company</label>
+        <p-select formControlName="company" [options]="companyOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select company" i18n-placeholder="@@audit.auditTeam.selectCompany"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Division -->
+      <div class="form-field">
+        <label class="form-label" i18n="@@common.division">Division</label>
+        <p-select formControlName="division" [options]="divisionOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select division" i18n-placeholder="@@audit.auditTeam.selectDivision"
+                  styleClass="w-full"></p-select>
+      </div>
+
+              <!-- Assigned Sub-Divisions — disabled when the selected division has hasSubDivision: false -->
+              <div class="form-field form-field--full">
+                <label for="assignedSubDivisions" class="form-label">
+                  <span i18n="@@audit.auditTeam.assignedSubDivisions">Assigned Sub-Divisions</span>
+                  <span *ngIf="subDivisionRequired()"> *</span>
+                </label>
+                <p-multiSelect
+    id="assignedSubDivisions"
+    formControlName="assignedSubDivisions"
+    [options]="subDivisionOptions()"
+    optionLabel="label"
+    optionValue="value"
+    [placeholder]="divisionHasSubDivision() ? selectSubDivisionsLabel : noSubDivisionsForDivisionLabel"
+    display="chip"
+    styleClass="w-full"
+    [filter]="true"
+    [disabled]="!divisionHasSubDivision()"
+    [invalid]="isInvalid('create.assignedSubDivisions')">
+  </p-multiSelect>
+  <small *ngIf="getError('create.assignedSubDivisions','Assigned Sub-Divisions') as err"
+         class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Hourly Cost Rate -->
+              <div class="form-field form-field--full">
+                <label for="hourlyCostRate" class="form-label" i18n="@@audit.auditTeam.hourlyCostRateRequired">Hourly Cost Rate ($) *</label>
+                <p-inputNumber id="hourlyCostRate" formControlName="hourlyCostRate"
+                               placeholder="Hourly Cost Rate ($) *"
+                               i18n-placeholder="@@audit.auditTeam.hourlyCostRateRequired"
+                               [min]="0" mode="currency" currency="USD"
+                               [invalid]="isInvalid('create.hourlyCostRate')"
+                               styleClass="w-full" inputStyleClass="w-full"></p-inputNumber>
+                <small *ngIf="getError('create.hourlyCostRate','Hourly Cost Rate') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Assigned Hours -->
+              <div class="form-field">
+                <label for="assignedHours" class="form-label" i18n="@@audit.auditTeam.assignedHours">Assigned Hours</label>
+                <p-inputNumber id="assignedHours" formControlName="assignedHours"
+                               placeholder="Assigned Hours" i18n-placeholder="@@audit.auditTeam.assignedHours"
+                               [min]="0" [useGrouping]="false"
+                               [invalid]="isInvalid('create.assignedHours')"
+                               styleClass="w-full" inputStyleClass="w-full"></p-inputNumber>
+                <small *ngIf="getError('create.assignedHours','Assigned Hours') as err" class="error-text">{{ err }}</small>
+              </div>
+
+              <!-- Total Capacity (hours) -->
+              <div class="form-field">
+                <label for="totalCapacityHours" class="form-label" i18n="@@audit.auditTeam.totalCapacityHours">Total Capacity (hours)</label>
+                <p-inputNumber id="totalCapacityHours" formControlName="totalCapacityHours"
+                               placeholder="Total Capacity (hours)"
+                               i18n-placeholder="@@audit.auditTeam.totalCapacityHours"
+                               [min]="0" [useGrouping]="false"
+                               [invalid]="isInvalid('create.totalCapacityHours')"
+                               styleClass="w-full" inputStyleClass="w-full"></p-inputNumber>
+                <small *ngIf="getError('create.totalCapacityHours','Total Capacity (hours)') as err" class="error-text">{{ err }}</small>
+              </div>
+
+            </div>
+          </ng-container>
+        </p-tabpanel>
+
+        <!-- ================== TAB 2 – LINK EXISTING MEMBER ============= -->
+        <p-tabpanel value="1">
+          <ng-container *ngIf="activeTabIndex === MemberFormTabs.Link" formGroupName="link">
+
+            <!-- Search bar -->
+            <div class="member-search">
+              <app-draw-icon icon="pi pi-search" class="member-search__icon"></app-draw-icon>
+              <input pInputText type="text"
+                     formControlName="search"
+                     placeholder="Search by Name, Designation and expertise etc..."
+                     i18n-placeholder="@@audit.auditTeam.linkMemberSearchPlaceholder" />
+            </div>
+
+            <!-- Member cards -->
+            <div class="member-list" *ngIf="filteredMembers().length > 0; else emptyMembers">
+              <article *ngFor="let member of filteredMembers()"
+                       class="member-card"
+                       [class.is-selected]="isMemberSelected(member.id)"
+                       (click)="selectMember(member.id)"
+                       (keydown.enter)="selectMember(member.id)"
+                       tabindex="0"
+                       role="button"
+                       [attr.aria-pressed]="isMemberSelected(member.id)">
+
+                <div class="member-card__top">
+                  <div class="member-card__avatar">
+                    <img [src]="member.avatarUrl"
+                         [alt]="member.name"
+                         (error)="onAvatarError($event)" />
+                  </div>
+
+                  <div class="member-card__title-block">
+                    <h4 class="member-card__name">{{ member.name }}</h4>
+                    <div class="member-card__chips">
+                      <span class="chip chip--role">{{ member.designation }}</span>
+                      <span class="chip chip--years">{{ experienceLongLabel(member.yearsOfExperience) }}</span>
+                    </div>
+                  </div>
+
+                  <span class="member-card__check"
+                        [class.is-on]="isMemberSelected(member.id)"
+                        aria-hidden="true">
+                    <i class="pi" [ngClass]="isMemberSelected(member.id) ? 'pi-check-circle' : 'pi-circle'"></i>
+                  </span>
+                </div>
+
+                <div class="member-card__bottom">
+                  <div class="member-card__expertise">
+                    <app-draw-icon icon="pi pi-bookmark"></app-draw-icon>
+                    <div class="member-card__expertise-text">
+                      <span class="label"><span i18n="@@audit.auditTeam.expertise">Expertise</span>:</span>
+                      <span class="value">{{ member.expertise }}</span>
+                    </div>
+                  </div>
+
+                  <div class="member-card__workload">
+                    <div class="member-card__workload-head">
+                      <span class="label" i18n="@@audit.auditTeam.workload">Workload</span>
+                      <span class="value">{{ member.workloadPct }}%</span>
+                    </div>
+                    <div class="member-card__workload-bar">
+                      <span class="member-card__workload-fill"
+                            [style.width.%]="member.workloadPct"
+                            [class.is-high]="member.workloadPct >= 80"
+                            [class.is-mid]="member.workloadPct >= 50 && member.workloadPct < 80"></span>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <ng-template #emptyMembers>
+              <div class="member-empty">
+                <app-draw-icon icon="pi pi-users"></app-draw-icon>
+                <p i18n="@@audit.auditTeam.noMatchingMembers">No matching members.</p>
+              </div>
+            </ng-template>
+
+            <small *ngIf="isInvalid('link.selectedMemberId')" class="error-text error-text--center" i18n="@@audit.auditTeam.selectMemberToLink">
+              Please select a member to link.
+            </small>
+
+          </ng-container>
+        </p-tabpanel>
+
+      </p-tabpanels>
+    </p-tabs>
+
+    
+
+  <!-- ============================ FOOTER ============================ -->
+    <div class="drawer-footer">
+      <p-button label="Cancel" i18n-label="@@common.cancel" *ngIf="form.get('create.viewType')?.value!=MemberDrawerTypes.View"
+                styleClass="p-button-secondary cancel-btn"
+                (onClick)="onCancel()" type="button"></p-button>
+
+      <p-button [label]="isEdit ? submitLabels.Edit : submitLabels.Add" *ngIf="form.get('create.viewType')?.value!=MemberDrawerTypes.View"
+                styleClass="submit-btn"
+                type="submit"></p-button>
+    </div>
+      </form>
+</div>

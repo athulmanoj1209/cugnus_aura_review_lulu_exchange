@@ -1,0 +1,495 @@
+$primary: var(--primary-color);
+$accent: var(--primary-color);
+$border: var(--surface-border);
+$muted: var(--text-color-secondary);
+$heading: var(--text-color);
+$bg-page: var(--surface-ground);
+$input-border: var(--surface-border);
+$error: var(--p-red-500);
+
+::ng-deep .add-audit-plan-drawer {
+  width: 680px !important;
+  max-width: 100vw !important;
+
+  &.p-drawer {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-drawer-content {
+    padding: 0 !important;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
+.drawer-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--surface-ground);
+}
+
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $border;
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-icon-wrap {
+  width: 40px;
+  height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 18px;
+    color: $primary;
+  }
+}
+
+.drawer-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.drawer-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: $heading;
+  margin: 0;
+
+  strong {
+    font-weight: 700;
+    color: $primary;
+  }
+}
+
+.drawer-subtitle {
+  font-size: 11px;
+  color: $muted;
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  .pi {
+    font-size: 13px;
+    color: $muted;
+  }
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+}
+
+/* Tabs */
+::ng-deep .audit-plan-drawer-tabs {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  margin: 1.5rem;
+  background: var(--surface-card);
+  border-radius: 10px;
+  border: 1px solid var(--surface-border);
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 12px rgba(0, 0, 0, 0.04);
+
+  .p-tablist {
+    border-bottom: 1px solid $border !important;
+    padding: 0 24px !important;
+    gap: 0 !important;
+    flex-shrink: 0;
+    background: transparent !important;
+
+    .p-tablist-tab-list {
+      border: none !important;
+      background: transparent !important;
+    }
+  }
+
+  .p-tab {
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    background: transparent !important;
+    padding: 12px 14px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #555 !important;
+    border-radius: 0 !important;
+
+    &[aria-selected='true'],
+    &.p-tab-active {
+      color: $primary !important;
+      border-bottom-color: $primary !important;
+      font-weight: 700 !important;
+    }
+  }
+
+  .p-tabpanels {
+    padding: 0 !important;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    background: transparent;
+  }
+
+  .p-tabpanel {
+    padding: 0 !important;
+  }
+}
+
+.tab-content {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.form-col {
+  flex: 1;
+  min-width: 0;
+
+  &.full {
+    flex: 1 1 100%;
+  }
+}
+
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: $heading;
+  margin-bottom: 5px;
+}
+
+.field-required {
+  color: $error;
+  margin-left: 2px;
+}
+
+.form-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid $input-border;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 13px;
+  background: var(--surface-card);
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: var(--text-color-secondary);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  &[readonly] {
+    background: var(--surface-hover);
+    color: $muted;
+  }
+
+  &.input-error {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-red-500) 8%, transparent);
+  }
+}
+
+.form-textarea {
+  width: 100%;
+  border: 1px solid $input-border;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  background: var(--surface-card);
+  resize: vertical;
+  font-family: inherit;
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+}
+
+.char-counter {
+  font-size: 11px;
+  color: $muted;
+  text-align: right;
+  margin-top: 3px;
+}
+
+.error-hint {
+  display: block;
+  font-size: 11px;
+  color: $error;
+  margin-top: 4px;
+}
+
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid $border;
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+::ng-deep .cancel-btn.p-button {
+  background: var(--surface-hover) !important;
+  border: none !important;
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+
+  &:hover { background: var(--surface-border) !important; }
+}
+
+::ng-deep .next-btn.p-button {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+
+  &:hover { opacity: 0.9; }
+}
+
+::ng-deep .submit-btn.p-button {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  margin-left: auto;
+
+  &:hover { opacity: 0.9; }
+}
+
+.empty-tab-state {
+  padding: 48px 24px;
+  text-align: center;
+  color: $muted;
+
+  h3 {
+    margin: 12px 0 6px;
+    font-size: 16px;
+    color: $heading;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+  }
+}
+
+.empty-tab-icon {
+  font-size: 28px;
+  color: $primary;
+}
+
+// Scope Coverage Tab
+.scope-coverage-list {
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.scope-item {
+  border-radius: 10px;
+  background: #6886b126;
+  padding: 14px 16px;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &.scope-item--selected {
+    background: var(--surface-card);
+    border: 1.5px dashed var(--primary-color);
+    box-shadow: 0 2px 10px rgba(70, 93, 255, 0.1);
+  }
+
+  &:hover:not(.scope-item--selected) {
+    background: rgba(104, 134, 177, 0.22);
+  }
+}
+
+.scope-item-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.scope-radio-wrap {
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.scope-item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.scope-item-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: $primary;
+  line-height: 1.3;
+}
+
+.scope-item-desc {
+  font-size: 11.5px;
+  color: $muted;
+  line-height: 1.5;
+}
+
+.scope-item-meta {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid $border;
+  flex-wrap: wrap;
+}
+
+.meta-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.meta-chip-icon {
+  width: 30px;
+  height: 30px;
+  background: var(--surface-hover);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 12px;
+    color: $primary;
+  }
+}
+
+.meta-chip-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.meta-chip-label {
+  font-size: 10px;
+  color: $muted;
+  font-weight: 500;
+}
+
+.meta-chip-value {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: $heading;
+}
+
+// Departments Covered Tab
+.dept-list {
+  padding: 8px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.dept-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 12px;
+  border-bottom: 1px solid #f0f2f5;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background: rgba(104, 134, 177, 0.08);
+  }
+
+  &.dept-item--selected {
+    background: rgba(104, 134, 177, 0.12);
+  }
+}
+
+.dept-checkbox-wrap {
+  flex-shrink: 0;
+}
+
+.dept-label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: $heading;
+  flex: 1;
+}

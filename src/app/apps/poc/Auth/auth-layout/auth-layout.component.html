@@ -1,0 +1,75 @@
+<div class="auth-shell">
+
+  <!-- =================== LEFT — form column =================== -->
+  <section class="auth-left">
+
+    <!-- Brand mark ---------------------------------------------- -->
+    <!--
+      Replace the inline SVG below with your own logo asset, e.g.:
+      <img src="assets/cygnus-logo.svg" alt="Cygnus Audit" class="auth-brand__logo" />
+    -->
+    <div class="auth-brand">
+     <img src="/images/brand/cygnus_logo.png" class="img">
+    </div>
+
+    <!-- Projected form content --------------------------------- -->
+    <div class="auth-left__content">
+      <div class="auth-left__inner">
+        <ng-content></ng-content>
+      </div>
+    </div>
+
+    <!-- Footer links ------------------------------------------- -->
+    <footer class="auth-footer">
+      <a href="#" class="auth-footer__link">Customer Support</a>
+      <a href="#" class="auth-footer__link">News / Updates</a>
+    </footer>
+  </section>
+
+  <!-- =================== RIGHT — marketing carousel =================== -->
+  <aside class="auth-right">
+    <div class="auth-right__card"
+         (mouseenter)="onHoverEnter()"
+         (mouseleave)="onHoverLeave()">
+
+      <!-- Decorative visual layer (CSS orbits) — hidden when the slide
+           supplies a real image. -->
+      <div class="auth-right__visual" *ngIf="!current().imageUrl"></div>
+
+      <!-- Real hero image, if the slide provides one -->
+      <img *ngIf="current().imageUrl"
+           [src]="current().imageUrl!"
+           [alt]="current().tagline"
+           class="auth-right__hero-img" />
+
+      <div class="auth-right__copy">
+        <!-- The slide-keyed wrapper triggers a fresh fade on every change -->
+        <div class="auth-right__slide" [attr.data-i]="index()">
+          <h2 class="auth-right__tagline">{{ current().tagline }}</h2>
+          <p class="auth-right__author">{{ current().authorName }}</p>
+          <p class="auth-right__author-role">{{ current().authorRole }}</p>
+        </div>
+
+        <div class="auth-right__nav">
+          <span class="auth-right__pages">
+            {{ index() + 1 }} <span class="auth-right__pages-of">of</span> {{ slides.length }}
+          </span>
+          <div class="auth-right__arrows">
+            <button type="button"
+                    (click)="prev()"
+                    [disabled]="slides.length < 2"
+                    aria-label="Previous slide">
+              <app-draw-icon icon="pi pi-arrow-left"></app-draw-icon>
+            </button>
+            <button type="button"
+                    (click)="next()"
+                    [disabled]="slides.length < 2"
+                    aria-label="Next slide">
+              <app-draw-icon icon="pi pi-arrow-right"></app-draw-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>

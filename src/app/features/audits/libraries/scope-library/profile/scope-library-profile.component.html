@@ -1,0 +1,175 @@
+<div class="profile-inner">
+
+  @if (scopeItem) {
+
+    <!-- ═══════════════ HERO HEADER (gradient) ═══════════════ -->
+    <header class="hero">
+      <div class="hero__avatar">
+        @if (scopeItem.scopeLevel === ScopeLevels.Scope) {
+          <app-draw-icon icon="pi pi-folder"></app-draw-icon>
+        }
+        @if (scopeItem.scopeLevel === ScopeLevels.SubScope) {
+          <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+        }
+      </div>
+      <div class="hero__text">
+        <h2 class="hero__title">{{ scopeItem.title }}</h2>
+        <p class="hero__sub">{{ scopeItem.id }} · {{ scopeItem.scopeLevel === ScopeLevels.Scope ? 'Scope' : 'Sub Scope' }}</p>
+      </div>
+      <span class="hero-badge" [class]="'hsev--' + getRiskSeverity(scopeItem.riskCategory)">
+        {{ scopeItem.riskCategory }}
+      </span>
+      <button type="button" class="hero__close" (click)="onProfileClose()" aria-label="Close">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+      </button>
+    </header>
+
+    <!-- ═══════════════ SCROLLABLE BODY ═══════════════ -->
+    <div class="profile-body">
+
+      <!-- ── stat cards (overlap the hero) ── -->
+      <div class="stat-grid">
+        <div class="stat-card">
+          <span class="stat-ic stat-ic--blue">
+            <i [ngClass]="scopeItem.scopeLevel === ScopeLevels.Scope ? 'pi pi-folder' : 'pi pi-file-check'"></i>
+          </span>
+          <div class="stat-txt">
+            <span class="stat-num">{{ scopeItem.scopeLevel === ScopeLevels.Scope ? 'Scope' : 'Sub Scope' }}</span>
+            <span class="stat-lbl">Scope Level</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-ic stat-ic--red"><app-draw-icon icon="pi pi-shield"></app-draw-icon></span>
+          <div class="stat-txt">
+            <span class="stat-num">{{ scopeItem.riskCategory }}</span>
+            <span class="stat-lbl">Risk Category</span>
+          </div>
+        </div>
+        @if (scopeItem.scopeLevel === ScopeLevels.Scope) {
+          <div class="stat-card">
+            <span class="stat-ic stat-ic--indigo"><app-draw-icon icon="pi pi-folder-open"></app-draw-icon></span>
+            <div class="stat-txt">
+              <span class="stat-num">{{ scopeItem.subScopes?.length || 0 }}</span>
+              <span class="stat-lbl">Sub Scopes Linked</span>
+            </div>
+          </div>
+        } @else {
+          <div class="stat-card">
+            <span class="stat-ic stat-ic--indigo"><app-draw-icon icon="pi pi-arrow-up"></app-draw-icon></span>
+            <div class="stat-txt">
+              <span class="stat-num">{{ scopeItem.parentScopeTitle || '—' }}</span>
+              <span class="stat-lbl">Parent Scope</span>
+            </div>
+          </div>
+        }
+        <div class="stat-card">
+          <span class="stat-ic stat-ic--mint"><app-draw-icon icon="pi pi-verified"></app-draw-icon></span>
+          <div class="stat-txt">
+            <span class="stat-num">{{ scopeItem.applicableFrameworks.length }}</span>
+            <span class="stat-lbl">Applicable Frameworks</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════ BASIC INFORMATION ═══════════════ -->
+      <div class="sec-card">
+        <div class="sec-head">
+          <span class="sec-ic sec-ic--blue"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon></span>
+          <h3>Basic Information</h3>
+        </div>
+
+        <div class="kv-grid">
+          <div class="kv">
+            <span class="kv__k">Library ID</span>
+            <span class="kv__v kv__v--mono"><strong>{{ scopeItem.id }}</strong></span>
+          </div>
+          <div class="kv">
+            <span class="kv__k">Scope Level</span>
+            <span class="kv__v">
+              <i class="kv-ic" [ngClass]="scopeItem.scopeLevel === ScopeLevels.Scope ? 'pi pi-folder' : 'pi pi-file-check'"></i>
+              {{ scopeItem.scopeLevel === ScopeLevels.Scope ? 'Scope' : 'Sub Scope' }}
+            </span>
+          </div>
+          <div class="kv">
+            <span class="kv__k">Risk Category</span>
+            <span class="kv__v">
+              <p-tag [value]="scopeItem.riskCategory"
+                [severity]="getRiskSeverity(scopeItem.riskCategory)"
+                class="risk-tag"></p-tag>
+            </span>
+          </div>
+          @if (scopeItem.scopeLevel === ScopeLevels.Scope) {
+            <div class="kv">
+              <span class="kv__k">Sub Scopes</span>
+              <span class="kv__v"><app-draw-icon icon="pi pi-folder-open" class="kv-ic"></app-draw-icon>
+                {{ scopeItem.subScopes?.length ? scopeItem.subScopes!.length + ' linked' : 'None' }}
+              </span>
+            </div>
+          }
+          @if (scopeItem.scopeLevel === ScopeLevels.SubScope && scopeItem.parentScopeTitle) {
+            <div class="kv kv--full">
+              <span class="kv__k">Parent Scope</span>
+              <span class="kv__v"><app-draw-icon icon="pi pi-arrow-up" class="kv-ic"></app-draw-icon>{{ scopeItem.parentScopeTitle }}</span>
+            </div>
+          }
+        </div>
+
+        <div class="notes">
+          <span class="notes__k"><app-draw-icon icon="pi pi-align-left"></app-draw-icon> Scope Objective</span>
+          <p class="notes__v">{{ scopeItem.objective }}</p>
+        </div>
+      </div>
+
+      <!-- ═══════════════ APPLICABLE FRAMEWORKS ═══════════════ -->
+      <div class="sec-card">
+        <div class="sec-head">
+          <span class="sec-ic sec-ic--mint"><app-draw-icon icon="pi pi-verified"></app-draw-icon></span>
+          <h3>Applicable Frameworks</h3>
+          <span class="sec-count">{{ scopeItem.applicableFrameworks.length }}</span>
+        </div>
+        <div class="fw-rows">
+          @for (fw of scopeItem.applicableFrameworks; track fw) {
+            <div class="fw-row">
+              <app-draw-icon icon="pi pi-check-circle"></app-draw-icon>
+              <span>{{ fw }}</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- ═══════════════ SUB SCOPES (scope level only) ═══════════════ -->
+      @if (scopeItem.scopeLevel === ScopeLevels.Scope && scopeItem.subScopes?.length) {
+        <div class="sec-card">
+          <div class="sec-head">
+            <span class="sec-ic sec-ic--indigo"><app-draw-icon icon="pi pi-list"></app-draw-icon></span>
+            <h3>Sub Scopes</h3>
+            <span class="sec-count">{{ scopeItem.subScopes!.length }}</span>
+          </div>
+          <div class="subscope-rows">
+            @for (sub of scopeItem.subScopes; track sub.id) {
+              <div class="subscope-row">
+                <div class="subscope-row__icon"><app-draw-icon icon="pi pi-file-check"></app-draw-icon></div>
+                <span class="subscope-row__name">{{ sub.title }}</span>
+                <span class="subscope-row__id">{{ sub.id }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+    </div>
+
+    <!-- ══════════════════════ FOOTER ══════════════════════ -->
+    <div class="profile-footer">
+      <button type="button" class="btn-close" (click)="onProfileClose()">Close</button>
+    </div>
+
+  } @else {
+    <!-- Empty state -->
+    <div class="profile-empty">
+      <app-draw-icon icon="pi pi-book"></app-draw-icon>
+      <p>No scope library item selected.</p>
+    </div>
+  }
+
+</div>

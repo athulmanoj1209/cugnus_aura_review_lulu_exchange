@@ -1,0 +1,113 @@
+<div class="add-dialog-root">
+
+  <!-- Custom Header -->
+  <div class="add-dh">
+    <div class="add-dh__icon"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon></div>
+    <div class="add-dh__text">
+      <span class="add-dh__title">{{ headerTitle }}</span>
+      <span class="add-dh__subtitle">{{ headerSubtitle }}</span>
+    </div>
+    <button class="add-dh__close" type="button" (click)="cancel()"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+  </div>
+
+  <!-- Body -->
+  <div class="add-db">
+    <form [formGroup]="entryForm" autocomplete="off">
+
+      <!-- Name field -->
+      <div class="form-field">
+        <label class="field-label" for="methodologyName"><span i18n="@@admin.samplingMethodology.nameLabel">Methodology Name</span> <span class="req-star">*</span></label>
+        <input pInputText id="methodologyName" formControlName="name" placeholder="e.g. Random Sampling, Stratified, Judgmental"
+          class="field-input" [class.input-error]="nameInvalid" maxlength="100" i18n-placeholder="@@admin.samplingMethodology.namePlaceholder" />
+        <div class="field-meta">
+          <span>
+            @if (nameInvalid) {
+              <small class="field-error">
+                @if (nameControl.errors?.['required']) {
+                <span i18n="@@admin.samplingMethodology.nameRequired">{{ errorMessages.name.required }}</span>
+                }
+                @else if (nameControl.errors?.['minlength']) {
+                <span i18n="@@admin.samplingMethodology.minLength">{{ errorMessages.name.minlength }}</span>
+                }
+              </small>
+            }
+          </span>
+          <span class="char-count">{{ nameControl.value?.length || 0 }}/100</span>
+        </div>
+      </div>
+
+      <!-- Description field -->
+      <div class="form-field">
+        <label class="field-label" for="methodologyDesc">
+          <span i18n="@@common.description">Description</span>
+          <span class="optional-tag" i18n="@@common.optional">(optional)</span>
+        </label>
+        <textarea pTextarea id="methodologyDesc" formControlName="description"
+          placeholder="Brief description of this sampling methodology..." [rows]="3"
+          class="field-textarea" maxlength="500" i18n-placeholder="@@admin.samplingMethodology.descriptionPlaceholder"></textarea>
+        <div class="field-meta">
+          <span></span>
+          <span class="char-count">{{ descControl.value?.length || 0 }}/500</span>
+        </div>
+      </div>
+
+      <!-- Status toggle -->
+      <div class="status-row">
+        <div class="status-row__text">
+          <span class="status-row__label" i18n="@@common.status">Status</span>
+          <span class="status-row__hint">
+            {{ statusControl.value ? activeStatusHint : inactiveStatusHint }}
+          </span>
+        </div>
+        <p-toggleswitch formControlName="statusActive"></p-toggleswitch>
+      </div>
+
+      <!-- Add to List (add mode only) -->
+      @if (mode === 'add') {
+        <div class="add-btn-row">
+          <p-button label="+ Add to List" i18n-label="@@admin.samplingMethodology.addToList" styleClass="btn-add-list"
+            [disabled]="entryForm.invalid" (onClick)="addEntry()"></p-button>
+        </div>
+      }
+
+    </form>
+
+    <!-- Pending list preview (add mode) -->
+    @if (mode === 'add' && addedEntries.length > 0) {
+      <p-divider styleClass="preview-divider"></p-divider>
+      <div class="preview-section">
+        <p class="preview-heading"><app-draw-icon icon="pi pi-list-check"></app-draw-icon> <span i18n="@@admin.samplingMethodology.pendingSubmission">Pending Submission</span> <span class="preview-count">{{ addedEntries.length }}</span></p>
+        <div class="preview-list">
+          @for (entry of addedEntries; track $index; let i = $index) {
+            <div class="preview-item">
+              <span class="preview-item__idx">{{ i + 1 }}</span>
+              <div class="preview-item__body">
+                <span class="preview-item__name">{{ entry.name }}</span>
+                @if (entry.description) { <span class="preview-item__desc">{{ entry.description }}</span> }
+              </div>
+              <span class="preview-status-pill" [class.active]="entry.status === 'active'">
+                {{ statusLabel(entry.status) }}
+              </span>
+              <button type="button" class="btn-remove" (click)="removeEntry(i)" pTooltip="Remove" i18n-pTooltip="@@common.remove" tooltipPosition="top">
+                <app-draw-icon icon="pi pi-times"></app-draw-icon>
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Footer -->
+  <div class="add-df">
+    <p-button label="Cancel" i18n-label="@@common.cancel" [text]="true" severity="secondary" (onClick)="cancel()"></p-button>
+    <p-button
+      [label]="mode === 'edit' ? saveChangesLabel : addSamplingMethodologyLabel"
+      icon="pi pi-check"
+      styleClass="btn-submit"
+      [disabled]="mode === 'edit' ? entryForm.invalid : (entryForm.invalid && addedEntries.length === 0)"
+      (onClick)="submit()">
+    </p-button>
+  </div>
+
+</div>

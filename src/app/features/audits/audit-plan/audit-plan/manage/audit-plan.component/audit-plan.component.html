@@ -1,0 +1,190 @@
+<!-- ══════════════════════════════════════════════
+     HEADER  (uses shared .drawer-header)
+══════════════════════════════════════════════════ -->
+<div class="drawer-header">
+  <div class="drawer-header-left">
+    <div class="drawer-icon-wrap">
+      <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+    </div>
+    <div class="drawer-title-block">
+      <h2 class="drawer-title">
+        {{ header().Title }}
+      </h2>
+      <p class="drawer-subtitle">
+        {{ header().Subtitle }}
+      </p>
+    </div>
+  </div>
+  <button class="close-btn" pTooltip="Close" tooltipPosition="left" (click)="cancel()">
+    <app-draw-icon icon="pi pi-times"></app-draw-icon>
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BODY  (uses shared .drawer-body — scrollable)
+══════════════════════════════════════════════════ -->
+<div class="drawer-body">
+  <form [formGroup]="form" novalidate autocomplete="off" class="plan">
+
+    <!-- Row 1: Company | Division -->
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">
+          Company<span class="required">*</span>
+        </label>
+        <p-select
+          formControlName="companyId"
+          [options]="companyOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Company"
+          [filter]="true"
+          filterBy="label"
+          [class.p-invalid]="invalid('companyId')"
+        />
+        @if (invalid('companyId') && form.get('companyId')?.errors?.['required']) {
+          <small class="error-text">{{ errors.CompanyRequired }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">
+          Division<span class="required">*</span>
+        </label>
+        <p-select
+          formControlName="divisionCode"
+          [options]="divisionOptions"
+          optionLabel="label"
+          optionValue="value"
+          [placeholder]="form.get('companyId')?.value ? placeholders.Division : placeholders.CompanyFirst"
+          [filter]="true"
+          filterBy="label"
+          [class.p-invalid]="invalid('divisionCode')"
+        />
+        @if (invalid('divisionCode') && form.get('divisionCode')?.errors?.['required']) {
+          <small class="error-text">{{ errors.DivisionRequired }}</small>
+        }
+      </div>
+    </div>
+
+    <!-- Row 2: Sub-Division (optional) -->
+    <div class="form-grid">
+      <div class="form-field form-field--full">
+        <label class="field-label">Sub-Division</label>
+        <p-multiselect
+          formControlName="subDivisionCodes"
+          [options]="subDivisionOptions"
+          optionLabel="label"
+          optionValue="value"
+          [placeholder]="!form.get('divisionCode')?.value
+            ? placeholders.DivisionFirst
+            : subDivisionOptions.length ? placeholders.SubDivisionOptional : subDivisionPlaceholders.None"
+          display="chip"
+          [filter]="true"
+          filterBy="label"
+          appendTo="body"
+          styleClass="w-full"
+        />
+      </div>
+    </div>
+
+    <!-- Row 3: Plan Name -->
+    <div class="form-grid">
+      <div class="form-field form-field--full">
+        <label class="field-label">
+          Plan Name<span class="required">*</span>
+        </label>
+        <input
+          pInputText
+          formControlName="planName"
+          placeholder="Plan Name"
+          [maxlength]="planNameMax"
+          [class.p-invalid]="invalid('planName')"
+        />
+        @if (invalid('planName') && form.get('planName')?.errors?.['required']) {
+          <small class="error-text">{{ errors.PlanNameRequired }}</small>
+        }
+        @if (invalid('planName') && form.get('planName')?.errors?.['maxlength']) {
+          <small class="error-text">{{ planNameMaxMessage }}</small>
+        }
+      </div>
+    </div>
+
+    <!-- Time Period heading -->
+    <p class="section-label">Time Period</p>
+    <p class="section-note">
+      <i class="pi pi-info-circle"></i>
+      Plan duration must be exactly 1 year (12 months), e.g. Jan-2026 to Dec-2026.
+    </p>
+
+    <!-- Row 4: From | To -->
+    <div class="form-grid">
+      <div class="form-field">
+        <label class="field-label">
+          From<span class="required">*</span>
+        </label>
+        <p-datepicker
+          formControlName="periodFrom"
+          placeholder="From"
+          [showIcon]="true"
+          view="month"
+          dateFormat="M-yy"
+          appendTo="body"
+          [minDate]="isEditMode() ? null : currentMonthStart"
+          [class.p-invalid]="invalid('periodFrom')"
+        />
+        @if (invalid('periodFrom') && form.get('periodFrom')?.errors?.['required']) {
+          <small class="error-text">{{ errors.FromRequired }}</small>
+        }
+        @if (invalid('periodFrom') && form.get('periodFrom')?.errors?.['pastMonth']) {
+          <small class="error-text">{{ errors.FromPastMonth }}</small>
+        }
+      </div>
+
+      <div class="form-field">
+        <label class="field-label">
+          To<span class="required">*</span>
+        </label>
+        <p-datepicker
+          formControlName="periodTo"
+          placeholder="To"
+          [showIcon]="true"
+          view="month"
+          dateFormat="M-yy"
+          appendTo="body"
+          [minDate]="form.get('periodFrom')?.value"
+          [maxDate]="periodToMaxDate"
+          [class.p-invalid]="invalid('periodTo') || groupError('periodToBeforeFrom') || groupError('periodNotOneYear')"
+        />
+        @if (invalid('periodTo') && form.get('periodTo')?.errors?.['required']) {
+          <small class="error-text">{{ errors.ToRequired }}</small>
+        }
+        @if (groupError('periodToBeforeFrom')) {
+          <small class="error-text">{{ errors.ToBeforeFrom }}</small>
+        }
+        @if (groupError('periodNotOneYear')) {
+          <small class="error-text">{{ errors.NotOneYear }}</small>
+        }
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     FOOTER  (uses shared .drawer-footer)
+══════════════════════════════════════════════════ -->
+<div class="drawer-footer">
+  <p-button
+    label="Cancel"
+    styleClass="cancel-btn"
+    [disabled]="submitting()"
+    (onClick)="cancel()"
+  />
+  <p-button
+    [label]="header().Submit"
+    styleClass="submit-btn"
+    [loading]="submitting()"
+    (onClick)="submit()"
+  />
+</div>

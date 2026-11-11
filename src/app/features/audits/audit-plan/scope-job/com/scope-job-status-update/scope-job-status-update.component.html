@@ -1,0 +1,463 @@
+<p-toast position="top-right" />
+
+<div class="su-drawer" *ngIf="data">
+
+  <!-- ══════════════════════════ HEADER ══════════════════════════════ -->
+  <div class="drawer-header" [ngClass]="isJobTarget ? 'drawer-header--job' : 'drawer-header--task'">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap" [ngClass]="isJobTarget ? 'drawer-icon-wrap--job' : 'drawer-icon-wrap--task'">
+        <i class="pi" [ngClass]="isJobTarget ? 'pi-briefcase' : 'pi-list-check'"></i>
+      </div>
+      <div class="drawer-title-block">
+        <div class="su-header__eyebrow">
+          <span class="su-id-pill">{{ data.job.scopeId }}</span>
+          <span class="su-sep">·</span>
+          <span class="su-id-pill su-id-pill--job">{{ data.job.id }}</span>
+          <span *ngIf="!isJobTarget && data.task" class="su-id-pill su-id-pill--task">{{ data.task!.id }}</span>
+          <span class="su-type-chip" [ngClass]="isJobTarget ? 'su-type-chip--job' : 'su-type-chip--task'">
+            <app-draw-icon icon="pi pi-sync"></app-draw-icon>
+            {{ targetLabels.Chip }}
+          </span>
+        </div>
+        <h2 class="drawer-title">
+          {{ isJobTarget ? data.job.title : (data.task?.title ?? unknownTaskTitle) }}
+        </h2>
+        <p *ngIf="!isJobTarget" class="drawer-subtitle">
+          <app-draw-icon icon="pi pi-briefcase"></app-draw-icon>{{ data.job.title }}
+        </p>
+      </div>
+    </div>
+    <div class="dh-right">
+      <span class="status-pill"
+            [ngClass]="'status-pill--' + (isJobTarget ? data.job.status : (data.task?.status ?? ScopeTaskStatuses.Open))">
+        <span class="status-pill__dot"></span>
+        {{ isJobTarget
+            ? statusLabel(data.job.status)
+            : taskStatusLabel(data.task?.status ?? ScopeTaskStatuses.Open) }}
+      </span>
+      <button type="button" class="close-btn" (click)="onCancel()" pTooltip="Close" tooltipPosition="left">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════ BODY ════════════════════════════════ -->
+  <div class="su-body">
+
+    <!-- ─── JOB INFO CARDS ─────────────────────────────────────── -->
+    <ng-container *ngIf="isJobTarget">
+
+      <!-- Card: Scope & Period -->
+      <div class="info-card">
+        <div class="info-card__header">
+          <app-draw-icon icon="pi pi-calendar-clock"></app-draw-icon> Scope &amp; Period
+        </div>
+        <div class="info-card__body">
+          <div class="ic-grid">
+            <div class="ic-field ic-field--full">
+              <span class="ic-label">Scope</span>
+              <span class="ic-value ic-value--strong">{{ data.job.scopeName }}</span>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">Period</span>
+              <span class="period-badge"><app-draw-icon icon="pi pi-calendar"></app-draw-icon>{{ data.job.periodLabel }}</span>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">Frequency</span>
+              <span class="freq-chip" [ngClass]="'freq-chip--' + data.job.auditFrequency">
+                <app-draw-icon icon="pi pi-refresh"></app-draw-icon>{{ frequencyLabel(data.job.auditFrequency) }}
+              </span>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">Start Date</span>
+              <span class="ic-value">
+                <app-draw-icon icon="pi pi-calendar-plus" class="ic-icon"></app-draw-icon>
+                {{ data.job.periodStart | date:'dd MMM yyyy' }}
+              </span>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">End Date</span>
+              <span class="ic-value">
+                <app-draw-icon icon="pi pi-calendar-minus" class="ic-icon"></app-draw-icon>
+                {{ data.job.periodEnd | date:'dd MMM yyyy' }}
+              </span>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">Mode of Audit</span>
+              <span class="mode-badge"><app-draw-icon icon="pi pi-eye"></app-draw-icon>{{ modeLabel(data.job.modeOfAudit) }}</span>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">Duration</span>
+              <span class="duration-chip"><app-draw-icon icon="pi pi-hourglass"></app-draw-icon>{{ durationDays }} days</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Organisation -->
+      <div class="info-card">
+        <div class="info-card__header">
+          <app-draw-icon icon="pi pi-building"></app-draw-icon> Organisation
+        </div>
+        <div class="info-card__body">
+          <div class="ic-grid">
+            <div class="ic-field ic-field--full">
+              <span class="ic-label">Company</span>
+              <div class="org-block">
+                <div class="org-block__avatar">{{ data.job.company.slice(0,2).toUpperCase() }}</div>
+                <span class="org-block__name">{{ data.job.company }}</span>
+              </div>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">Division / Location</span>
+              <span class="ic-value">
+                <app-draw-icon icon="pi pi-map-marker" class="ic-icon"></app-draw-icon>{{ data.job.division }}
+              </span>
+            </div>
+            <div class="ic-field">
+              <span class="ic-label">Sub-Division</span>
+              <span class="dept-badge">{{ data.job.subDivision }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Audit Team -->
+      <div class="info-card">
+        <div class="info-card__header">
+          <app-draw-icon icon="pi pi-users"></app-draw-icon> Audit Team
+        </div>
+        <div class="info-card__body info-card__body--team">
+          <div class="team-group">
+            <span class="team-group__label"><app-draw-icon icon="pi pi-shield"></app-draw-icon> Auditors</span>
+            <div class="team-chips">
+              <span *ngFor="let id of data.job.assignedAuditors" class="team-chip team-chip--auditor">
+                <span class="team-chip__avatar">{{ auditorInitials(id) }}</span>
+                {{ auditorName(id) }}
+              </span>
+            </div>
+          </div>
+          <div class="team-group" *ngIf="data.job.assignedReviewers?.length">
+            <span class="team-group__label"><app-draw-icon icon="pi pi-eye"></app-draw-icon> Reviewers</span>
+            <div class="team-chips">
+              <span *ngFor="let id of data.job.assignedReviewers" class="team-chip team-chip--reviewer">
+                <span class="team-chip__avatar">{{ auditorInitials(id) }}</span>
+                {{ auditorName(id) }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card: Task Progress -->
+      <div class="info-card" *ngIf="data.tasks?.length">
+        <div class="info-card__header">
+          <app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> Task Progress
+          <span class="info-card__header-badge">{{ data.tasks!.length }} {{ pluralize(data.tasks!.length, 'task') }}</span>
+        </div>
+        <div class="info-card__body">
+          <div class="tp-stats">
+            <div class="tp-stat tp-stat--completed">
+              <span class="tp-stat__num">{{ taskCounts.completed }}</span>
+              <span class="tp-stat__lbl">Completed</span>
+            </div>
+            <div class="tp-stat tp-stat--progress">
+              <span class="tp-stat__num">{{ taskCounts.inProgress }}</span>
+              <span class="tp-stat__lbl">In Progress</span>
+            </div>
+            <div class="tp-stat tp-stat--open">
+              <span class="tp-stat__num">{{ taskCounts.open }}</span>
+              <span class="tp-stat__lbl">Open</span>
+            </div>
+            <div class="tp-stat tp-stat--overdue">
+              <span class="tp-stat__num">{{ taskCounts.overdue }}</span>
+              <span class="tp-stat__lbl">Overdue</span>
+            </div>
+          </div>
+          <div class="tp-bar-wrap">
+            <div class="tp-bar">
+              <div class="tp-bar__fill" [style.width.%]="completionPct"></div>
+            </div>
+            <span class="tp-bar__label">
+              {{ completionPct }}% complete &nbsp;·&nbsp;
+              {{ taskCounts.completed }} / {{ data.tasks!.length }} tasks done
+            </span>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ─── TASK INFO CARDS ─────────────────────────────────────── -->
+    <ng-container *ngIf="!isJobTarget && data.task">
+
+      <!-- Job Context Strip -->
+      <div class="job-context-strip">
+        <div class="jcs-icon"><app-draw-icon icon="pi pi-briefcase"></app-draw-icon></div>
+        <div class="jcs-info">
+          <span class="jcs-eyebrow">Parent Job</span>
+          <span class="jcs-title">{{ data.job.title }}</span>
+          <div class="jcs-meta">
+            <span class="jcs-chip"><app-draw-icon icon="pi pi-calendar"></app-draw-icon>{{ data.job.periodLabel }}</span>
+            <span class="jcs-chip"><app-draw-icon icon="pi pi-building"></app-draw-icon>{{ data.job.subDivision }}</span>
+            <span class="jcs-chip"><app-draw-icon icon="pi pi-map-marker"></app-draw-icon>{{ data.job.division }}</span>
+          </div>
+        </div>
+        <span class="status-pill" [ngClass]="'status-pill--' + data.job.status">
+          <span class="status-pill__dot"></span>{{ statusLabel(data.job.status) }}
+        </span>
+      </div>
+
+      <!-- Card: Task Details -->
+      <div class="info-card">
+        <div class="info-card__header">
+          <app-draw-icon icon="pi pi-list-check"></app-draw-icon> Task Details
+        </div>
+        <div class="info-card__body">
+          <div class="ic-grid">
+
+            <div class="ic-field ic-field--full">
+              <span class="ic-label">Task Name</span>
+              <span class="ic-value ic-value--strong">{{ data.task!.title }}</span>
+            </div>
+
+            <div class="ic-field ic-field--full"
+                 *ngIf="data.task!.objective || data.task!.description">
+              <span class="ic-label">Objective / Description</span>
+              <span class="ic-value ic-value--desc">{{ data.task!.objective || data.task!.description }}</span>
+            </div>
+
+            <div class="ic-field">
+              <span class="ic-label">Assigned To</span>
+              <span class="team-chip team-chip--auditor">
+                <span class="team-chip__avatar">{{ auditorInitials(data.task!.assignedTo) }}</span>
+                {{ auditorName(data.task!.assignedTo) }}
+              </span>
+            </div>
+
+            <div class="ic-field">
+              <span class="ic-label">Due Date</span>
+              <span class="ic-value" [class.ic-value--overdue]="data.task!.status === ScopeTaskStatuses.Overdue">
+                <app-draw-icon icon="pi pi-calendar" class="ic-icon"></app-draw-icon>
+                {{ (data.task!.endDate || data.task!.dueDate) | date:'dd MMM yyyy' }}
+              </span>
+            </div>
+
+            <div class="ic-field">
+              <span class="ic-label">Priority</span>
+              <span class="priority-chip" [ngClass]="'priority-chip--' + data.task!.priority">
+                {{ priorityLabel(data.task!.priority) }}
+              </span>
+            </div>
+
+            <div class="ic-field" *ngIf="data.task!.controlRating">
+              <span class="ic-label">Control Rating</span>
+              <span class="cr-badge" [ngClass]="'cr-badge--' + data.task!.controlRating">
+                <i class="pi" [ngClass]="crIcon(data.task!.controlRating!)"></i>
+                {{ crLabel(data.task!.controlRating!) }}
+              </span>
+            </div>
+
+            <div class="ic-field" *ngIf="data.task!.checklistItems?.length">
+              <span class="ic-label">Checklist Items</span>
+              <span class="ic-value">
+                <app-draw-icon icon="pi pi-check-square" class="ic-icon"></app-draw-icon>
+                {{ data.task!.checklistItems!.length }} items
+              </span>
+            </div>
+
+            <div class="ic-field" *ngIf="data.task!.observations">
+              <span class="ic-label">Observations</span>
+              <span class="ic-value ic-value--desc">{{ data.task!.observations }}</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+    <!-- ─── STATUS UPDATE SECTION (common) ─────────────────────── -->
+    <div class="su-section-wrapper" [formGroup]="form">
+
+      <!-- Status picker -->
+      <div class="su-section">
+        <div class="su-section__label-row">
+          <p class="su-section__label">
+            <app-draw-icon icon="pi pi-sync"></app-draw-icon>
+            Select New Status
+          </p>
+          <span class="su-required-badge">Required</span>
+        </div>
+        <div class="su-status-grid">
+          <button *ngFor="let opt of statusOptions"
+                  type="button"
+                  class="su-status-card"
+                  [ngClass]="['su-status-card--' + opt.value, isStatusSelected(opt.value) ? 'su-status-card--active' : '']"
+                  (click)="setStatus(opt.value)">
+            <div class="su-status-card__icon-wrap" [ngClass]="'su-icon-wrap--' + opt.value">
+              <i class="pi" [ngClass]="opt.icon"></i>
+            </div>
+            <div class="su-status-card__text">
+              <span class="su-status-card__label">{{ opt.label }}</span>
+              <span class="su-status-card__desc">{{ opt.desc }}</span>
+            </div>
+            <app-draw-icon icon="pi pi-check" class="su-status-card__check" *ngIf="isStatusSelected(opt.value)"></app-draw-icon>
+          </button>
+        </div>
+        <small *ngIf="isFieldInvalid('status')" class="error-text">
+          <app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Please select a status.
+        </small>
+      </div>
+
+      <!-- ─── COMPLETION FIELDS (visible only when status = completed) ── -->
+      <ng-container *ngIf="isCompletedStatus">
+
+        <!-- Time Spent / Effort Logged -->
+        <div class="su-section">
+          <div class="su-section__label-row">
+            <p class="su-section__label">
+              <app-draw-icon icon="pi pi-clock"></app-draw-icon>
+              Total Time Spent / Effort Logged
+            </p>
+            <span class="su-required-badge">Required</span>
+          </div>
+          <div class="time-input-wrap">
+            <div class="time-input-row">
+              <input pInputText
+                     type="number"
+                     formControlName="timeSpentHours"
+                     class="time-input"
+                     [min]="fieldLimits.TimeSpentHoursMin"
+                     step="0.5"
+                     placeholder="e.g. 12.5"
+                     [class.ng-invalid]="isFieldInvalid('timeSpentHours')"
+                     [class.ng-touched]="isFieldInvalid('timeSpentHours')" />
+              <span class="time-unit-badge"><app-draw-icon icon="pi pi-hourglass"></app-draw-icon> Hours</span>
+            </div>
+            <span class="time-hint">Decimals allowed — e.g. 12.5 = 12h 30min</span>
+            <small *ngIf="isFieldInvalid('timeSpentHours')" class="error-text">
+              <app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon>
+              {{ form.get('timeSpentHours')?.errors?.['required']
+                  ? errors.TimeSpentRequired
+                  : minTimeSpentMessage }}
+            </small>
+          </div>
+        </div>
+
+        <!-- Overall Rating -->
+        <div class="su-section">
+          <div class="su-section__label-row">
+            <p class="su-section__label">
+              <app-draw-icon icon="pi pi-star"></app-draw-icon>
+              Overall Rating
+            </p>
+            <span class="su-required-badge">Required</span>
+          </div>
+          <div class="ou-rating-grid">
+            <button *ngFor="let opt of overallRatingOptions"
+                    type="button"
+                    class="ou-rating-card ou-rating-card--{{ opt.value }}"
+                    [class.ou-rating-card--active]="isRatingSelected(opt.value)"
+                    (click)="setRating(opt.value)">
+              <div class="ou-rating-card__icon">
+                <i class="pi" [ngClass]="opt.icon"></i>
+              </div>
+              <div class="ou-rating-card__text">
+                <span class="ou-rating-card__label">{{ opt.label }}</span>
+                <span class="ou-rating-card__desc">{{ opt.desc }}</span>
+              </div>
+              <app-draw-icon icon="pi pi-check" class="ou-rating-card__check" *ngIf="isRatingSelected(opt.value)"></app-draw-icon>
+            </button>
+          </div>
+          <small *ngIf="isFieldInvalid('overallRating')" class="error-text">
+            <app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Please select an overall rating.
+          </small>
+        </div>
+
+      </ng-container>
+
+      <!-- Auditor Note -->
+      <div class="su-section">
+        <div class="su-section__label-row">
+          <p class="su-section__label">
+            <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+            Auditor Note
+          </p>
+          <span class="su-required-badge">Required</span>
+        </div>
+        <div class="su-note-wrap">
+          <div class="su-auditor-row">
+            <div class="su-auditor-chip">
+              <div class="su-auditor-chip__avatar">{{ auditorInitials(currentAuditorId) }}</div>
+              <span>{{ auditorName(currentAuditorId) }}</span>
+              <span class="su-auditor-chip__role">{{ auditorRole }}</span>
+            </div>
+          </div>
+          <textarea pTextarea
+                    formControlName="note"
+                    rows="5"
+                    [autoResize]="false"
+                    placeholder="Provide a note about this status change — reason, observations, blockers, or completion remarks…"
+                    [class.ng-invalid]="isFieldInvalid('note')"
+                    [class.ng-touched]="isFieldInvalid('note')"
+          ></textarea>
+          <div class="su-note-footer">
+            <small *ngIf="isFieldInvalid('note')" class="error-text">
+              <app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon>
+              {{ (form.get('note')?.errors?.['required']) ? errors.NoteRequired : noteMaxMessage }}
+            </small>
+            <span class="char-count">{{ noteLength }} / {{ fieldLimits.StatusNoteMax }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audit Overview -->
+      <div class="su-section">
+        <div class="su-section__label-row">
+          <p class="su-section__label">
+            <app-draw-icon icon="pi pi-file-edit"></app-draw-icon>
+            Audit Overview
+          </p>
+          <span *ngIf="isCompletedStatus" class="su-required-badge">Required</span>
+          <span *ngIf="!isCompletedStatus" class="su-conditional-badge">
+            <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+            Required when Completed
+          </span>
+        </div>
+        <div class="su-note-wrap">
+          <textarea pTextarea
+                    formControlName="auditOverview"
+                    rows="6"
+                    [autoResize]="false"
+                    placeholder="Summarise the audit findings, key observations, control effectiveness, risk areas identified, and any recommendations for improvement…"
+                    [class.ng-invalid]="isFieldInvalid('auditOverview')"
+                    [class.ng-touched]="isFieldInvalid('auditOverview')"
+          ></textarea>
+          <div class="su-note-footer">
+            <small *ngIf="isFieldInvalid('auditOverview')" class="error-text">
+              <app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon>
+              {{ form.get('auditOverview')?.errors?.['required']
+                  ? errors.AuditOverviewRequired
+                  : auditOverviewMaxMessage }}
+            </small>
+            <span class="char-count">{{ auditOverviewLength }} / {{ fieldLimits.AuditOverviewMax }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <!-- end .su-body -->
+
+  <!-- ══════════════════════════ FOOTER ══════════════════════════════ -->
+  <div class="drawer-footer">
+    <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onCancel()"></p-button>
+    <p-button [label]="targetLabels.Submit"
+              icon="pi pi-check"
+              styleClass="submit-btn"
+              (onClick)="onUpdate()"></p-button>
+  </div>
+
+</div>

@@ -1,0 +1,151 @@
+.audit-page {
+  padding: 1.5rem;
+  background: var(--surface-card);
+  min-height: 100vh;
+}
+
+.audit-card {
+  border-radius: 1.25rem;
+  overflow: hidden;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--surface-border);
+
+  h2 {
+    margin: 0;
+    font-size: 1.6rem;
+    color: var(--p-blue-800);
+  }
+
+  p {
+    margin: 0.35rem 0 0;
+    color: var(--text-color-secondary);
+    font-size: 0.95rem;
+  }
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  align-items: start;
+}
+
+.section-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  margin-bottom: 1rem;
+
+  h3 {
+    margin: 0 0 1rem;
+    font-size: 1.05rem;
+    color: var(--p-blue-800);
+  }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.25rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  label {
+    font-weight: 600;
+    color: var(--text-color);
+    font-size: 0.95rem;
+  }
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.inline-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.option-item,
+.checkbox-item,
+.toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkbox-list,
+.toggle-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.actions-card {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-dropdown,
+:host ::ng-deep .p-datepicker,
+:host ::ng-deep .p-inputtextarea {
+  width: 100%;
+}
+
+@media (max-width: 992px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .actions-card {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .header-actions .p-button,
+  .actions-card .p-button {
+    width: 100%;
+  }
+}
+.error {
+  color: var(--p-red-700);
+  font-size: 12px;
+  display: block;
+  margin-top: 4px;
+}

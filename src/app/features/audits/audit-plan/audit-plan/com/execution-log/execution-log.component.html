@@ -1,0 +1,71 @@
+<button class="back" (click)="store.view.set(PlanViews.Scope)">← Back to Scope Detail</button>
+
+<section class="panel">
+  <header class="panel-head">
+    <div>
+      <h2>Execution Log</h2>
+      <p class="sub">Every job instance across the year. Global filters apply; add a month filter here.</p>
+    </div>
+    <p-select [options]="monthOptions" optionLabel="label" optionValue="value"
+              placeholder="All months" [showClear]="true"
+              [ngModel]="store.logMonthFilter()"
+              (ngModelChange)="store.logMonthFilter.set($event)" />
+  </header>
+
+  <div class="stats">
+    <span class="pill"><b>{{ store.logRows().length }}</b> job instances</span>
+    @for (st of statusKeys; track st) {
+      <span class="pill"><b>{{ store.logCounts()[st] }}</b> {{ meta[st].label }}</span>
+    }
+  </div>
+
+  <p-table
+    [value]="store.logRows()"
+    [paginator]="true" [rows]="pageRows" [rowsPerPageOptions]="rowsPerPageOptions"
+    [sortMode]="'single'" dataKey="job.id"
+    [tableStyle]="{ 'min-width': '900px', 'font-size': '12.5px' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="monthIndex">Month <p-sortIcon field="monthIndex" /></th>
+        <th pSortableColumn="subDivisionName">Sub-Division <p-sortIcon field="subDivisionName" /></th>
+        <th>Scope Job</th>
+        <th pSortableColumn="scope.name">Scope <p-sortIcon field="scope.name" /></th>
+        <th>Freq.</th>
+        <th pSortableColumn="status">Status <p-sortIcon field="status" /></th>
+        <th>Auditor</th>
+        <th class="c">Est. hrs</th>
+        <th class="c">RFIs</th>
+        <th class="c">Findings</th>
+        <th></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td class="mono b">{{ row.monthLabel }}
+          @if (row.runs > 1) { <span class="runs">×{{ row.runs }} runs</span> }
+        </td>
+        <td class="muted">{{ row.subDivisionName }}</td>
+        <td class="b link" (click)="open(row)">{{ row.job.name }}
+          @if (row.job.run !== undefined) {
+            <span class="run-tag">{{ runShortLabel(row.scope.freq) }} {{ row.job.run }}</span>
+          }
+        </td>
+        <td class="muted link" (click)="store.drillToScope(row.scope.id)">
+          {{ row.scope.name }} <small>· {{ row.scope.code }}</small>
+        </td>
+        <td><span class="freq-badge fq-{{ row.scope.freq }}">{{ row.scope.freq }}</span></td>
+        <td><span class="tag st-{{ row.status }}">{{ metaOf(row).label }}</span></td>
+        <td class="muted">{{ row.job.auditor }}</td>
+        <td class="c mono">{{ row.job.hrs }}</td>
+        <td class="c">{{ row.scope.rfi }}</td>
+        <td class="c" [class.danger]="row.scope.findings > 0">{{ row.scope.findings }}</td>
+        <td class="c">
+          <button pButton text size="small" icon="pi pi-eye" (click)="open(row)"></button>
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="11" class="muted" style="padding:16px">No records match the selected filters.</td></tr>
+    </ng-template>
+  </p-table>
+</section>

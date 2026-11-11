@@ -1,0 +1,268 @@
+<div class="dp-wrap" *ngIf="d() as data; else emptyState">
+<div class="drawer-inner">
+  <div class="drawer-resizer" (mousedown)="onResizeStart($event)"></div>
+
+  <!-- ========================= HEADER ========================= -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-users"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ data.subDivisionName }}</h2>
+        <p class="drawer-subtitle" *ngIf="divisionName$()">{{ divisionName$() }}</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onHide()" aria-label="Close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+  <!-- ======================== STATS ========================= -->
+  <section class="dp-stats">
+    <div class="stat-card" *ngIf="data.numberOfEmployees != null">
+      <div class="stat-card__icon stat-card__icon--emp"><app-draw-icon icon="pi pi-user"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ data.numberOfEmployees }}</span>
+        <span class="stat-card__label">Employees</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="scopeCount() > 0">
+      <div class="stat-card__icon stat-card__icon--scope"><app-draw-icon icon="pi pi-file-check"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ scopeCount() }}</span>
+        <span class="stat-card__label">Audit Scopes</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="yearsOperational() != null">
+      <div class="stat-card__icon stat-card__icon--yrs"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ yearsOperational() }}<small> yrs</small></span>
+        <span class="stat-card__label">Operational</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="data.riskStatus">
+      <div class="stat-card__icon stat-card__icon--risk"><app-draw-icon icon="pi pi-shield"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value stat-card__value--sm">{{ riskStatusLabel(data.riskStatus) }}</span>
+        <span class="stat-card__label">Risk Status</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= BODY ========================= -->
+  <div class="dp-body">
+
+    <!-- LEFT COLUMN ------------------------------------------ -->
+    <div class="dp-col dp-col--main">
+
+      <!-- Sub-Division Details -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-info-circle" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Sub-Division Details</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row" *ngIf="divisionName$()">
+            <span class="info-row__label">Division</span>
+            <span class="info-row__value">{{ divisionName$() }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">Sub-Division Code</span>
+            <span class="info-row__value info-row__value--mono">{{ data.subDivisionCode || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">Sub-Division Type</span>
+            <span class="info-row__value">{{ divisionTypeLabel(data?.subDivisionType) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">Department Type</span>
+            <span class="info-row__value">{{ departmentTypeLabel(data?.departmentType) }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.subDivisionHead">
+            <span class="info-row__label">Sub-Division Head</span>
+            <span class="info-row__value">{{ data.subDivisionHead }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.operationalSince">
+            <span class="info-row__label">Operational Since</span>
+            <span class="info-row__value">{{ data.operationalSince | date:'mediumDate' }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.parentSubDivisions?.length">
+            <span class="info-row__label">Parent Sub-Divisions</span>
+            <span class="info-row__value">{{ data.parentSubDivisions.join(', ') }}</span>
+          </div>
+          <div class="info-row info-row--note" *ngIf="data.description">
+            <span class="info-row__label">Description</span>
+            <p class="info-row__note">{{ data.description }}</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-id-card" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Contact</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row" *ngIf="data.primaryContactPerson">
+            <span class="info-row__label">Primary Contact</span>
+            <span class="info-row__value">{{ data.primaryContactPerson }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.contactEmail">
+            <span class="info-row__label">Email</span>
+            <a class="info-row__link" [href]="'mailto:' + data.contactEmail">{{ data.contactEmail }}</a>
+          </div>
+          <div class="info-row" *ngIf="data.contactPhone">
+            <span class="info-row__label">Phone</span>
+            <a class="info-row__link" [href]="'tel:' + data.contactPhone">{{ data.contactPhone }}</a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN ----------------------------------------- -->
+    <div class="dp-col dp-col--side">
+
+      <!-- Risk -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-shield" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Risk</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row" *ngIf="data.riskRating">
+            <span class="info-row__label">Risk Rating</span>
+            <p-tag [value]="riskLabel(data.riskRating)" [severity]="riskSeverity(data.riskRating)"
+              styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="info-row" *ngIf="data.riskStatus">
+            <span class="info-row__label">Risk Status</span>
+            <span class="info-row__value">{{ riskStatusLabel(data.riskStatus) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">Sub-Division Status</span>
+            <p-tag [value]="subDivisionStatusLabels[data.status === SubDivisionStatuses.Active ? SubDivisionStatuses.Active : SubDivisionStatuses.Inactive]" [severity]="statusSeverity(data.status)"
+              styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="info-row" *ngIf="data.auditStatus">
+            <span class="info-row__label">Audit Status</span>
+            <p-tag [value]="auditStatusLabel(data.auditStatus)" [severity]="auditStatusSeverity(data.auditStatus)"
+              styleClass="tag-sm"></p-tag>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ============= ASSIGNED AUDITORS & REVIEWERS ============ -->
+  <section class="dp-personnel" *ngIf="assignedAuditors().length > 0 || assignedReviewers().length > 0">
+    <app-assignees-panel
+      [auditors]="assignedAuditors()"
+      [reviewers]="assignedReviewers()"
+      [showScopeExpansion]="true"
+      auditorSubtitle="Auditors responsible for scopes in this sub-division"
+      reviewerSubtitle="Assigned reviewers for scopes in this sub-division">
+    </app-assignees-panel>
+  </section>
+
+  <!-- =================== AUDIT SCOPES ======================= -->
+  <section class="dp-scopes" *ngIf="scopeCount() > 0">
+    <header class="dp-scopes-head">
+      <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+      <h2>Audit Scopes</h2>
+      <span class="count-badge">{{ scopeCount() }}</span>
+    </header>
+
+    <div class="dp-scopes-search">
+      <p-iconfield class="w-full">
+        <p-inputicon><app-draw-icon icon="pi pi-search"></app-draw-icon></p-inputicon>
+        <input pInputText type="text" placeholder="Search scopes & sub-scopes…"
+               [value]="getScopeSearch()" (input)="setScopeSearch($any($event.target).value)"
+               class="w-full" />
+      </p-iconfield>
+    </div>
+
+    <p-tree [value]="pagedScopeTree()"
+            (onNodeExpand)="onScopeNodeExpand($event)"
+            (onNodeCollapse)="onScopeNodeCollapse($event)"
+            styleClass="scope-tree">
+      <ng-template let-node pTemplate="default">
+
+        <!-- SCOPE row -->
+        <div *ngIf="node.data.type === SubDivisionScopeNodeTypes.Scope" class="scope-item">
+          <div class="scope-item__left">
+            <div class="scope-item__avatar">
+              <app-draw-icon icon="pi pi-file-check"></app-draw-icon>
+            </div>
+            <div class="scope-item__info">
+              <span class="scope-item__name">{{ node.data.name }}</span>
+              <span class="scope-item__sub">
+                {{ auditFreqLabel(node.data.auditFrequency) }}
+                <ng-container *ngIf="node.data.subScopeCount">
+                  &middot; {{ node.data.subScopeCount }} sub-scope{{ node.data.subScopeCount > 1 ? 's' : '' }}
+                </ng-container>
+              </span>
+            </div>
+          </div>
+          <div class="scope-item__chips">
+            <p-tag [value]="scopeTypeLabel(node.data.scopeType)" severity="secondary" styleClass="tag-xs"></p-tag>
+            <p-tag *ngIf="node.data.riskRating" [value]="riskLabel(node.data.riskRating)" [severity]="riskSeverity(node.data.riskRating)" styleClass="tag-xs"></p-tag>
+          </div>
+        </div>
+
+        <!-- SUBSCOPE row -->
+        <div *ngIf="node.data.type === SubDivisionScopeNodeTypes.SubScope" class="scope-item">
+          <div class="scope-item__left">
+            <div class="scope-item__avatar scope-item__avatar--sub">
+              <app-draw-icon icon="pi pi-file"></app-draw-icon>
+            </div>
+            <div class="scope-item__info">
+              <span class="scope-item__name">{{ node.data.name }}</span>
+              <span class="scope-item__parent" *ngIf="node.data.parentScopeName">
+                <app-draw-icon icon="pi pi-arrow-up-right"></app-draw-icon>{{ node.data.parentScopeName }}
+              </span>
+            </div>
+          </div>
+          <div class="scope-item__chips">
+            <p-tag value="Sub-scope" severity="secondary" styleClass="tag-xs"></p-tag>
+            <p-tag *ngIf="node.data.riskRating" [value]="riskLabel(node.data.riskRating)" [severity]="riskSeverity(node.data.riskRating)" styleClass="tag-xs"></p-tag>
+          </div>
+        </div>
+
+      </ng-template>
+    </p-tree>
+
+    <div *ngIf="scopeTree().length === 0" class="assign-empty">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <span>No scopes match your search.</span>
+    </div>
+
+    <p-paginator
+      *ngIf="scopeTree().length > SCOPE_PAGE_SIZE"
+      [rows]="SCOPE_PAGE_SIZE"
+      [totalRecords]="scopeTree().length"
+      [first]="getScopeFirst()"
+      (onPageChange)="onScopeTreePageChange($event)"
+      styleClass="assign-paginator">
+    </p-paginator>
+
+  </section>
+
+  </div>
+</div>
+</div>
+
+<ng-template #emptyState>
+  <div class="dp-empty">
+    <app-draw-icon icon="pi pi-users"></app-draw-icon>
+    <p>No sub-division selected.</p>
+  </div>
+</ng-template>

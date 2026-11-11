@@ -1,0 +1,14 @@
+<div class="toast toast--{{ toast().type }}" role="alert" aria-live="assertive">
+  <div class="toast__icon-wrap">
+    <span class="toast__icon">{{ icon() }}</span>
+  </div>
+  <div class="toast__body">
+    @if (toast().title) {
+      <strong class="toast__title">{{ toast().title }}</strong>
+    }
+    <span class="toast__message">{{ toast().message }}</span>
+  </div>
+  <button class="toast__close" aria-label="Dismiss" (click)="dismissed.emit(toast().id)">
+    &#x2715;
+  </button>
+</div>

@@ -1,0 +1,209 @@
+<div class="ar-scope"
+     [class.ar-scope--open]="pickerFor() === SCOPE_TARGET"
+     [class.ar-scope--preparer]="scope().role === AssignmentRoles.Preparer"
+     [class.ar-scope--reviewer]="scope().role === AssignmentRoles.Reviewer">
+
+  <!-- ══ Scope header row ══════════════════════════════════════════════════════ -->
+  <div class="ar-row" [class.ar-row--busy]="scopeBusy()">
+
+    <input *ngIf="bulkMode()" type="checkbox" class="ar-check"
+           [checked]="scopeChecked()" [indeterminate]="scopeIndeterminate()"
+           (change)="toggleScope($any($event.target).checked)"
+           [attr.aria-label]="selectScopeAriaLabel(scope().scopeLabel)" />
+
+    <button type="button" class="ar-chevron" (click)="expanded.set(!expanded())"
+            [attr.aria-expanded]="expanded()" [attr.aria-label]="expanded() ? collapseJobsLabel : expandJobsLabel">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           [style.transform]="expanded() ? 'rotate(90deg)' : 'none'" style="transition:transform .15s">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+
+    <div class="ar-row__main" (click)="expanded.set(!expanded())">
+      <span class="ar-scope-name">{{ scope().scopeLabel }}</span>
+      <span class="ar-scope-sub">{{ jobsCountLabel(scope().jobs.length) }}</span>
+    </div>
+
+    <span class="ar-badge" [class.ar-badge--preparer]="scope().role === AssignmentRoles.Preparer"
+          [class.ar-badge--reviewer]="scope().role === AssignmentRoles.Reviewer">
+      <span class="ar-badge__dot"></span>
+      {{ roleLabels[scope().role] }}
+    </span>
+
+    <!-- Staged chip OR action button -->
+    <ng-container *ngIf="scopePending() as st; else scopeAction">
+      <ng-container *ngTemplateOutlet="stagedChip; context: { $implicit: st, kind: SCOPE_TARGET }"></ng-container>
+    </ng-container>
+    <ng-template #scopeAction>
+      <span *ngIf="scopePartial()" class="ar-partial" i18n="@@audit.assignment.someJobsStaged">{{ someJobsStaged }}</span>
+      <button type="button" class="ar-reassign-btn" [class.ar-reassign-btn--active]="pickerFor() === SCOPE_TARGET"
+              [disabled]="scopeBusy()"
+              (click)="pickerFor() === SCOPE_TARGET ? closePicker() : openPicker(SCOPE_TARGET)">
+        <span class="ar-spinner" *ngIf="scopeBusy()"></span>
+        <svg *ngIf="!scopeBusy()" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+        <span i18n="@@audit.assignment.reassignScope">Reassign scope</span>
+      </button>
+    </ng-template>
+  </div>
+
+  <!-- Scope picker -->
+  <div class="ar-picker" *ngIf="pickerFor() === SCOPE_TARGET">
+    <ng-container *ngTemplateOutlet="picker; context: { $implicit: SCOPE_TARGET, count: scope().jobs.length }"></ng-container>
+  </div>
+
+  <!-- ══ Expanded jobs ═════════════════════════════════════════════════════════ -->
+  <div class="ar-jobs" *ngIf="expanded()">
+    <div class="ar-job-wrap" *ngFor="let job of scope().jobs; let last = last; trackBy: trackByJob" [class.ar-job-wrap--last]="last">
+
+      <div class="ar-job" [class.ar-row--busy]="isBusy(job.assignmentId)"
+           [class.ar-job--open]="pickerFor() === job.assignmentId">
+
+        <input *ngIf="bulkMode()" type="checkbox" class="ar-check"
+               [checked]="isJobChecked(job.assignmentId)"
+               (change)="toggleJob(job, $any($event.target).checked)"
+               [attr.aria-label]="selectJobAriaLabel(job.jobName)" />
+
+        <svg class="ar-job__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+        </svg>
+
+        <span class="ar-job__name">{{ job.jobName }}</span>
+
+        <ng-container *ngIf="jobStaged(job.assignmentId) as jt; else jobAction">
+          <ng-container *ngTemplateOutlet="stagedChip; context: { $implicit: jt, kind: 'job', jobId: job.assignmentId }"></ng-container>
+        </ng-container>
+        <ng-template #jobAction>
+          <button type="button" class="ar-reassign-btn ar-reassign-btn--sm"
+                  [class.ar-reassign-btn--active]="pickerFor() === job.assignmentId"
+                  [disabled]="isBusy(job.assignmentId)"
+                  (click)="pickerFor() === job.assignmentId ? closePicker() : openPicker(job.assignmentId)">
+            <span class="ar-spinner" *ngIf="isBusy(job.assignmentId)"></span>
+            <ng-container *ngIf="!isBusy(job.assignmentId)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+              </svg>
+              <span i18n="@@audit.assignment.reassign">Reassign</span>
+            </ng-container>
+          </button>
+        </ng-template>
+      </div>
+
+      <div class="ar-picker ar-picker--job" *ngIf="pickerFor() === job.assignmentId">
+        <ng-container *ngTemplateOutlet="picker; context: { $implicit: job.assignmentId, count: 1 }"></ng-container>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ Reusable staged chip (target + date range) ═══════════════════════════════ -->
+<ng-template #stagedChip let-pr let-kind="kind" let-jobId="jobId">
+  <div class="ar-staged" *ngIf="optOf(pr.toAuditorId) as opt">
+    <svg class="ar-staged__arrow" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    <span class="ar-avatar ar-avatar--xs">{{ opt.initials }}</span>
+    <div class="ar-staged__info">
+      <span class="ar-staged__name">{{ opt.label }}</span>
+      <span class="ar-staged__dates" *ngIf="pr.fromDate || pr.toDate">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        {{ fmtDate(pr.fromDate) }} <span class="ar-direction-arrow">→</span> {{ fmtDate(pr.toDate) }}
+      </span>
+    </div>
+    <button type="button" class="ar-staged__btn" title="Change" i18n-title="@@common.change" aria-label="Change" i18n-aria-label="@@common.change"
+            (click)="kind === SCOPE_TARGET ? openPicker(SCOPE_TARGET) : openPicker(jobId)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>
+    </button>
+    <button type="button" class="ar-staged__btn ar-staged__btn--x" title="Remove" i18n-title="@@common.remove" aria-label="Remove" i18n-aria-label="@@common.remove"
+            (click)="kind === SCOPE_TARGET ? clearScope() : clearJob(jobId)">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+</ng-template>
+
+<!-- ══ Reusable picker: FROM → TO auditor + reassignment period ══════════════════ -->
+<ng-template #picker let-target let-count="count">
+  <div class="ar-transfer">
+    <div class="ar-party">
+      <span class="ar-party__label" i18n="@@common.from">From</span>
+      <div class="ar-chip" *ngIf="fromAuditor() as f">
+        <span class="ar-avatar ar-avatar--muted">{{ f.initials }}</span>
+        <div class="ar-chip__info"><span class="ar-chip__name">{{ f.label }}</span><span class="ar-chip__role">{{ roleLabel(f.role) }}</span></div>
+      </div>
+    </div>
+
+    <div class="ar-transfer__arrow" aria-hidden="true">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </div>
+
+    <div class="ar-party ar-party--to">
+      <span class="ar-party__label" i18n="@@audit.assignment.reassignTo">Reassign to</span>
+      <p-select [options]="targetOptions()" optionLabel="label" optionValue="value"
+                [ngModel]="pickValue()" (ngModelChange)="onPickTarget(target, $event)"
+                [placeholder]="placeholders.PickTarget" i18n-placeholder="@@audit.assignment.chooseAuditor" [filter]="true" [filterPlaceholder]="placeholders.SearchAuditor" i18n-filterPlaceholder="@@audit.assignment.searchAuditor"
+                styleClass="w-full" appendTo="body">
+        <ng-template pTemplate="selectedItem" let-opt>
+          <div class="ar-chip" *ngIf="opt">
+            <span class="ar-avatar">{{ opt.initials }}</span>
+            <div class="ar-chip__info"><span class="ar-chip__name">{{ opt.label }}</span><span class="ar-chip__role">{{ roleLabel(opt.role) }}</span></div>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="item" let-opt>
+          <div class="ar-option">
+            <span class="ar-avatar">{{ opt.initials }}</span>
+            <div class="ar-option__info"><span class="ar-option__name">{{ opt.label }}</span><span class="ar-option__meta">{{ roleLabel(opt.role) }} &bull; {{ opt.email }}</span></div>
+          </div>
+        </ng-template>
+      </p-select>
+    </div>
+  </div>
+
+  <!-- Reassignment period -->
+  <div class="ar-period">
+    <span class="ar-period__title">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span i18n="@@audit.assignment.reassignmentPeriod">Reassignment period</span> <span class="ar-req">*</span>
+    </span>
+    <div class="ar-period__fields">
+      <div class="ar-period__field">
+        <span class="ar-party__label"><span i18n="@@common.from">From</span> <span class="ar-req">*</span></span>
+        <p-datepicker [ngModel]="pickFrom()" (ngModelChange)="onPickFrom(target, $event)"
+          [showTime]="true" [showIcon]="true" iconDisplay="input" [showButtonBar]="true" [hourFormat]="datePicker.HourFormat"
+          [dateFormat]="datePicker.DateFormat" [placeholder]="placeholders.PickDate" i18n-placeholder="@@audit.assignment.selectDateTime" appendTo="body" styleClass="ar-dp">
+        </p-datepicker>
+      </div>
+      <div class="ar-period__field">
+        <span class="ar-party__label"><span i18n="@@common.to">To</span> <span class="ar-req">*</span></span>
+        <p-datepicker [ngModel]="pickTo()" (ngModelChange)="onPickTo(target, $event)"
+          [showTime]="true" [showIcon]="true" iconDisplay="input" [showButtonBar]="true" [hourFormat]="datePicker.HourFormat"
+          [minDate]="pickFrom()" [dateFormat]="datePicker.DateFormat" [placeholder]="placeholders.PickDate" i18n-placeholder="@@audit.assignment.selectDateTime"
+          appendTo="body" styleClass="ar-dp">
+        </p-datepicker>
+      </div>
+    </div>
+
+    <!-- Total days & hours (shows once both dates are picked) -->
+    <div class="ar-period__duration" *ngIf="periodValid()">
+      <span class="ar-period__duration-left">
+        <span class="ar-period__duration-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>
+        </span>
+        <span class="ar-period__duration-text">
+          <span class="ar-period__duration-label" i18n="@@audit.assignment.totalPeriod">Total period</span>
+          <span class="ar-period__duration-value">
+            {{ periodDurationLabel() }}
+          </span>
+        </span>
+      </span>
+      <span class="ar-period__duration-chip">{{ periodShort() }}</span>
+    </div>
+  </div>
+
+  <div class="ar-picker__foot">
+    <span class="ar-picker__hint" [class.ar-picker__hint--req]="!pickComplete()">
+      <ng-container *ngIf="!pickComplete()" i18n="@@audit.assignment.auditorPeriodRequired">Auditor and full period (from &amp; to) are required</ng-container>
+      <ng-container *ngIf="pickComplete()">{{ stagedMessage(count) }}</ng-container>
+    </span>
+    <span class="ar-picker__spacer"></span>
+    <button type="button" class="ar-btn ar-btn--ghost" (click)="closePicker()" i18n="@@common.close">Close</button>
+  </div>
+</ng-template>

@@ -1,0 +1,198 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  styleClass="import-dialog"
+  [style]="{ width: step() === RiskImportSteps.Preview ? dialogWidth.Preview : dialogWidth.Upload }">
+
+  <!-- ── HEADER ── -->
+  <ng-template pTemplate="header">
+    <div class="import-dialog__header">
+      <div class="import-dialog__icon"><app-draw-icon icon="pi pi-file-import"></app-draw-icon></div>
+      <div>
+        <h2 class="import-dialog__title">Import Risks</h2>
+        <p class="import-dialog__sub">
+          {{ step() === RiskImportSteps.Upload ? subtitles.Upload : subtitles.Preview }}
+        </p>
+      </div>
+    </div>
+  </ng-template>
+
+  <!-- ══════════════ STEP 1 — UPLOAD ══════════════ -->
+  <div *ngIf="step() === RiskImportSteps.Upload" class="upload-step">
+
+    <!-- Template download -->
+    <div class="template-banner">
+      <div class="template-banner__text">
+        <app-draw-icon icon="pi pi-download"></app-draw-icon>
+        <div>
+          <strong>Download the Excel template</strong>
+          <p>Fill in your risks and upload the completed file below.</p>
+        </div>
+      </div>
+      <button type="button" class="btn-template" (click)="downloadTemplate()">
+        <app-draw-icon icon="pi pi-file-excel"></app-draw-icon> Download Template
+      </button>
+    </div>
+
+    <!-- Column guide -->
+    <div class="column-guide">
+      <h4 class="column-guide__title">Required columns</h4>
+      <div class="column-guide__chips">
+        <span class="col-chip col-chip--required">Risk Title</span>
+        <span class="col-chip col-chip--required">Risk Type</span>
+        <span class="col-chip col-chip--required">Description</span>
+        <span class="col-chip col-chip--required">Sub-Division</span>
+        <span class="col-chip col-chip--required">Impact (1–5)</span>
+        <span class="col-chip col-chip--required">Likelihood (1–5)</span>
+        <span class="col-chip col-chip--required">Control Effectiveness</span>
+        <span class="col-chip col-chip--required">Owner</span>
+        <span class="col-chip">Key Controls</span>
+        <span class="col-chip">Status</span>
+        <!-- <span class="col-chip">Linked Scopes</span> -->
+      </div>
+    </div>
+
+    <!-- File upload zone -->
+    <p-fileupload
+      #fileUp
+      mode="advanced"
+      [accept]="upload.Accept"
+      [maxFileSize]="upload.MaxFileSizeBytes"
+      [auto]="false"
+      [customUpload]="true"
+      (onSelect)="onFileSelected($event)"
+      styleClass="import-fileupload"
+      [showUploadButton]="false"
+      [showCancelButton]="false">
+      <ng-template pTemplate="content">
+        <div class="drop-zone">
+          <div class="drop-zone__icon-wrap"><app-draw-icon icon="pi pi-cloud-upload"></app-draw-icon></div>
+          <p class="drop-zone__title">Drag &amp; drop your file here</p>
+          <span class="drop-zone__or">or</span>
+          <button type="button" class="btn-browse" (click)="fileUp.choose()">
+            <app-draw-icon icon="pi pi-folder-open"></app-draw-icon> Browse File
+          </button>
+          <p class="drop-zone__hint">Accepts .csv, .xlsx, .xls — max 10 MB</p>
+        </div>
+      </ng-template>
+    </p-fileupload>
+
+    <!-- Parse error -->
+    <div *ngIf="parseError()" class="parse-error">
+      <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon>
+      <span>{{ parseError() }}</span>
+    </div>
+  </div>
+
+  <!-- ══════════════ STEP 2 — PREVIEW ══════════════ -->
+  <div *ngIf="step() === RiskImportSteps.Preview" class="preview-step">
+
+    <!-- Summary bar -->
+    <div class="summary-bar">
+      <span class="summary-bar__file"><app-draw-icon icon="pi pi-file"></app-draw-icon> {{ fileName() }}</span>
+      <div class="summary-bar__counts">
+        <span class="count-chip count-chip--valid">
+          <app-draw-icon icon="pi pi-check-circle"></app-draw-icon> {{ validRows.length }} valid
+        </span>
+        <span class="count-chip count-chip--invalid" *ngIf="invalidRows.length">
+          <app-draw-icon icon="pi pi-times-circle"></app-draw-icon> {{ invalidRows.length }} with errors
+        </span>
+      </div>
+    </div>
+
+    <!-- Preview table -->
+    <div class="preview-table-wrap">
+      <table class="preview-table">
+        <thead>
+          <tr>
+            <th class="col-row">#</th>
+            <th>Title</th>
+            <th>Type</th>
+            <th>Sub-Division</th>
+            <th class="col-center">Impact</th>
+            <th class="col-center">Likelihood</th>
+            <th class="col-center">Score</th>
+            <th>Owner</th>
+            <th>Status</th>
+            <th class="col-status">Validation</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows()"
+              class="preview-row"
+              [class.preview-row--error]="!row.valid"
+              [class.preview-row--ok]="row.valid">
+
+            <td class="col-row">{{ row.rowIndex }}</td>
+            <td>
+              <span class="cell-title">{{ row.title || emptyValue }}</span>
+            </td>
+            <td>
+              <span *ngIf="row.riskType" class="type-badge">{{ typeLabel(row.riskType) }}</span>
+              <span *ngIf="!row.riskType" class="cell-empty">{{ emptyValue }}</span>
+            </td>
+            <td>{{ row.department || emptyValue }}</td>
+            <td class="col-center">
+              <span class="scale-badge">{{ row.impact ?? emptyValue }}</span>
+            </td>
+            <td class="col-center">
+              <span class="scale-badge">{{ row.likelihood ?? emptyValue }}</span>
+            </td>
+            <td class="col-center">
+              <span class="score-badge"
+                    [class.score--high]="rowScoreLevel(row) === 'high'"
+                    [class.score--medium]="rowScoreLevel(row) === 'medium'"
+                    [class.score--low]="rowScoreLevel(row) === 'low'">
+                {{ row.impact && row.likelihood ? row.impact * row.likelihood : emptyValue }}
+              </span>
+            </td>
+            <td>{{ row.owner || emptyValue }}</td>
+            <td>{{ row.status || defaultStatus }}</td>
+            <td>
+              <span *ngIf="row.valid" class="valid-chip">
+                <app-draw-icon icon="pi pi-check"></app-draw-icon> Valid
+              </span>
+              <div *ngIf="!row.valid" class="error-list">
+                <span *ngFor="let err of row.errors" class="error-chip"
+                      [pTooltip]="err" tooltipPosition="left">
+                  <app-draw-icon icon="pi pi-times"></app-draw-icon> {{ errorChipText(err) }}
+                </span>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p *ngIf="invalidRows.length > 0" class="skip-note">
+      <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+      Rows with errors will be skipped. Only {{ validRows.length }} valid row{{ validRows.length !== 1 ? 's' : '' }} will be imported.
+    </p>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <ng-template pTemplate="footer">
+
+    <!-- Upload step footer -->
+    <div *ngIf="step() === RiskImportSteps.Upload" class="dialog-footer">
+      <button type="button" class="btn-cancel" (click)="close()">Cancel</button>
+    </div>
+
+    <!-- Preview step footer -->
+    <div *ngIf="step() === RiskImportSteps.Preview" class="dialog-footer">
+      <button type="button" class="btn-back" (click)="goBack()">
+        <app-draw-icon icon="pi pi-arrow-left"></app-draw-icon> Back
+      </button>
+      <button type="button" class="btn-cancel" (click)="close()">Cancel</button>
+      <button type="button" class="btn-import"
+              [disabled]="!validRows.length || importing()"
+              (click)="confirmImport()">
+        <app-draw-icon icon="pi pi-file-import"></app-draw-icon>
+        {{ importing() ? importingLabel : importRisksLabel(validRows.length) }}
+      </button>
+    </div>
+  </ng-template>
+</p-dialog>

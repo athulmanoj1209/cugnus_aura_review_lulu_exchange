@@ -1,0 +1,271 @@
+<div class="em-page">
+
+  <!-- ── Page header ────────────────────────────────────────────────── -->
+  <div class="page-header">
+
+    <!-- Row 1: Title + right-side actions -->
+    <div class="page-header__row page-header__row--top">
+      <div class="page-header__lead">
+        <app-back-button></app-back-button>
+        <div class="page-header__text">
+          <h2 class="page-header__title" i18n="@@audit.eventMeeting.title">Events and meetings</h2>
+          <p class="page-header__subtitle" i18n="@@audit.eventMeeting.subtitle">Manage all audit-related events and meetings.</p>
+        </div>
+      </div>
+
+      <div class="page-header__actions">
+        <p-button label="+ New Event" i18n-label="@@audit.eventMeeting.newEvent" styleClass="btn-add" (onClick)="goToAdd()" />
+
+        <div class="view-toggle">
+          <button class="view-toggle__btn" [class.is-active]="viewMode() === EventViewModes.Grid" (click)="setView(EventViewModes.Grid)" pTooltip="Grid view" i18n-pTooltip="@@common.gridView">
+            <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+          </button>
+          <button class="view-toggle__btn" [class.is-active]="viewMode() === EventViewModes.List" (click)="setView(EventViewModes.List)" pTooltip="List view" i18n-pTooltip="@@common.listView">
+            <app-draw-icon icon="pi pi-bars"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Row 2: Sort + Organized By (left) + Search (right) -->
+    <div class="page-header__row page-header__row--filters">
+      <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+        <p-select
+          [options]="sortOptions"
+          optionLabel="label"
+          placeholder="Sort By"
+          i18n-placeholder="@@common.sortBy"
+          [showClear]="true"
+          (onChange)="onSortChange($event.value)"
+        />
+
+        <p-select
+          [options]="organizerOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Organized By"
+          i18n-placeholder="@@audit.eventMeeting.organizedBy"
+          [showClear]="true"
+          [ngModel]="selectedOrganizer()"
+          (onChange)="onOrganizerChange($event.value)"
+        />
+      </div>
+
+      <div class="filter-bar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input
+          type="text"
+          placeholder="Search by name, Location, organizer, Type etc..."
+          i18n-placeholder="@@audit.eventMeeting.searchPlaceholder"
+          (input)="onSearch($any($event.target).value)"
+        />
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Empty state ────────────────────────────────────────────────── -->
+  @if (filteredEvents().length === 0) {
+    <div class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-calendar-times"></app-draw-icon>
+      <span i18n="@@audit.eventMeeting.noEventsFound">No events found.</span>
+      <button class="ev-empty__btn" (click)="goToAdd()"><span i18n="@@audit.eventMeeting.addEvent">+ Add Event</span></button>
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════
+       GRID VIEW — cards
+  ═══════════════════════════════════════════════════════════════ -->
+  @if (viewMode() === EventViewModes.Grid && filteredEvents().length > 0) {
+    <div class="em-grid">
+      @for (event of pagedEvents(); track event.id) {
+        <div class="em-card" [class.em-card--inactive]="!event.isActive">
+
+          <span class="em-card__type status-tag--corner">{{ eventTypeLabel(event.eventType) }}</span>
+
+          <div class="card-header">
+            <div class="em-avatar-wrap">
+              <div class="em-badge"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+              <svg class="em-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+                <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+              </svg>
+            </div>
+            <h3 class="em-card__title">{{ event.title }}</h3>
+            <span class="em-card__date">
+              <app-draw-icon icon="pi pi-clock"></app-draw-icon>{{ formatDate(event.startDateTime, event.endDateTime) }}
+            </span>
+          </div>
+
+          <div class="info-grid">
+            <div class="info-item" pTooltip="Organizer" i18n-pTooltip="@@audit.eventMeeting.organizer" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+              <div class="info-content"><span class="info-value">{{ event.organizer.name }}</span></div>
+            </div>
+            <div class="info-item info-item--full" pTooltip="Participants" i18n-pTooltip="@@audit.eventMeeting.participants" tooltipPosition="top">
+              <span class="info-icon"><app-draw-icon icon="pi pi-users"></app-draw-icon></span>
+              <div class="info-content">
+                <div class="em-card__chips">
+                  @for (p of event.participants; track p.id) {
+                    <span class="em-chip" [pTooltip]="p.email" tooltipPosition="top">{{ p.name }}</span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          @if (event.description) {
+            <p class="em-card__desc">{{ event.description }}</p>
+          }
+
+          <div class="card-footer">
+            <div class="card-actions">
+              <div class="card-actions__icons">
+                <button class="icon-btn icon-btn--edit"
+                        pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top"
+                        (click)="goToEdit(event, $event)">
+                  <app-draw-icon icon="pi pi-pencil"></app-draw-icon>
+                </button>
+                <button class="icon-btn"
+                        [class.icon-btn--activate]="!event.isActive"
+                        [class.icon-btn--deactivate]="event.isActive"
+                        [pTooltip]="event.isActive ? EventBlockActions.Deactivate : EventBlockActions.Activate"
+                        tooltipPosition="top"
+                        (click)="openConfirmation(event, $event)">
+                  <app-draw-icon [icon]="event.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+                </button>
+              </div>
+
+              <button type="button" class="btn-view" (click)="goToDetail(event)">
+                <span i18n="@@common.view">View</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ════════════════════════════════════════════════════════════
+       LIST VIEW — table
+  ═══════════════════════════════════════════════════════════════ -->
+  @if (viewMode() === EventViewModes.List && filteredEvents().length > 0) {
+    <div class="events events--list">
+      <div class="list-header">
+        <span class="list-header__cell col-id" i18n="@@common.id">ID</span>
+        <span class="list-header__cell col-title" i18n="@@common.titleUppercase">TITLE</span>
+        <span class="list-header__cell col-type" i18n="@@common.typeUppercase">TYPE</span>
+        <span class="list-header__cell col-location" i18n="@@audit.eventMeeting.organizer">Organizer</span>
+        <span class="list-header__cell col-participants" i18n="@@audit.eventMeeting.participantsUppercase">PARTICIPANTS</span>
+        <span class="list-header__cell col-date sortable" (click)="onSortChange(dateColumnSort)">
+          <span i18n="@@common.dateUppercase">DATE</span>
+          <app-draw-icon icon="pi pi-arrow-down" class="sortable__arrow"></app-draw-icon>
+        </span>
+        <span class="list-header__cell col-actions" i18n="@@common.actionsUppercase">ACTIONS</span>
+      </div>
+
+      @for (event of pagedEvents(); track event.id; let i = $index) {
+        <article class="ev-row" [class.ev-row--inactive]="!event.isActive">
+
+          <!-- ID -->
+          <div class="col-id">
+            <span class="ev-id">{{ eventIdPrefix }}{{ ((currentPage() - 1) * pageSize() + i + 1).toString().padStart(3, '0') }}</span>
+          </div>
+
+          <!-- Title -->
+          <div class="col-title">
+            <span class="ev-title">{{ event.title }}</span>
+          </div>
+
+          <!-- Type -->
+          <div class="col-type">
+            <span class="type-badge">{{ eventTypeLabel(event.eventType) }}</span>
+          </div>
+
+          <!-- Organizer -->
+          <div class="col-location">
+            <span class="ev-uploader">
+              <app-draw-icon icon="pi pi-user"></app-draw-icon>
+              {{ event.organizer.name }}
+            </span>
+          </div>
+
+          <!-- Participants -->
+          <div class="col-participants">
+            <div class="file-pills">
+              @for (p of (expandedParticipants().has(event.id) ? event.participants : event.participants.slice(0, participantsPreviewCount)); track p.id) {
+                <span class="file-pill" [pTooltip]="p.email" tooltipPosition="top">
+                  <app-draw-icon icon="pi pi-user"></app-draw-icon>
+                  <span class="file-pill__name">{{ p.name }}</span>
+                </span>
+              }
+              @if (!expandedParticipants().has(event.id) && event.participants.length > participantsPreviewCount) {
+                <button class="file-pill file-pill--more" (click)="toggleParticipants(event.id); $event.stopPropagation()">
+                  {{ moreParticipantsLabel(event.participants.length - participantsPreviewCount) }}
+                </button>
+              }
+              @if (expandedParticipants().has(event.id) && event.participants.length > participantsPreviewCount) {
+                <button class="file-pill file-pill--less" (click)="toggleParticipants(event.id); $event.stopPropagation()">
+                  <span i18n="@@common.less">less</span>
+                </button>
+              }
+            </div>
+          </div>
+
+          <!-- Date -->
+          <div class="col-date">
+            {{ formatDate(event.startDateTime, event.endDateTime) }}
+          </div>
+
+          <!-- Actions -->
+          <div class="col-actions">
+            <div class="row-actions">
+              <button class="icon-btn icon-btn--view"
+                      pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top"
+                      (click)="goToDetail(event)">
+                <app-draw-icon icon="pi pi-eye" style="color:rgb(4,4,62)"></app-draw-icon>
+              </button>
+              <button class="icon-btn icon-btn--edit"
+                      pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top"
+                      (click)="goToEdit(event, $event)">
+                <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+              </button>
+              <button class="icon-btn"
+                      [class.icon-btn--activate]="!event.isActive"
+                      [class.icon-btn--deactivate]="event.isActive"
+                      [pTooltip]="event.isActive ? EventBlockActions.Deactivate : EventBlockActions.Activate"
+                      tooltipPosition="top"
+                      (click)="openConfirmation(event, $event)">
+                <app-draw-icon [icon]="event.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+
+  @if (filteredEvents().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filteredEvents().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="events"
+      i18n-entityLabel="@@audit.eventMeeting.events"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+  <!-- ── Confirm dialog ────────────────────────────────────────────── -->
+  <app-confirm-action-dialog
+    [visible]="displayConfirmation()"
+    [action]="confirmationAction()"
+    [itemName]="confirmationTarget()?.title ?? ''"
+    (confirmed)="confirmToggleBlocked()"
+    (cancelled)="closeConfirmation()"
+  />
+
+</div>

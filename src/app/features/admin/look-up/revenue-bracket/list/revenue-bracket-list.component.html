@@ -1,0 +1,177 @@
+<p-toast position="top-right" />
+<p-confirmDialog />
+
+<!-- ── Add / Edit modal ──────────────────────────────────────────────────── -->
+<app-revenue-bracket-form
+  [visible]="showDialog()"
+  [item]="editingItem()"
+  (save)="onFormSave($event)"
+  (close)="onFormClose()"
+/>
+
+<!-- ── View dialog ────────────────────────────────────────────────────────── -->
+@if (viewItem(); as item) {
+  <app-lookup-view-dialog
+    [visible]="showView()"
+    (visibleChange)="$event ? null : closeView()"
+    icon="pi pi-chart-bar"
+    [title]="item.name"
+    subtitle="Revenue Bracket Details"
+    i18n-subtitle="@@admin.revenueBracket.details"
+    [active]="item.isActive"
+    [description]="item.description"
+    [createdOn]="formatDate(item.createdAt)">
+    @if (item.updatedAt) {
+      <div lvdAfter class="lvd-footer-row">
+        <span class="lvd-footer-label"><app-draw-icon icon="pi pi-clock"></app-draw-icon> <span i18n="@@common.lastUpdated">LAST UPDATED</span></span>
+        <span class="lvd-footer-value">{{ formatDate(item.updatedAt) }}</span>
+      </div>
+    }
+  </app-lookup-view-dialog>
+}
+
+<!-- ── Activate / Deactivate confirmation ───────────────────────────────── -->
+<p-dialog
+  header="Confirmation"
+  i18n-header="@@common.confirmation"
+  [visible]="displayConfirmation()"
+  (visibleChange)="$event ? null : closeConfirmation()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="false"
+  [style]="{ width: '420px' }"
+  styleClass="confirm-dialog"
+>
+  <div class="confirm-body">
+    <app-draw-icon icon="pi pi-exclamation-triangle" class="confirm-body__icon"></app-draw-icon>
+    <span class="confirm-body__text">
+      {{ confirmationMessage() }}
+    </span>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button label="No" i18n-label="@@common.no" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="closeConfirmation()" />
+    <p-button
+      [label]="confirmationAction() === 'Deactivate' ? yesDeactivateLabel : yesActivateLabel"
+      icon="pi pi-check"
+      [severity]="confirmationAction() === 'Deactivate' ? 'danger' : 'success'"
+      [outlined]="true"
+      autofocus
+      (onClick)="confirmToggleBlocked()"
+    />
+  </ng-template>
+</p-dialog>
+
+<div class="rb-page">
+
+  <!-- ── Page header ────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h2 class="page-header__title" i18n="@@admin.revenueBracket.title">Revenue Brackets</h2>
+      <p class="page-header__subtitle" i18n="@@admin.revenueBracket.subtitle">Manage master list of revenue bracket classifications</p>
+    </div>
+    <div class="page-header__actions">
+      <p-button label="+ Add Revenue Bracket" i18n-label="@@admin.revenueBracket.addRevenueBracketButton" styleClass="btn-add" (onClick)="openAdd()" />
+    </div>
+  </div>
+
+  <div class="search-bar-row">
+    <div class="filter-bar__search">
+      <app-draw-icon icon="pi pi-search"></app-draw-icon>
+      <input
+        type="text"
+        placeholder="Search by revenue bracket..."
+        i18n-placeholder="@@admin.revenueBracket.searchPlaceholder"
+        (input)="onSearch($any($event.target).value)"
+      />
+    </div>
+  </div>
+
+  <!-- ── Empty state ────────────────────────────────────────────────────── -->
+  @if (filtered().length === 0) {
+    <div class="ev-empty ev-empty--standalone">
+      <app-draw-icon icon="pi pi-chart-bar"></app-draw-icon>
+      <span i18n="@@admin.revenueBracket.empty">No revenue brackets found.</span>
+      <button class="ev-empty__btn" (click)="openAdd()">
+        <span i18n="@@admin.revenueBracket.addRevenueBracketButton">+ Add Revenue Bracket</span>
+      </button>
+    </div>
+  }
+
+  <!-- ── List ─────────────────────────────────────────────────────────── -->
+  @if (filtered().length > 0) {
+    <div class="rb-list">
+      <div class="list-header">
+        <span class="list-header__cell col-id" i18n="@@common.number">#</span>
+        <span class="list-header__cell col-name sortable" i18n="@@admin.revenueBracket.columnName" (click)="toggleSort('name')">REVENUE BRACKET <i class="sort-icon" [class.pi-sort-alt]="sortField() !== 'name'" [class.pi-sort-amount-up-alt]="sortField() === 'name' && sortDir() === 'asc'" [class.pi-sort-amount-down-alt]="sortField() === 'name' && sortDir() === 'desc'"></i></span>
+        <span class="list-header__cell col-status" i18n="@@common.statusUppercase">STATUS</span>
+        <span class="list-header__cell col-date sortable" (click)="toggleSort('createdAt')"><span i18n="@@common.createdOn">CREATED ON</span> <i class="sort-icon" [class.pi-sort-alt]="sortField() !== 'createdAt'" [class.pi-sort-amount-up-alt]="sortField() === 'createdAt' && sortDir() === 'asc'" [class.pi-sort-amount-down-alt]="sortField() === 'createdAt' && sortDir() === 'desc'"></i></span>
+        <span class="list-header__cell col-actions" i18n="@@common.actionsUppercase">ACTIONS</span>
+      </div>
+
+      @for (item of paginated(); track item.id; let i = $index) {
+        <article class="rb-row" [class.rb-row--inactive]="!item.isActive">
+
+          <div class="col-id">
+            <span class="ev-id">{{ ((currentPage() - 1) * pageSize() + i + 1).toString().padStart(2, '0') }}</span>
+          </div>
+
+          <div class="col-name">
+            <span class="ev-title">{{ item.name }}</span>
+            @if (item.description) {
+              <span class="ev-uploader">{{ item.description }}</span>
+            }
+          </div>
+
+          <div class="col-status">
+            <span class="status-badge"
+              [class.status-badge--active]="item.isActive"
+              [class.status-badge--inactive]="!item.isActive">
+              {{ statusLabel(item.isActive) }}
+            </span>
+          </div>
+
+          <div class="col-date">{{ formatDate(item.createdAt) }}</div>
+
+          <div class="col-actions">
+            <div class="row-actions">
+              <button class="icon-btn" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="top"
+                (click)="openView(item, $event)">
+                <app-draw-icon icon="pi pi-eye" style="color:rgb(4, 4, 62)"></app-draw-icon>
+              </button>
+              <button class="icon-btn" pTooltip="Edit" i18n-pTooltip="@@common.edit" tooltipPosition="top"
+                (click)="openEdit(item, $event)">
+                <app-draw-icon icon="pi pi-pencil" style="color:#F59E0B"></app-draw-icon>
+              </button>
+              <button
+                class="icon-btn"
+                [class.icon-btn--activate]="!item.isActive"
+                [class.icon-btn--deactivate]="item.isActive"
+                [pTooltip]="item.isActive ? deactivateLabel : activateLabel"
+                tooltipPosition="top"
+                (click)="promptToggle(item, $event)">
+                <app-draw-icon [icon]="item.isActive ? 'pi pi-ban' : 'pi pi-check-circle'"></app-draw-icon>
+              </button>
+            </div>
+          </div>
+
+        </article>
+      }
+    </div>
+  }
+
+  @if (filtered().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="revenue brackets"
+      i18n-entityLabel="@@admin.revenueBracket.entityLabel"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+</div>

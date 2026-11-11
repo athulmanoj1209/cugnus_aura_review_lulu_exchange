@@ -1,0 +1,123 @@
+<div class="client-dashboard">
+
+  <!-- ── Page header ─────────────────────────────────────────────────────── -->
+  <div class="dashboard-header">
+    <div class="header-left">
+      <h2 class="page-title">
+        <i class="pi pi-th-large"></i>
+        {{ isCfo ? executiveDashboardLabel : myAuditDashboardLabel }}
+      </h2>
+      <span class="header-sub">{{ isCfo ? organisationAuditOverviewLabel : itSecurityAssessmentLabel }}</span>
+    </div>
+    <div class="header-right">
+      <p-button
+        icon="pi pi-bell"
+        [badge]="unreadCount > 0 ? unreadCount.toString() : ''"
+        badgeSeverity="danger"
+        [rounded]="true" [text]="true"
+        pTooltip="Notifications" i18n-pTooltip="@@common.notifications" tooltipPosition="bottom" />
+      <p-button icon="pi pi-refresh" [rounded]="true" [text]="true" pTooltip="Refresh" i18n-pTooltip="@@common.refresh" tooltipPosition="bottom" (onClick)="onRefresh()" />
+    </div>
+  </div>
+
+  <!-- ── Viewing as (Admin / Sub-Division Head) ─────────────────────────── -->
+  <div class="viewing-as-bar">
+    <span class="viewing-as-label" i18n="@@common.viewingAs">Viewing as</span>
+    <div class="viewing-as-toggle">
+      <button type="button" class="viewing-as-btn" [class.active]="isCfo" (click)="setRole('CFO')">
+        <i class="pi pi-shield"></i> <span i18n="@@common.admin">Admin</span>
+      </button>
+      <button type="button" class="viewing-as-btn" [class.active]="!isCfo" (click)="setRole('SUB_DIVISION_HEAD')">
+        <i class="pi pi-user"></i> <span i18n="@@common.subDivisionHead">Sub-Division Head</span>
+      </button>
+    </div>
+
+    @if (!isCfo && isInternalAudit) {
+      <div class="viewing-as-sub-division">
+        <span class="viewing-as-label" i18n="@@common.subDivision"  >Sub-Division</span>
+        <p-select [(ngModel)]="selectedSubDivision" [options]="subDivisionOptions"
+          optionLabel="label" optionValue="value" styleClass="viewing-as-sub-division-select"
+          (onChange)="onSubDivisionChange()">
+        </p-select>
+      </div>
+    }
+  </div>
+
+  <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
+  <div class="tab-bar">
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '0'" (click)="activeTab = '0'">
+      <app-draw-icon icon="pi pi-th-large"></app-draw-icon> <span i18n="@@client.clientDashboard.overview">Overview</span>
+    </button>
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '1'" (click)="activeTab = '1'">
+      <app-draw-icon icon="pi pi-file-edit"></app-draw-icon> <span i18n="@@client.clientDashboard.rfis">RFIs</span>
+      @if (overdueRfiCount > 0) {
+        <p-badge [value]="overdueRfiCount.toString()" severity="danger" styleClass="tab-badge" />
+      }
+    </button>
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '2'" (click)="activeTab = '2'">
+      <app-draw-icon icon="pi pi-list-check"></app-draw-icon> <span i18n="@@client.clientDashboard.scope">Scope</span>
+    </button>
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '3'" (click)="activeTab = '3'">
+      <app-draw-icon icon="pi pi-bell"></app-draw-icon> <span i18n="@@client.clientDashboard.notificationsAndReports">Notifications &amp; Reports</span>
+      @if (unreadCount > 0) {
+        <p-badge [value]="unreadCount.toString()" severity="danger" styleClass="tab-badge" />
+      }
+    </button>
+  </div>
+
+  <div class="tab-content">
+
+    <!-- ══ Overview ══════════════════════════════════════════════════════ -->
+    @if (activeTab === '0') {
+      <app-client-overview-tab
+        [isCfo]="isCfo"
+        [kpis]="kpis"
+        [scopes]="scopes"
+        [upcomingAudits]="upcomingAudits"
+        (kpiClick)="onKpiClick($event)" />
+    }
+
+    <!-- ══ RFIs ══════════════════════════════════════════════════════════ -->
+    @if (activeTab === '1') {
+      @defer (when activeTab === '1'; prefetch on idle) {
+        <app-client-rfis-tab
+          [isCfo]="isCfo"
+          [kpis]="rfiKpis"
+          [rfis]="rfis"
+          [rfiBreakdown]="rfiBreakdown"
+          [allRfis]="allRfis"
+          [subDivision]="rfiSubDivision"
+          (kpiClick)="onKpiClick($event)"
+          (viewAll)="viewAllRfis()" />
+      } @placeholder {
+        <div i18n="@@client.clientDashboard.preparingRfis">Preparing RFIs...</div>
+      }
+    }
+
+    <!-- ══ Scope ══════════════════════════════════════════════════════════ -->
+    @if (activeTab === '2') {
+      @defer (when activeTab === '2'; prefetch on idle) {
+        <app-client-scope-tab
+          [isCfo]="isCfo"
+          [scopes]="scopes"
+          [scopeStats]="scopeStats"
+          (openScopeSummary)="goToScopeSummary($event)" />
+      } @placeholder {
+        <div i18n="@@client.clientDashboard.preparingScope">Preparing scope...</div>
+      }
+    }
+
+    <!-- ══ Notifications & Reports ════════════════════════════════════════ -->
+    @if (activeTab === '3') {
+      @defer (when activeTab === '3'; prefetch on idle) {
+        <app-client-notifications-reports-tab
+          [notifications]="notifications"
+          [reports]="reports" />
+      } @placeholder {
+        <div i18n="@@client.clientDashboard.preparingNotificationsReports">Preparing notifications &amp; reports...</div>
+      }
+    }
+
+  </div>
+
+</div>

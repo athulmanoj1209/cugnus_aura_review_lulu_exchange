@@ -1,0 +1,253 @@
+@use '@/assets/drawer-modal.scss' as *;
+
+:host { display: flex; flex-direction: column; height: 100%; width: 100%; }
+.add-risk-content { display: flex; flex-direction: column; height: 100%; background: var(--surface-card); }
+
+// ── Header / footer shell overrides (matches rfi-client.component.scss) ──────
+// The shared drawer-modal.scss partial defines its own (older) .drawer-header /
+// .drawer-footer BEM classes; these local rules take precedence for this
+// component so its shell matches the standardized "Add ___" drawer pattern.
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  flex-shrink: 0;
+
+  &--approve { border-bottom-color: var(--p-orange-100); background: var(--p-orange-50); }
+}
+
+.drawer-header-left { display: flex; align-items: center; gap: 12px; }
+
+.drawer-icon-wrap {
+  width: 40px; height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  .pi { font-size: 18px; color: var(--primary-color); }
+
+  &--approve { background: var(--p-orange-50); .pi { color: var(--p-orange-600); } }
+}
+
+.drawer-title-block { display: flex; flex-direction: column; gap: 2px; }
+
+.drawer-title {
+  font-size: 16px; font-weight: 400; color: var(--text-color); margin: 0;
+  strong { font-weight: 700; color: var(--primary-color); }
+}
+
+.drawer-subtitle { font-size: 11px; color: var(--text-color-secondary); margin: 0; }
+
+.close-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi { font-size: 13px; color: var(--text-color-secondary); }
+  &:hover { background: var(--surface-hover); }
+}
+
+/* Approve banner */
+.approve-banner {
+      display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0 1.75rem 0;
+    padding: 0.65rem 1rem;
+    background: var(--surface-hover);
+    border: 1px solid var(--p-blue-200);
+    border-radius: 8px;
+    font-size: 0.83rem;
+    color: var(--primary-color);
+    flex-shrink: 0;
+    margin-top:5px;
+  .pi { font-size: 1rem; color: var(--p-orange-600); margin-top: 1px; flex-shrink: 0; }
+  strong { font-weight: 700; }
+}
+
+// .drawer-body {
+//   display: flex; flex-direction: column; flex: 1; min-height: 0;
+//   padding: 1.25rem 1.75rem 1.5rem; overflow-y: auto; gap: 1.25rem;
+// }
+
+/* Form sections */
+.form-section {
+  display: flex; flex-direction: column; gap: 0.85rem;
+  border: 1px solid var(--surface-border); border-radius: 10px; padding: 1rem 1.25rem;
+  background: var(--surface-hover);
+  margin-top:5px;
+
+  &__title {
+    margin: 0; font-size: 0.85rem; font-weight: 700; color: var(--primary-color);
+    display: flex; align-items: center; gap: 0.4rem;
+    .pi { font-size: 0.85rem; }
+  }
+}
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; }
+.form-field { display: flex; flex-direction: column; &--full { grid-column: 1 / -1; } }
+.form-label { font-size: 0.83rem; font-weight: 600; color: var(--text-color); margin-bottom: 0.35rem; }
+.error-text { display: block; margin-top: 4px; font-size: 0.75rem; color: var(--p-red-500); }
+.hint-text  { display: block; margin-top: 3px; font-size: 0.75rem; color: var(--text-color-secondary); }
+
+/* Score previews */
+.score-preview {
+  grid-column: 1; background: var(--surface-hover); border: 1px solid var(--surface-border);
+  border-radius: 10px; padding: 0.75rem 1rem; display: flex; flex-direction: column; gap: 2px;
+
+  &--residual { grid-column: 2; }
+
+  &__label { font-size: 0.72rem; font-weight: 700; color: var(--text-color-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+  &__value  { font-size: 1.4rem; font-weight: 800; color: var(--text-color);
+    &--high   { color: var(--p-red-600); }
+    &--medium { color: var(--p-orange-400); }
+    &--low    { color: var(--p-green-600); } }
+  &__formula { font-size: 0.72rem; color: var(--text-color-secondary); }
+}
+
+/* Approver notes section */
+.approver-section {
+  border: 1px solid var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 10px;
+  &__head {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.88rem; font-weight: 700; color: var(--primary-color);
+    .pi { font-size: 1rem; }
+  }
+
+  &__hint {
+       margin-left: auto;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--p-red-600);
+    background: var(--p-red-50);
+    border-radius: 999px;
+    padding: 0.15rem 0.5rem;
+  }
+}
+
+/* PrimeNG overrides */
+:host ::ng-deep .form-field {
+  .p-inputtext, .p-select, .p-datepicker, .p-multiselect { width: 100%; }
+  .p-inputtext:not(.p-invalid), .p-select:not(.p-invalid),
+  .p-datepicker .p-inputtext:not(.p-invalid) {
+    border-radius: 8px; padding: 0.55rem 0.9rem; font-size: 0.9rem;
+    color: var(--primary-color); border: 1px solid var(--surface-border); height: 44px;
+  }
+  .p-inputtext::placeholder, .p-select .p-select-label { color: var(--text-color-secondary); }
+  .p-multiselect { border-radius: 8px; border-color: var(--surface-border); min-height: 44px; }
+  textarea.p-textarea {
+    width: 100%; border-radius: 8px; padding: 0.55rem 0.9rem;
+    font-size: 0.9rem; color: var(--primary-color); border: 1px solid var(--surface-border);
+    resize: vertical; font-family: inherit;
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 2px rgba(30,58,138,.15); }
+    &.ng-invalid.ng-touched { border-color: var(--p-red-500); }
+  }
+}
+:host ::ng-deep {
+  input.ng-invalid.ng-touched { border-color: var(--p-red-500) !important; }
+  p-select.ng-invalid.ng-touched .p-select { border-color: var(--p-red-500) !important; }
+}
+
+/* File upload */
+:host ::ng-deep .custom-fileupload {
+  border: 2px dashed var(--p-blue-200); border-radius: 10px; background: var(--p-blue-100);
+  .p-fileupload-header { display: none; }
+  .p-fileupload-content { background: transparent; border: none; padding: 0; }
+}
+.upload-drop-zone {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1.5rem; text-align: center; gap: 0.4rem;
+  &__icon-wrap { width: 48px; height: 48px; border-radius: 50%; background: var(--p-blue-100);
+    display: flex; align-items: center; justify-content: center;
+    .pi { font-size: 1.3rem; color: var(--primary-color); } }
+  &__title { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--text-color); }
+  &__or    { font-size: 0.78rem; color: var(--text-color-secondary); }
+  &__hint  { font-size: 0.75rem; color: var(--text-color-secondary); margin: 0; }
+}
+.upload-browse-btn {
+  display: inline-flex; align-items: center; gap: 0.4rem;
+  background: var(--primary-color); color: #fff; border: none; border-radius: 8px;
+  padding: 0.4rem 1.2rem; font-size: 0.85rem; font-weight: 600; cursor: pointer;
+  &:hover { opacity: 0.9; }
+}
+.file-list {
+  list-style: none; margin: 0.5rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem;
+  &__item { display: flex; align-items: center; gap: 0.5rem; background: var(--surface-hover); border-radius: 8px; padding: 0.45rem 0.75rem; font-size: 0.85rem; }
+  &__icon { color: var(--primary-color); flex-shrink: 0; }
+  &__name { flex: 1; color: var(--text-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  &__size { color: var(--text-color-secondary); font-size: 0.75rem; flex-shrink: 0; }
+  &__remove { background: none; border: none; cursor: pointer; color: var(--text-color-secondary); display: flex; align-items: center;
+    border-radius: 4px; transition: color 0.15s; &:hover { color: var(--p-red-500); } }
+}
+
+/* Footer */
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--surface-border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+::ng-deep .cancel-btn.p-button {
+  background: var(--surface-hover) !important;
+  border: none !important;
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  &:hover { background: var(--surface-hover) !important; }
+}
+
+::ng-deep .submit-btn.p-button {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  margin-left: auto;
+  &:hover { opacity: 0.9; }
+}
+
+.footer-approve-actions {
+  display: flex; align-items: center; gap: 0.5rem; margin-left: auto;
+}
+
+:host ::ng-deep {
+  .btn-reject.p-button {
+    background: var(--p-red-50); border: 1px solid var(--p-red-300); color: var(--p-red-300); font-weight: 600;
+    padding: 0.7rem 1.5rem; border-radius: 8px;
+    &:hover { background: var(--p-red-50); }
+  }
+  .btn-approve.p-button {
+    background: var(--p-green-600); border: none; color: #fff; font-weight: 600;
+    padding: 0.7rem 1.75rem; border-radius: 8px;
+    &:hover { opacity: 0.9; }
+  }
+}

@@ -1,0 +1,68 @@
+<p-toast />
+
+<div class="card">
+    <div class="text-xl font-bold mb-6">Application Request</div>
+
+    @if (requestExpiry) {
+        <div class="mb-4 p-3 rounded-lg border"
+             [class]="checkExpired()
+                ? 'bg-red-50 border-red-300 dark:bg-red-950 dark:border-red-700'
+                : 'bg-green-50 border-green-300 dark:bg-green-950 dark:border-green-700'">
+            <span class="text-sm font-medium"
+                  [class]="checkExpired() ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
+                @if (checkExpired()) {
+                    Submissions closed — method expired on {{ requestExpiry }}.
+                } @else {
+                    Submissions open until {{ requestExpiry }}.
+                }
+            </span>
+        </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-4">
+
+        <div class="flex flex-col gap-1">
+            <label for="requestName" class="font-medium">Request Name</label>
+            <input
+                pInputText
+                id="requestName"
+                formControlName="requestName"
+                placeholder="Enter request name"
+                class="w-full"
+            />
+            @if (form.get('requestName')?.hasError('required') && form.get('requestName')?.touched) {
+                <small class="text-red-500">Request name is required</small>
+            }
+            @if (form.get('requestName')?.hasError('minlength') && form.get('requestName')?.touched) {
+                <small class="text-red-500">Request name must be at least 3 characters</small>
+            }
+        </div>
+
+        <div class="flex flex-col gap-1">
+            <label for="requestDescription" class="font-medium">Request Description</label>
+            <textarea
+                pTextarea
+                id="requestDescription"
+                formControlName="requestDescription"
+                placeholder="Enter request description"
+                rows="5"
+                class="w-full"
+            ></textarea>
+            @if (form.get('requestDescription')?.hasError('required') && form.get('requestDescription')?.touched) {
+                <small class="text-red-500">Request description is required</small>
+            }
+            @if (form.get('requestDescription')?.hasError('minlength') && form.get('requestDescription')?.touched) {
+                <small class="text-red-500">Request description must be at least 10 characters</small>
+            }
+        </div>
+
+        <button
+            pButton
+            type="submit"
+            label="Submit Request"
+            [disabled]="checkExpired()"
+            class="w-full mt-2"
+        ></button>
+
+    </form>
+</div>

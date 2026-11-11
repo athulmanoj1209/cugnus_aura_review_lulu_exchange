@@ -1,0 +1,169 @@
+<div class="tab-canvas">
+
+  <div class="kpi-grid">
+    @for (kpi of kpis; track kpi.label) {
+      <div class="kpi-card"
+        [class.kpi-clickable]="kpi.clickable"
+        [class.kpi-accent--danger]="kpi.subColor === 'danger'"
+        [class.kpi-accent--success]="kpi.subColor === 'success'"
+        [class.kpi-accent--warning]="kpi.subColor === 'warning'"
+        [class.kpi-accent--muted]="kpi.subColor === 'muted'"
+        (click)="onKpiClick(kpi)"
+        (keydown.enter)="onKpiClick(kpi)"
+        (keydown.space)="onKpiClick(kpi)"
+        [attr.role]="kpi.clickable ? 'button' : null"
+        [attr.tabindex]="kpi.clickable ? 0 : null">
+        <div class="kpi-icon"><app-draw-icon [icon]="kpi.icon" [size]="18"></app-draw-icon></div>
+        <div class="kpi-body">
+          <span class="kpi-label">{{ kpi.label }}</span>
+          <span class="kpi-value">{{ kpi.value }}</span>
+          <span class="kpi-sub"
+            [class.text-danger]="kpi.subColor === 'danger'"
+            [class.text-warning]="kpi.subColor === 'warning'"
+            [class.text-success]="kpi.subColor === 'success'"
+            [class.text-muted]="kpi.subColor === 'muted'">{{ kpi.sub }}</span>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="audit-charts-grid" [class.has-sub-division-bar]="isCfo">
+
+    <p-card styleClass="dash-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@client.auditTeamChart.auditStatusDistribution">Audit status distribution</span></span>
+            <span class="card-subtitle">{{ isCfo ? allSubDivisionsLabel : itSecurityAssessmentLabel }}</span>
+          </div>
+        </div>
+      </ng-template>
+      <div class="chart-wrap chart-wrap--pie">
+        <app-donut-status-chart [legend]="auditStatusLegend"></app-donut-status-chart>
+      </div>
+    </p-card>
+
+    @if (isCfo) {
+      <p-card styleClass="dash-card">
+        <ng-template pTemplate="header">
+          <div class="card-header">
+            <div class="card-title-group">
+              <span class="card-title"><app-draw-icon icon="pi pi-chart-bar"></app-draw-icon> {{ auditsByLabel(auditsByView) }}</span>
+              <span class="card-subtitle">
+                {{ totalEngagementsPerLabel(auditsByView) }}
+                @if (auditUnitRows.length > PREVIEW_COUNT) {· {{ topPreviewLabel(PREVIEW_COUNT, auditUnitRows.length) }} }
+              </span>
+            </div>
+            <div class="card-actions">
+              <div class="view-toggle" role="group" aria-label="View audits by" i18n-aria-label="@@client.auditTeamChart.viewAuditsBy">
+                @for (view of unitViews; track view.key) {
+                  <button type="button"
+                          class="view-toggle__btn"
+                          [class.view-toggle__btn--active]="auditsByView === view.key"
+                          [attr.aria-pressed]="auditsByView === view.key"
+                          (click)="setAuditsByView(view.key)">
+                    {{ view.label }}
+                  </button>
+                }
+              </div>
+              <p-button [label]="viewAllLabel" icon="pi pi-external-link" [text]="true" size="small"
+                        [disabled]="!auditUnitRows.length" (onClick)="openAuditsDetail()" />
+            </div>
+          </div>
+        </ng-template>
+        <div class="chart-wrap chart-wrap--bar">
+          <p-chart type="bar" [data]="auditsBySubDivisionChartData" [options]="auditsBySubDivisionChartOptions" [plugins]="auditsBySubDivisionHoverBandPlugins" />
+          @if (!auditUnitRows.length) {
+            <p class="chart-empty">{{ noAuditsLabel(auditsByView) }}</p>
+          }
+        </div>
+      </p-card>
+    }
+
+    <p-card styleClass="dash-card">
+      <ng-template pTemplate="header">
+        <div class="card-header">
+          <div class="card-title-group">
+            <span class="card-title"><app-draw-icon icon="pi pi-calendar"></app-draw-icon> <span i18n="@@client.auditTeamChart.upcomingAudits">Upcoming audits</span></span>
+            <span class="card-subtitle">{{ upcomingAudits.length }} {{ scheduledLabel }}</span>
+          </div>
+          <div class="view-toggle" role="group" aria-label="Upcoming audits view" i18n-aria-label="@@client.auditTeamChart.upcomingAuditsView">
+            <button type="button"
+                    class="view-toggle__btn"
+                    [class.view-toggle__btn--active]="upcomingView === 'list'"
+                    [attr.aria-pressed]="upcomingView === 'list'"
+                    aria-label="List view"
+                    i18n-aria-label="@@common.listView"
+                    (click)="setUpcomingView('list')">
+              <app-draw-icon icon="pi pi-list"></app-draw-icon> <span i18n="@@common.listViewText">List</span>
+            </button>
+            <button type="button"
+                    class="view-toggle__btn"
+                    [class.view-toggle__btn--active]="upcomingView === 'calendar'"
+                    [attr.aria-pressed]="upcomingView === 'calendar'"
+                    aria-label="Calendar view"
+                    i18n-aria-label="@@common.calendarView"
+                    (click)="setUpcomingView('calendar')">
+              <app-draw-icon icon="pi pi-calendar"></app-draw-icon> <span i18n="@@common.calendar">Calendar</span>
+            </button>
+          </div>
+        </div>
+      </ng-template>
+
+      <div class="upcoming-list" *ngIf="upcomingView === 'list'">
+        @for (audit of upcomingAudits; track audit.name) {
+          <div class="upcoming-row">
+            <div class="upcoming-dot"
+              [class.dot-info]="upcomingAuditSeverity[audit.status] === 'info'"
+              [class.dot-success]="upcomingAuditSeverity[audit.status] === 'success'"
+              [class.dot-danger]="upcomingAuditSeverity[audit.status] === 'danger'"
+              [class.dot-secondary]="upcomingAuditSeverity[audit.status] === 'secondary'">
+            </div>
+            <div class="upcoming-body">
+              <span class="upcoming-name">{{ audit.name }}</span>
+              <span class="upcoming-meta">{{ audit.subDivision }} · {{ audit.assignee }}</span>
+            </div>
+            <div class="upcoming-right">
+              <span class="upcoming-date">{{ audit.date | date:'MMM d' }}</span>
+              <p-tag [value]="audit.status" [severity]="upcomingAuditSeverity[audit.status]" styleClass="status-tag" />
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="upcoming-calendar" *ngIf="upcomingView === 'calendar'">
+        <div class="upcoming-calendar__nav">
+          <button type="button" class="icon-btn" aria-label="Previous month" i18n-aria-label="@@common.previousMonth" (click)="prevMonth()">
+            <app-draw-icon icon="pi pi-chevron-left"></app-draw-icon>
+          </button>
+          <span class="upcoming-calendar__label">{{ calendarMonthLabel }}</span>
+          <button type="button" class="icon-btn" aria-label="Next month" i18n-aria-label="@@common.nextMonth" (click)="nextMonth()">
+            <app-draw-icon icon="pi pi-chevron-right"></app-draw-icon>
+          </button>
+        </div>
+
+        <div class="upcoming-calendar__weekdays">
+          <span *ngFor="let wd of weekDayLabels">{{ wd }}</span>
+        </div>
+
+        <div class="upcoming-calendar__grid">
+          <div *ngFor="let cell of calendarDays"
+               class="upcoming-calendar__cell"
+               [class.upcoming-calendar__cell--empty]="!cell.day">
+            <span *ngIf="cell.day" class="upcoming-calendar__day">{{ cell.day }}</span>
+            <div class="upcoming-calendar__dots" *ngIf="cell.audits.length">
+              <span *ngFor="let a of cell.audits"
+                    class="upcoming-calendar__dot"
+                    [class.dot-info]="upcomingAuditSeverity[a.status] === 'info'"
+                    [class.dot-success]="upcomingAuditSeverity[a.status] === 'success'"
+                    [class.dot-danger]="upcomingAuditSeverity[a.status] === 'danger'"
+                    [class.dot-secondary]="upcomingAuditSeverity[a.status] === 'secondary'"
+                    [title]="a.name + ' — ' + a.status"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+  </div>
+</div>

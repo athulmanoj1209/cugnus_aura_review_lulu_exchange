@@ -1,0 +1,155 @@
+<div class="rd-card">
+
+  <!-- Header -->
+  <div class="rd-header">
+    <div class="rd-header__icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="rd-header__title" i18n="@@audit.auditReport.downloadReports">Download Reports</h2>
+      <p class="rd-header__subtitle" i18n="@@audit.auditReport.downloadReportsSubtitle">Choose a division, report type and period to find your reports</p>
+    </div>
+  </div>
+
+  <form [formGroup]="form" autocomplete="off">
+
+    <div class="rd-section">
+
+    <!-- ── Filters toolbar: every field here just narrows the full list already loaded below ──── -->
+    <div class="rd-toolbar">
+
+        <div class="rd-field rd-field--fixed" *ngIf="isAdmin">
+          <label class="rd-label" i18n="@@common.company">Company</label>
+          <p-select formControlName="company" [options]="companyOptions"
+            optionLabel="label" optionValue="value" placeholder="All companies" i18n-placeholder="@@audit.auditReport.allCompanies"
+            [showClear]="true" styleClass="w-full" appendTo="body">
+          </p-select>
+        </div>
+
+        <div class="rd-field rd-field--fixed">
+          <label class="rd-label"><span i18n="@@common.division">Division</span> <span class="rd-required">*</span></label>
+          <p-select formControlName="division" [options]="divisionOptions"
+            optionLabel="label" optionValue="value" placeholder="Select division" i18n-placeholder="@@audit.auditReport.selectDivision"
+            [invalid]="isInvalid('division')" styleClass="w-full" appendTo="body">
+          </p-select>
+          <small *ngIf="getError('division','Division') as err" class="error-text">{{ err }}</small>
+        </div>
+
+        <div class="rd-field rd-field--type">
+          <label class="rd-label" i18n="@@audit.auditReport.reportType">Report Type</label>
+          <div class="rd-pill-row">
+            <button type="button" *ngFor="let opt of reportTypeOptions"
+              class="rd-pill"
+              [class.rd-pill--active]="form.get('reportType')?.value === opt.value"
+              [title]="form.get('reportType')?.value === opt.value ? clickToClearLabel : opt.label"
+              (click)="selectReportType(opt.value)">
+              {{ opt.label }}
+              <span class="rd-pill__clear" *ngIf="form.get('reportType')?.value === opt.value">×</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="rd-field rd-field--fixed">
+          <label class="rd-label" i18n="@@audit.auditReport.year">Year</label>
+          <p-select formControlName="year" [options]="yearOptions"
+            optionLabel="label" optionValue="value" placeholder="All years" i18n-placeholder="@@audit.auditReport.allYears"
+            [showClear]="true" styleClass="w-full" appendTo="body">
+          </p-select>
+        </div>
+
+        <div class="rd-field rd-field--fixed" *ngIf="periodZoneVisible">
+          <label class="rd-label" i18n="@@audit.auditReport.period">Period</label>
+          <p-select formControlName="periodZone" [options]="periodOptions"
+            optionLabel="label" optionValue="value" placeholder="All periods" i18n-placeholder="@@audit.auditReport.allPeriods"
+            [group]="selectedReportType === 'weekly'"
+            optionGroupLabel="label" optionGroupChildren="items"
+            [filter]="selectedReportType === 'weekly'" filterPlaceholder="Search period..." i18n-filterPlaceholder="@@audit.auditReport.searchPeriod"
+            [showClear]="true" styleClass="w-full" appendTo="body">
+          </p-select>
+        </div>
+
+      </div>
+
+    <!-- ── Section: Results — full list on load, filters above just narrow it ──── -->
+    <div class="rd-results">
+      <div class="rd-section__label" i18n="@@audit.auditReport.reports">Reports</div>
+
+      <ng-container *ngIf="loadingReports">
+        <div class="rd-skeleton">
+          <div class="rd-skeleton__row" *ngFor="let _ of [1,2]">
+            <div class="rd-skeleton__cell"></div>
+            <div class="rd-skeleton__cell rd-skeleton__cell--sm"></div>
+            <div class="rd-skeleton__cell rd-skeleton__cell--sm"></div>
+            <div class="rd-skeleton__cell rd-skeleton__cell--xs"></div>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="!loadingReports">
+        <div class="rd-table" *ngIf="hasResults; else noResults">
+          <div class="rd-table-head">
+            <div class="rd-th" i18n="@@audit.auditReport.report">Report</div>
+            <div class="rd-th" i18n="@@audit.auditReport.period">Period</div>
+            <div class="rd-th" i18n="@@audit.auditReport.generated">Generated</div>
+            <div class="rd-th rd-th--action" i18n="@@common.actions">Actions</div>
+          </div>
+
+          <div class="rd-row" *ngFor="let r of pagedReports">
+            <div class="rd-td rd-td--name">{{ r.name }}</div>
+            <div class="rd-td">{{ periodLabel(r) }}</div>
+            <div class="rd-td">{{ r.generatedDate | date:'dd MMM yyyy' }}</div>
+
+            <div class="rd-td rd-td--action">
+              <!-- Auto-generated report -->
+              <button type="button" class="rd-icon-btn" title="Download auto-generated report" i18n-title="@@audit.auditReport.downloadAutoGeneratedReport"
+                      [disabled]="isDownloading(r.id, 'auto')" (click)="download(r, 'auto')">
+                <span class="rd-spinner" *ngIf="isDownloading(r.id, 'auto')"></span>
+              <svg *ngIf="!isDownloading(r.id, 'auto')" width="15" height="15" viewBox="0 0 24 24"
+   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/>
+  <polyline points="14 2 14 8 20 8"/>
+  <path d="M12 18v-6"/>
+  <path d="m9 15 3 3 3-3"/>
+</svg>
+              </button>
+
+              <!-- Corrected uploaded report -->
+              <button type="button" class="rd-icon-btn rd-icon-btn--alt" title="Download corrected uploaded report" i18n-title="@@audit.auditReport.downloadCorrectedReport"
+                      [disabled]="isDownloading(r.id, 'corrected')" (click)="download(r, 'corrected')">
+                <span class="rd-spinner" *ngIf="isDownloading(r.id, 'corrected')"></span>
+                <svg *ngIf="!isDownloading(r.id, 'corrected')" width="15" height="15" viewBox="0 0 24 24"
+   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/>
+  <polyline points="14 2 14 8 20 8"/>
+  <path d="m9 15 2 2 4-4"/>
+</svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p-paginator *ngIf="hasResults"
+          [first]="first" [rows]="rows" [totalRecords]="filteredReports.length"
+          [rowsPerPageOptions]="rowsPerPageOptions"
+          (onPageChange)="onPageChange($event)" styleClass="rd-paginator">
+        </p-paginator>
+
+        <ng-template #noResults>
+          <div class="rd-empty" i18n="@@audit.auditReport.noReportsForSelectedFilters">No reports found for the selected filters.</div>
+        </ng-template>
+      </ng-container>
+    </div>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+    <div class="rd-footer">
+      <button type="button" class="rd-btn rd-btn--ghost" (click)="onReset()" i18n="@@common.reset">Reset</button>
+    </div>
+
+    </div><!-- /rd-section -->
+
+  </form>
+</div>

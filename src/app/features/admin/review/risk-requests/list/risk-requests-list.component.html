@@ -1,0 +1,246 @@
+<section class="rpa-page">
+
+  <!-- PAGE HEADER -->
+  <header class="page-header">
+    <div class="page-header__lead">
+      <app-back-button></app-back-button>
+      <div class="page-header__text">
+        <h1 class="page-header__title" i18n="@@admin.riskRequests.title">Risk Approvals</h1>
+        <p class="page-header__subtitle" i18n="@@admin.riskRequests.subtitle">Review and approve submitted risks pending your action</p>
+      </div>
+    </div>
+    <div class="view-toggle">
+      <button type="button" class="view-toggle__btn" [class.is-active]="viewMode()==='grid'"
+              (click)="viewMode.set('grid')" pTooltip="Grid view" i18n-pTooltip="@@common.gridView" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-th-large"></app-draw-icon>
+      </button>
+      <button type="button" class="view-toggle__btn" [class.is-active]="viewMode()==='list'"
+              (click)="viewMode.set('list')" pTooltip="List view" i18n-pTooltip="@@common.listView" tooltipPosition="top">
+        <app-draw-icon icon="pi pi-list"></app-draw-icon>
+      </button>
+    </div>
+  </header>
+
+  <!-- STAT CARDS -->
+  <div class="stat-cards">
+    <div class="stat-card stat-card--total">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-list"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().total }}</span>
+        <span class="stat-card__label" i18n="@@admin.riskRequests.totalPending">Total Pending</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--critical">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().critical }}</span>
+        <span class="stat-card__label" i18n="@@common.critical">Critical</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--high">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-angle-double-up"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().high }}</span>
+        <span class="stat-card__label" i18n="@@common.high">High</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--medium">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-minus-circle"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().medium }}</span>
+        <span class="stat-card__label" i18n="@@common.medium">Medium</span>
+      </div>
+    </div>
+    <div class="stat-card stat-card--low">
+      <div class="stat-card__icon"><app-draw-icon icon="pi pi-arrow-down-right"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ stats().low }}</span>
+        <span class="stat-card__label" i18n="@@common.low">Low</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="toolbar__left">
+      <!-- Clear all -->
+      <button *ngIf="hasFilters()" type="button" class="toolbar__clear" (click)="clearAll()">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon><span i18n="@@common.clear">Clear</span>
+      </button>
+
+      <!-- Filter modal -->
+      <app-filter-modal
+        [typeOptions]="categoryOptions"
+        [riskOptions]="ratingOptions"
+        [companyOptions]="companyOptions()"
+        [divisionOptions]="divisionOptions()"
+        [subDivisionOptions]="subDivisionOptions()"
+        [disableSubDivision]="!subDivisionEnabled()"
+        [submittedByOptions]="submitterOptions()"
+        [selectedTypes]="filterCategories()"
+        [selectedRisks]="filterRatings()"
+        [selectedCompanies]="filterCompanies()"
+        [selectedDivisions]="filterDivisions()"
+        [selectedSubDivisions]="filterSubDivisions()"
+        [selectedSubmittedBys]="filterSubmittedBys()"
+        typeLabel="CATEGORY"
+        i18n-typeLabel="@@admin.riskRequests.category"
+        [showRisk]="true"
+        [showSubmittedBy]="true"
+        (typesChange)="onCategoriesChange($event)"
+        (risksChange)="onRatingsChange($event)"
+        (companiesChange)="onCompaniesChange($event)"
+        (divisionsChange)="onDivisionsChange($event)"
+        (subDivisionsChange)="onSubDivisionsChange($event)"
+        (submittedBysChange)="onSubmittedBysChange($event)"
+        (filtersCleared)="clearAll()"
+      ></app-filter-modal>
+    </div>
+
+    <!-- Search -->
+    <div class="toolbar__right">
+      <span class="toolbar__search">
+        <app-draw-icon icon="pi pi-search"></app-draw-icon>
+        <input type="text" [ngModel]="search()" (ngModelChange)="onSearch($event)"
+               placeholder="Search by ID, title, submitter…"
+               i18n-placeholder="@@admin.riskRequests.searchPlaceholder" />
+      </span>
+    </div>
+  </div>
+
+  <!-- EMPTY STATE -->
+  <div *ngIf="filtered().length === 0" class="rpa-empty">
+    <app-draw-icon icon="pi pi-shield"></app-draw-icon>
+    <span i18n="@@admin.riskRequests.noPendingRisks">No pending risks match your filters.</span>
+    <button *ngIf="hasFilters()" type="button" class="rpa-empty__btn" (click)="clearAll()" i18n="@@common.clearFilters">Clear filters</button>
+  </div>
+
+  <!-- ── GRID VIEW ── -->
+  <div *ngIf="viewMode() === 'grid' && filtered().length > 0" class="rpa-grid">
+    <article *ngFor="let item of paginated(); trackBy: trackById" class="rpa-card">
+
+      <span class="status-chip status-tag--corner" [ngClass]="'status--' + item.status">{{ ratingLabel(item.status) }}</span>
+
+      <div class="card-header">
+        <div class="rpa-avatar-wrap">
+          <div class="rpa-badge" [ngClass]="'bar--' + item.riskRating"><i class="pi" [ngClass]="categoryIcon(item.category)"></i></div>
+          <svg class="rpa-avatar-ring" viewBox="0 0 52 52" width="52" height="52" aria-hidden="true">
+            <circle pathLength="100" cx="26" cy="26" r="24" fill="none" stroke-width="2"></circle>
+          </svg>
+        </div>
+        <span class="rpa-id-sub"><app-draw-icon icon="pi pi-hashtag"></app-draw-icon>{{ item.id }}</span>
+        <h3 class="rpa-card__title">{{ item.title }}</h3>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item" pTooltip="Likelihood" i18n-pTooltip="@@common.likelihood" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-chart-line"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ ratingLabel(item.likelihood) }}</span></div>
+        </div>
+        <div class="info-item" pTooltip="Impact" i18n-pTooltip="@@common.impact" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-bolt"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ ratingLabel(item.impact) }}</span></div>
+        </div>
+        <div class="info-item" pTooltip="Submitted By" i18n-pTooltip="@@admin.riskRequests.submittedBy" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-user"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ item.submittedBy }}</span></div>
+        </div>
+        <div class="info-item" pTooltip="Submitted Date" i18n-pTooltip="@@admin.riskRequests.submittedDate" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ item.submittedDate | date:'MMM d, y' }}</span></div>
+        </div>
+        <div class="info-item" *ngIf="item.dueDate" pTooltip="Due Date" i18n-pTooltip="@@common.dueDate" tooltipPosition="top">
+          <span class="info-icon"><app-draw-icon icon="pi pi-calendar-clock"></app-draw-icon></span>
+          <div class="info-content"><span class="info-value">{{ item.dueDate | date:'MMM d, y' }}</span></div>
+        </div>
+      </div>
+
+      <div class="tags-row">
+        <span class="risk-badge" [ngClass]="'risk--' + item.riskRating">{{ ratingLabel(item.riskRating) }}</span>
+        <span class="cat-badge">{{ categoryLabel(item.category) }}</span>
+      </div>
+
+      <div class="card-footer">
+        <button type="button" class="btn-view" (click)="openDetail(item)">
+          <span i18n="@@common.view">View</span>
+        </button>
+      </div>
+    </article>
+  </div>
+
+  <!-- ── LIST VIEW ── -->
+  <div *ngIf="viewMode() === 'list' && filtered().length > 0" class="rpa-list">
+    <div class="list-header">
+      <span class="list-header__cell col-id" i18n="@@common.id">ID</span>
+      <span class="list-header__cell col-title" i18n="@@common.title">Title</span>
+      <span class="list-header__cell col-category" i18n="@@admin.riskRequests.categoryLabel">Category</span>
+      <span class="list-header__cell col-rating" i18n="@@admin.riskRequests.rating">Rating</span>
+      <span class="list-header__cell col-likelihood" i18n="@@common.likelihood">Likelihood</span>
+      <span class="list-header__cell col-impact" i18n="@@common.impact">Impact</span>
+      <span class="list-header__cell col-status" i18n="@@common.status">Status</span>
+      <span class="list-header__cell col-submitted" i18n="@@admin.riskRequests.submittedBy">Submitted By</span>
+      <span class="list-header__cell col-date" i18n="@@common.date">Date</span>
+      <span class="list-header__cell col-actions" i18n="@@admin.riskRequests.action">Action</span>
+    </div>
+
+    <article *ngFor="let item of paginated(); trackBy: trackById"
+             class="rpa-row" [ngClass]="'row--' + item.riskRating">
+
+      <div class="col-id">
+        <span class="rpa-id">{{ item.id }}</span>
+      </div>
+
+      <div class="col-title">
+        <span class="rpa-title">{{ item.title }}</span>
+        <small class="rpa-sub-division"><app-draw-icon icon="pi pi-building"></app-draw-icon> {{ item.subDivision }}</small>
+      </div>
+
+      <div class="col-category">
+        <span class="cat-badge">{{ item.category }}</span>
+      </div>
+
+      <div class="col-rating">
+        <span class="risk-badge" [ngClass]="'risk--' + item.riskRating">{{ ratingLabel(item.riskRating) }}</span>
+      </div>
+
+      <div class="col-likelihood">
+        <span class="lvl-badge lvl--{{ item.likelihood }}">{{ ratingLabel(item.likelihood) }}</span>
+      </div>
+
+      <div class="col-impact">
+        <span class="lvl-badge lvl--{{ item.impact }}">{{ ratingLabel(item.impact) }}</span>
+      </div>
+
+      <div class="col-status">
+        <span class="status-chip status--{{ item.status }}">{{ ratingLabel(item.status) }}</span>
+      </div>
+
+      <div class="col-submitted">{{ item.submittedBy }}</div>
+
+      <div class="col-date">{{ item.submittedDate | date:'MMM d, y' }}</div>
+
+      <div class="col-actions">
+        <div class="row-actions">
+          <button type="button" class="view-btn view-btn--sm" (click)="openDetail(item)">
+            <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- PAGINATION -->
+  @if (filtered().length > 0) {
+    <app-pagination-bar
+      [pageSize]="pageSize()"
+      [totalRecords]="filtered().length"
+      [currentPage]="currentPage() - 1"
+      [rowsPerPageOptions]="pageSizeOptions"
+      entityLabel="risks"
+      i18n-entityLabel="@@admin.riskRequests.risks"
+      (pageChange)="onPageChange($event)"
+      (rowsChange)="onPageSizeChange($event)">
+    </app-pagination-bar>
+  }
+
+</section>

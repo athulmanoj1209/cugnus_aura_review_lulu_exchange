@@ -1,0 +1,194 @@
+<div class="pp-pers-block" [class.pp-pers-block--reviewers]="isReviewer()">
+
+  <!-- ── COLLAPSIBLE HEADER ─────────────────────────────────── -->
+  <header class="pp-pers-head pp-pers-head--toggle" (click)="toggleBlock()">
+    <div class="pp-pers-head__left">
+      <div class="pp-pers-head__icon"
+           [class.pp-pers-head__icon--auditor]="!isReviewer()"
+           [class.pp-pers-head__icon--reviewer]="isReviewer()">
+        <i class="pi" [ngClass]="isReviewer() ? 'pi-eye' : 'pi-users'"></i>
+      </div>
+      <div>
+        <h2 class="pp-pers-head__title">{{ title$() }}</h2>
+        <p class="pp-pers-head__sub">{{ subtitle$() }}</p>
+      </div>
+    </div>
+    <div class="pp-pers-head__right">
+      <span class="pp-count-badge" [class.pp-count-badge--blue]="isReviewer()">
+        {{ persons$().length }}
+      </span>
+      <i class="pi pp-pers-head__chevron" [class.pp-pers-head__chevron--blue]="isReviewer()"
+         [ngClass]="blockOpen() ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+    </div>
+  </header>
+
+  <ng-container *ngIf="blockOpen()">
+
+    <!-- ── LIST SEARCH ───────────────────────────────────────── -->
+    <div class="pers-list-search" [class.pers-list-search--rev]="isReviewer()">
+      <p-iconfield class="w-full">
+        <p-inputicon><app-draw-icon icon="pi pi-search"></app-draw-icon></p-inputicon>
+        <input pInputText type="text"
+               [placeholder]="isReviewer() ? 'Search reviewers…' : 'Search preparers…'"
+               [value]="getListSearch()"
+               (input)="setListSearch($any($event.target).value)"
+               class="w-full" />
+      </p-iconfield>
+    </div>
+
+    <!-- ── PERSON LIST ───────────────────────────────────────── -->
+    <div class="person-list">
+      <ng-container *ngIf="pagedPersonsList().length > 0; else noPersonMatch">
+
+        <div class="person-card"
+             [class.person-card--reviewer]="isReviewer()"
+             [class.is-expanded]="showScopeExpansion$() && isCardExpanded(person.id)"
+             *ngFor="let person of pagedPersonsList()">
+
+          <!-- Card head (clickable only when expandable) -->
+          <div class="person-card__head"
+               [class.person-card__head--expandable]="showScopeExpansion$()"
+               (click)="onCardHeadClick(person.id)">
+
+            <div class="person-avatar"
+                 [class.person-avatar--auditor]="!isReviewer()"
+                 [class.person-avatar--reviewer]="isReviewer()">
+              {{ person.displayName.charAt(0) }}
+            </div>
+
+            <div class="person-card__identity">
+              <span class="person-card__name">{{ person.displayName }}</span>
+              <span class="person-card__role">
+                <app-draw-icon icon="pi pi-briefcase"></app-draw-icon>{{ person.role }}
+              </span>
+            </div>
+
+            <div class="person-card__meta">
+              <span class="exp-badge" [class.exp-badge--blue]="isReviewer()">
+                <app-draw-icon icon="pi pi-clock"></app-draw-icon>{{ person.experienceYears }} yrs exp
+              </span>
+              <div class="exp-tags">
+                <span class="exp-tag" [class.exp-tag--blue]="isReviewer()"
+                      *ngFor="let tag of person.expertise">{{ tag }}</span>
+              </div>
+            </div>
+
+            <div class="person-card__workload">
+              <div class="workload-label-row">
+                <span class="workload-lbl">Workload</span>
+                <span class="workload-pct">{{ person.workload }}%</span>
+              </div>
+              <p-progressBar [value]="person.workload" [showValue]="false"
+                [styleClass]="'wl-bar wl-bar--' + workloadClass(person.workload)"
+                style="height: 0.60rem !important;">
+              </p-progressBar>
+            </div>
+
+            <div class="person-card__review-stats">
+              <div class="rev-stat">
+                <span class="rev-stat__val">{{ person.completedCount }}</span>
+                <span class="rev-stat__lbl">Completed</span>
+              </div>
+              <span class="rev-stat__sep">/</span>
+              <div class="rev-stat">
+                <span class="rev-stat__val">{{ person.totalCount }}</span>
+                <span class="rev-stat__lbl">Total</span>
+              </div>
+            </div>
+
+            <button *ngIf="showScopeExpansion$()" type="button" class="person-card__toggle" aria-label="Toggle">
+              <i class="pi" [ngClass]="isCardExpanded(person.id) ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+            </button>
+          </div>
+
+          <!-- Expanded body: scope list with search + pagination -->
+          <div class="person-card__body"
+               *ngIf="showScopeExpansion$() && isCardExpanded(person.id)">
+
+            <div class="card-scope-search" [class.card-scope-search--rev]="isReviewer()">
+              <p-iconfield class="w-full">
+                <p-inputicon><app-draw-icon icon="pi pi-search"></app-draw-icon></p-inputicon>
+                <input pInputText type="text" placeholder="Search scopes &amp; sub-scopes…"
+                       [value]="getCardSearch(person.id)"
+                       (input)="setCardSearch(person.id, $any($event.target).value)"
+                       class="w-full" />
+              </p-iconfield>
+            </div>
+
+            <p class="assign-hint" [class.assign-hint--rev]="isReviewer()">
+              <app-draw-icon icon="pi pi-info-circle"></app-draw-icon> {{ resolvedScopeHint() }}
+            </p>
+
+            <div class="assign-list">
+              <ng-container *ngIf="filteredCardItems(person).length > 0; else noCardScopes">
+                <div class="assign-row"
+                     [class.assign-row--reviewer]="isReviewer()"
+                     *ngFor="let item of pagedCardItems(person)">
+                  <div class="assign-row__icon"
+                       [class.assign-row__icon--rev]="isReviewer()"
+                       [class.assign-row__icon--sub]="item.type === 'subscope'">
+                    <i [ngClass]="item.type === 'scope' ? 'pi pi-file-check' : 'pi pi-file'"></i>
+                  </div>
+                  <div class="assign-row__info">
+                    <div class="assign-row__top">
+                      <span class="assign-row__name">{{ item.name }}</span>
+                      <p-tag
+                        [value]="item.type === 'scope' ? 'Scope' : 'Sub-scope'"
+                        [severity]="item.type === 'scope' ? 'info' : 'secondary'"
+                        styleClass="tag-xs">
+                      </p-tag>
+                    </div>
+                    <span class="assign-row__parent" *ngIf="item.parentScope">
+                      <app-draw-icon icon="pi pi-arrow-up-right"></app-draw-icon>{{ item.parentScope }}
+                    </span>
+                    <span class="assign-row__timeframe"
+                          [class.assign-row__timeframe--rev]="isReviewer()">
+                      <app-draw-icon icon="pi pi-calendar"></app-draw-icon>
+                      {{ item.startDate | date:'MMM d' }} – {{ item.endDate | date:'MMM d, y' }}
+                    </span>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #noCardScopes>
+                <div class="assign-empty">
+                  <app-draw-icon icon="pi pi-search"></app-draw-icon>
+                  <span>No scopes match your search.</span>
+                </div>
+              </ng-template>
+            </div>
+
+            <p-paginator
+              *ngIf="filteredCardItems(person).length > PAGE_SIZE"
+              [rows]="PAGE_SIZE"
+              [totalRecords]="filteredCardItems(person).length"
+              [first]="getCardFirst(person.id)"
+              (onPageChange)="onCardPageChange(person.id, $event)"
+              [styleClass]="isReviewer() ? 'assign-paginator assign-paginator--rev' : 'assign-paginator'">
+            </p-paginator>
+
+          </div>
+        </div>
+
+      </ng-container>
+      <ng-template #noPersonMatch>
+        <div class="assign-empty">
+          <app-draw-icon icon="pi pi-search"></app-draw-icon>
+          <span>No {{ isReviewer() ? 'reviewers' : 'preparers' }} match your search.</span>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- ── LIST PAGINATOR ────────────────────────────────────── -->
+    <p-paginator
+      *ngIf="filteredPersonsList().length > PERSON_PAGE_SIZE"
+      [rows]="PERSON_PAGE_SIZE"
+      [totalRecords]="filteredPersonsList().length"
+      [first]="getListFirst()"
+      (onPageChange)="onListPageChange($event)"
+      [styleClass]="isReviewer()
+        ? 'assign-paginator assign-paginator--rev pers-paginator'
+        : 'assign-paginator pers-paginator'">
+    </p-paginator>
+
+  </ng-container>
+</div>

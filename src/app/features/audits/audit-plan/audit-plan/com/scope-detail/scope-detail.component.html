@@ -1,0 +1,84 @@
+<button class="back" (click)="store.view.set(PlanViews.Departments)">← Back to Sub-Division View</button>
+
+@if (vm(); as v) {
+  <section class="panel">
+    <header class="panel-head">
+      <div>
+        <h2>{{ v.scope.name }} <span class="code">· {{ v.scope.code }}</span></h2>
+        <p class="sub">{{ v.subDivision.name }} · <span class="freq-badge fq-{{ v.scope.freq }}">{{ freqLabels[v.scope.freq] }}</span></p>
+      </div>
+      <button pButton label="Open Working Papers" class="p-button-sm"></button>
+    </header>
+
+    <div class="body">
+      <div class="cards">
+        <div class="card"><span class="k">Lead auditor</span><span class="v">{{ v.scope.auditor }}</span></div>
+        <div class="card"><span class="k">Risk rating</span><span class="v"><span class="risk risk-{{ v.scope.risk }}">{{ v.scope.risk }}</span></span></div>
+        <div class="card"><span class="k">Open RFIs</span><span class="v">{{ v.scope.rfi }}</span></div>
+        <div class="card"><span class="k">Findings</span><span class="v" [class.danger]="v.scope.findings > 0">{{ v.scope.findings }}</span></div>
+      </div>
+
+      <h3>Scope jobs ({{ v.jobs.length }}) <small>— audit procedures executed each instance</small></h3>
+      @for (j of v.jobs; track j.job.id) {
+        <button class="job-row" (click)="openJob(j)">
+          <span class="ref">{{ jobRef(v.scope.code, j.job.id) }}</span>
+          <span class="name">{{ j.job.name }}
+            @if (j.job.run !== undefined) {
+              <span class="run-tag">{{ runShortLabel(v.scope.freq) }} {{ j.job.run }}</span>
+            }
+          </span>
+          <span class="hrs">{{ j.job.hrs }}h</span>
+          <span class="tag st-{{ j.status }}">{{ meta[j.status].label }}</span>
+          <i class="pi pi-chevron-right chev"></i>
+        </button>
+      }
+
+      <div class="exec-head">
+        <h3>Monthly execution — {{ store.year() }} <small>(hover for jobs, click for the record)</small></h3>
+        <span class="exec-pct">
+          <span class="dot"></span>{{ v.pct }}% complete · {{ v.done }}/{{ v.total }} instances
+        </span>
+      </div>
+
+      <div class="exec-timeline">
+        @for (m of v.cells; track m.monthIndex) {
+          <div class="et-cell"
+               [class.q-gap]="m.monthIndex % 3 === 0 && m.monthIndex !== 0"
+               [class.today]="isCurrentMonth(m.monthIndex)"
+               [class.clickable]="m.status !== null"
+               (click)="openMonth(m)">
+            <div class="et-box" [class.ghost]="m.status === null"
+                 [style.background]="m.status ? cellBg[m.status] : null"
+                 [style.color]="m.status ? cellTx[m.status] : null"
+                 [pTooltip]="m.tooltip" [escape]="false"
+                 tooltipPosition="top" tooltipStyleClass="jobs-tip">
+              <span class="et-month">{{ months[m.monthIndex] }}</span>
+              @if (m.runs.length > 1) {
+                <span class="et-runs">
+                  @for (r of m.runs; track $index; let ri = $index) {
+                    <i [style.background]="runSolid[r]"
+                       [pTooltip]="m.runTooltips[ri] || ''" [escape]="false"
+                       tooltipPosition="top" tooltipStyleClass="jobs-tip"
+                       (click)="$event.stopPropagation(); openRun(m, ri)"></i>
+                  }
+                </span>
+              } @else {
+                <span class="et-mark">{{ m.status ? meta[m.status].mark || markFallback : unscheduledMark }}</span>
+              }
+            </div>
+            @if (isCurrentMonth(m.monthIndex)) { <span class="et-today">Today</span> }
+          </div>
+        }
+      </div>
+
+      <p-progressBar [value]="v.pct" [showValue]="false" styleClass="exec-bar" />
+
+      <div class="foot">
+        <button pButton outlined size="small" label="View execution log →" (click)="store.view.set(PlanViews.Log)"></button>
+        <button pButton outlined size="small" label="Show on calendar" (click)="store.drillToMonth(v.firstMonth)"></button>
+      </div>
+    </div>
+  </section>
+} @else {
+  <p class="empty">Select a scope from the annual overview, calendar or sub-division view.</p>
+}

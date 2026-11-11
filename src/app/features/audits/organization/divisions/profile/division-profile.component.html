@@ -1,0 +1,318 @@
+<ng-container *ngIf="b() as data; else emptyState">
+<div class="drawer-inner">
+
+  <!-- =========================== HEADER =========================== -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-building"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ data.divisionName }}</h2>
+        <p class="drawer-subtitle">
+          <span *ngIf="data.divisionType">{{ divisionTypeLabel(data.divisionType) }}</span>
+          <span *ngIf="data.divisionType && (data.city || data.country)"> · </span>
+          <span *ngIf="data.city || data.country">{{ data.city }}<ng-container *ngIf="data.city && data.country">, </ng-container>{{ countryLabel(data.country) }}</span>
+        </p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onHide()" aria-label="Close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+  <!-- ======================== STATS ========================= -->
+  <section class="bp-stats">
+    <div class="stat-card" *ngIf="data.numberOfEmployees != null">
+      <div class="stat-card__icon stat-card__icon--emp"><app-draw-icon icon="pi pi-users"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ data.numberOfEmployees }}</span>
+        <span class="stat-card__label">Employees</span>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-card__icon stat-card__icon--dept"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ data.subDivisions.length }}</span>
+        <span class="stat-card__label">Sub-Divisions</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="yearsOperational() != null">
+      <div class="stat-card__icon stat-card__icon--yrs"><app-draw-icon icon="pi pi-calendar"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <span class="stat-card__value">{{ yearsOperational() }}<small> yrs</small></span>
+        <span class="stat-card__label">Operational</span>
+      </div>
+    </div>
+
+    <div class="stat-card" *ngIf="data.auditStatus">
+      <div class="stat-card__icon stat-card__icon--audit"><app-draw-icon icon="pi pi-shield"></app-draw-icon></div>
+      <div class="stat-card__body">
+        <p-tag [value]="auditLabel(data.auditStatus)"
+               [severity]="auditSeverity(data.auditStatus)"
+               styleClass="tag-xs"></p-tag>
+        <span class="stat-card__label">Audit Status</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= BODY ========================= -->
+  <div class="bp-body">
+
+    <!-- LEFT COLUMN ------------------------------------------ -->
+    <div class="bp-col bp-col--main">
+
+      <!-- Basic Information -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-info-circle" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Basic Information</h2>
+        </header>
+        <div class="panel__body info-grid">
+
+          <!-- Status (moved from the old hero banner) -->
+          <div class="info-row">
+            <span class="info-row__label">Status</span>
+            <span class="info-row__value">
+              <span class="badge-pill" [ngClass]="data.status === DivisionStatuses.Active ? 'is-yes' : 'is-no'">
+                <i class="pi" [ngClass]="data.status === DivisionStatuses.Active ? 'pi-check-circle' : 'pi-ban'"></i>
+                {{ divisionStatusLabels[data.status === DivisionStatuses.Active ? DivisionStatuses.Active : DivisionStatuses.Inactive] }}
+              </span>
+            </span>
+          </div>
+
+          <!-- Division Code (moved from the old hero banner) -->
+          <div class="info-row" *ngIf="data.divisionCode">
+            <span class="info-row__label">Division Code</span>
+            <span class="info-row__value">{{ data.divisionCode }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.divisionType">
+            <span class="info-row__label">Division Type</span>
+            <span class="info-row__value">{{ divisionTypeLabel(data.divisionType) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-row__label">Department Type</span>
+            <span class="info-row__value">{{ departmentTypeLabel(data.departmentType) }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.currency">
+            <span class="info-row__label">Currency</span>
+            <span class="info-row__value">{{ data.currency }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.legalEntityName">
+            <span class="info-row__label">Legal Entity</span>
+            <span class="info-row__value">{{ data.legalEntityName }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.sectorActivity">
+            <span class="info-row__label">Sector</span>
+            <span class="info-row__value">{{ sectorLabel(data.sectorActivity) }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.parentDivision">
+            <span class="info-row__label">Parent Division</span>
+            <span class="info-row__value">{{ data.parentDivision }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.operationalSince">
+            <span class="info-row__label">Operational Since</span>
+            <span class="info-row__value">{{ data.operationalSince | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Location -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-map" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Location</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row" *ngIf="data.country">
+            <span class="info-row__label">Country</span>
+            <span class="info-row__value">{{ countryLabel(data.country) }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.emirateState">
+            <span class="info-row__label">Emirate / State</span>
+            <span class="info-row__value">{{ emirateLabel(data.emirateState) }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.city">
+            <span class="info-row__label">City</span>
+            <span class="info-row__value">{{ data.city }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.postalCode">
+            <span class="info-row__label">Postal Code</span>
+            <span class="info-row__value">{{ data.postalCode }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.addressLine1">
+            <span class="info-row__label">Address</span>
+            <span class="info-row__value">
+              {{ data.addressLine1 }}<ng-container *ngIf="data.addressLine2">, {{ data.addressLine2 }}</ng-container>
+            </span>
+          </div>
+          <div class="info-row" *ngIf="data.gpsCoordinates">
+            <span class="info-row__label">GPS Coordinates</span>
+            <span class="info-row__value info-row__value--mono">{{ data.gpsCoordinates }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Contact -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-id-card" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Contact</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row" *ngIf="data.divisionManager">
+            <span class="info-row__label">Division Manager</span>
+            <span class="info-row__value">{{ data.divisionManager }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.primaryContactPerson">
+            <span class="info-row__label">Primary Contact</span>
+            <span class="info-row__value">{{ data.primaryContactPerson }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.contactEmail">
+            <span class="info-row__label">Email</span>
+            <a class="info-row__link" [href]="'mailto:' + data.contactEmail">{{ data.contactEmail }}</a>
+          </div>
+          <div class="info-row" *ngIf="data.contactPhone">
+            <span class="info-row__label">Phone</span>
+            <a class="info-row__link" [href]="'tel:' + data.contactPhone">{{ data.contactPhone }}</a>
+          </div>
+          <div class="info-row" *ngIf="data.alternatePhone">
+            <span class="info-row__label">Alt. Phone</span>
+            <a class="info-row__link" [href]="'tel:' + data.alternatePhone">{{ data.alternatePhone }}</a>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- RIGHT COLUMN ----------------------------------------- -->
+    <div class="bp-col bp-col--side">
+
+      <!-- Licensing -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-verified" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Licensing</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row" *ngIf="data.licenseNumber">
+            <span class="info-row__label">License No.</span>
+            <span class="info-row__value">{{ data.licenseNumber }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.licenseAuthority">
+            <span class="info-row__label">Authority</span>
+            <span class="info-row__value">{{ data.licenseAuthority | uppercase }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.licenseIssueDate">
+            <span class="info-row__label">Issued</span>
+            <span class="info-row__value">{{ data.licenseIssueDate | date:'mediumDate' }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.licenseExpiryDate">
+            <span class="info-row__label">Expires</span>
+            <span class="info-row__value">{{ data.licenseExpiryDate | date:'mediumDate' }}</span>
+          </div>
+
+          <div *ngIf="licenseExpiryInfo() as info"
+               class="expiry-banner"
+               [ngClass]="'tone-' + info.tone">
+            <i class="pi"
+               [ngClass]="info.tone === LicenseExpiryTones.Expired ? 'pi-exclamation-circle'
+                          : info.tone === LicenseExpiryTones.Warn ? 'pi-clock' : 'pi-check-circle'"></i>
+            <span>{{ info.label }}</span>
+          </div>
+
+          <div class="info-row" *ngIf="data.taxRegistrationNumber">
+            <span class="info-row__label">Tax Reg. No.</span>
+            <span class="info-row__value">{{ data.taxRegistrationNumber }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.commercialRegistrationNumber">
+            <span class="info-row__label">Comm. Reg. No.</span>
+            <span class="info-row__value">{{ data.commercialRegistrationNumber }}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Risk & Audit -->
+      <section class="panel">
+        <header class="panel__head">
+          <app-draw-icon icon="pi pi-shield" class="panel__head-icon"></app-draw-icon>
+          <h2 class="panel__title">Risk &amp; Audit</h2>
+        </header>
+        <div class="panel__body info-grid">
+          <div class="info-row" *ngIf="data.riskRating">
+            <span class="info-row__label">Risk Rating</span>
+            <p-tag [value]="riskLabel(data.riskRating)"
+                   [severity]="riskSeverity(data.riskRating)"
+                   styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="info-row" *ngIf="data.riskStatus">
+            <span class="info-row__label">Risk Status</span>
+            <span class="info-row__value">{{ riskStatusLabel(data.riskStatus) }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.auditStatus">
+            <span class="info-row__label">Audit Status</span>
+            <p-tag [value]="auditLabel(data.auditStatus)"
+                   [severity]="auditSeverity(data.auditStatus)"
+                   styleClass="tag-sm"></p-tag>
+          </div>
+          <div class="info-row" *ngIf="data.lastAuditDate">
+            <span class="info-row__label">Last Audit</span>
+            <span class="info-row__value">{{ data.lastAuditDate | date:'mediumDate' }}</span>
+          </div>
+          <div class="info-row" *ngIf="data.nextAuditDueDate">
+            <span class="info-row__label">Next Audit</span>
+            <span class="info-row__value">{{ data.nextAuditDueDate | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ==================== SUB-DIVISIONS ====================== -->
+  <section class="bp-departments" *ngIf="data.subDivisions.length > 0">
+    <header class="bp-depts-head">
+      <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      <h2>Sub-Divisions</h2>
+      <span class="count-badge">{{ data.subDivisions.length }}</span>
+    </header>
+
+    <div class="dept-list">
+      <div class="dept-item" *ngFor="let dept of data.subDivisions">
+        <div class="dept-item__left">
+          <div class="dept-item__avatar"><app-draw-icon icon="pi pi-users"></app-draw-icon></div>
+          <div class="dept-item__info">
+            <span class="dept-item__name">{{ dept.subDivisionName }}</span>
+            <span class="dept-item__sub">
+              {{ dept.numberOfEmployees ?? 0 }} employees
+              <ng-container *ngIf="dept.scopes?.length"> &middot; {{ dept.scopes!.length }} scope{{ dept.scopes!.length > 1 ? 's' : '' }}</ng-container>
+            </span>
+          </div>
+        </div>
+        <div class="dept-item__chips">
+          <p-tag [value]="divisionStatusLabels[dept.status === DivisionStatuses.Active ? DivisionStatuses.Active : DivisionStatuses.Inactive]"
+                 [severity]="subDivisionStatusSeverity(dept.status)"
+                 styleClass="tag-xs"></p-tag>
+          <p-tag [value]="riskLabel(dept.riskRating)"
+                 [severity]="riskSeverity(dept.riskRating)"
+                 styleClass="tag-xs"></p-tag>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  </div>
+</div>
+</ng-container>
+
+<ng-template #emptyState>
+  <div class="bp-empty">
+    <app-draw-icon icon="pi pi-building"></app-draw-icon>
+    <p>No division selected.</p>
+  </div>
+</ng-template>

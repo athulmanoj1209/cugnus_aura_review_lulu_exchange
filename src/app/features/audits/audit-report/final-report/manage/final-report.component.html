@@ -1,0 +1,169 @@
+<div class="rep-drawer-inner" [formGroup]="form">
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-file-edit"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ isEditMode ? editReportLabel : addNewReportLabel }}</h2>
+        <p class="drawer-subtitle">{{ isEditMode ? editReportSubtitle : addReportSubtitle }}</p>
+      </div>
+    </div>
+    <button class="close-btn" type="button" (click)="onClose()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- Body -->
+  <div class="rep-drawer-body">
+
+    <!-- Section: Assignment -->
+    <div class="rep-section">
+      <div class="rep-section-label">
+        <app-draw-icon icon="pi pi-building" class="rep-section-icon"></app-draw-icon>
+        <span i18n="@@audit.auditReport.assignment">Assignment</span>
+      </div>
+
+      <div class="rep-form-row">
+        <div class="rep-form-col full">
+          <label class="field-label"><span i18n="@@common.company">Company</span> <span class="field-required">*</span></label>
+          <p-select formControlName="companyId" [options]="companyOptions" optionLabel="label" optionValue="value"
+            placeholder="Select company" i18n-placeholder="@@audit.auditReport.selectCompany" styleClass="form-dropdown" appendTo="body" [invalid]="isFieldInvalid('companyId')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('companyId')">
+            {{ getErrorMessage('companyId') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="rep-form-row">
+        <div class="rep-form-col full">
+          <label class="field-label"><span i18n="@@common.division">Division</span> <span class="field-required">*</span></label>
+          <p-select formControlName="divisionCode" [options]="divisionOptions" optionLabel="label" optionValue="value"
+            placeholder="Select division" i18n-placeholder="@@audit.auditReport.selectDivision" styleClass="form-dropdown" appendTo="body" [filter]="true" filterPlaceholder="Search division…" i18n-filterPlaceholder="@@audit.auditReport.searchDivision"
+            [invalid]="isFieldInvalid('divisionCode')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('divisionCode')">
+            {{ getErrorMessage('divisionCode') }}
+          </small>
+          <small class="field-hint" *ngIf="!form.get('companyId')?.value" i18n="@@audit.auditReport.selectCompanyFirstForDivisions">
+            Select a company first to load divisions
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <p-divider styleClass="rep-divider"></p-divider>
+
+    <!-- Section: Report Details -->
+    <div class="rep-section">
+      <div class="rep-section-label">
+        <app-draw-icon icon="pi pi-info-circle" class="rep-section-icon"></app-draw-icon>
+        <span i18n="@@audit.auditReport.reportDetails">Report Details</span>
+      </div>
+
+      <div class="rep-form-row">
+        <div class="rep-form-col full">
+          <label class="field-label" i18n="@@audit.auditReport.reportId">Report ID</label>
+          <input pInputText type="text" formControlName="reportId" placeholder="Auto-generated after division selection" i18n-placeholder="@@audit.auditReport.reportIdPlaceholder"
+            class="form-input report-id-input" />
+          <small class="field-hint" i18n="@@audit.auditReport.reportIdHint">Auto-generated from division, year and a random reference number</small>
+        </div>
+      </div>
+
+      <div class="rep-form-row">
+        <div class="rep-form-col">
+          <label class="field-label"><span i18n="@@audit.auditReport.auditType">Audit Type</span> <span class="field-required">*</span></label>
+          <p-select formControlName="auditType" [options]="auditTypeOptions" optionLabel="label" optionValue="value"
+            placeholder="Select audit type" i18n-placeholder="@@audit.auditReport.selectAuditType" styleClass="form-dropdown" appendTo="body" [invalid]="isFieldInvalid('auditType')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('auditType')">
+            {{ getErrorMessage('auditType') }}
+          </small>
+        </div>
+
+        <div class="rep-form-col">
+          <label class="field-label"><span i18n="@@audit.auditReport.reportYear">Report Year</span> <span class="field-required">*</span></label>
+          <p-datepicker formControlName="reportYear" view="year" dateFormat="yy" placeholder="Select year" i18n-placeholder="@@audit.auditReport.selectYear"
+            [showIcon]="true" iconDisplay="input" styleClass="form-datepicker" [invalid]="isFieldInvalid('reportYear')">
+          </p-datepicker>
+          <small class="error-hint" *ngIf="isFieldInvalid('reportYear')">
+            {{ getErrorMessage('reportYear') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="rep-form-row">
+        <div class="rep-form-col">
+          <label class="field-label"><span i18n="@@audit.auditReport.reportType">Report Type</span> <span class="field-required">*</span></label>
+          <p-select formControlName="reportPeriod" [options]="reportPeriodOptions" optionLabel="label" optionValue="value"
+            placeholder="Select period" i18n-placeholder="@@audit.auditReport.selectPeriod" styleClass="form-dropdown" appendTo="body" [invalid]="isFieldInvalid('reportPeriod')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('reportPeriod')">
+            {{ getErrorMessage('reportPeriod') }}
+          </small>
+        </div>
+
+        <div class="rep-form-col">
+          <label class="field-label">
+            <span i18n="@@audit.auditReport.reportTimePeriod">Report Time Period</span>
+            <span class="field-required" *ngIf="periodZoneVisible">*</span>
+          </label>
+          <p-select formControlName="periodZone" [options]="periodZoneOptions" optionLabel="label" optionValue="value"
+            [placeholder]="periodZoneVisible ? selectTimePeriodLabel : selectReportPeriodFirstLabel"
+            styleClass="form-dropdown" appendTo="body" [invalid]="isFieldInvalid('periodZone')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('periodZone')">
+            {{ getErrorMessage('periodZone') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="rep-form-row">
+        <div class="rep-form-col full">
+          <label class="field-label"><span i18n="@@audit.auditReport.leadAuditor">Lead Auditor</span> <span class="field-required">*</span></label>
+          <p-select formControlName="leadAuditorId" [options]="leadAuditorOptions" optionLabel="label" optionValue="value"
+            placeholder="Select lead auditor" i18n-placeholder="@@audit.auditReport.selectLeadAuditor" styleClass="form-dropdown" appendTo="body" [filter]="true" filterPlaceholder="Search auditor…" i18n-filterPlaceholder="@@audit.auditReport.searchAuditor"
+            [invalid]="isFieldInvalid('leadAuditorId')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('leadAuditorId')">
+            {{ getErrorMessage('leadAuditorId') }}
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <p-divider styleClass="rep-divider"></p-divider>
+
+    <!-- Section: Report Template -->
+    <div class="rep-section">
+      <div class="rep-section-label">
+        <app-draw-icon icon="pi pi-file-word" class="rep-section-icon"></app-draw-icon>
+        <span i18n="@@audit.auditReport.reportTemplate">Report Template</span>
+      </div>
+
+      <div class="rep-form-row">
+        <div class="rep-form-col full">
+          <label class="field-label" i18n="@@audit.auditReport.templateName">Template Name</label>
+          <p-select formControlName="templateId" appendTo="body" [options]="templateOptions" optionLabel="label" optionValue="value"
+            placeholder="Select template name" i18n-placeholder="@@audit.auditReport.selectTemplateName" styleClass="form-dropdown" [filter]="true" filterPlaceholder="Search template…" i18n-filterPlaceholder="@@audit.auditReport.searchTemplate">
+          </p-select>
+          <small class="field-hint" *ngIf="!form.get('divisionCode')?.value" i18n="@@audit.auditReport.selectCompanyDivisionFirst">
+            Select a company and division first to load available templates
+          </small>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="drawer-footer">
+    <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+    <p-button *ngIf="isEditMode" label="View Report" i18n-label="@@audit.auditReport.viewReport" icon="pi pi-external-link" styleClass="submit-btn rep-view-report-btn" (onClick)="onViewReport()"></p-button>
+    <p-button [label]="isEditMode ? updateLabel : submitLabel" icon="pi pi-check" styleClass="submit-btn" (onClick)="onSubmit()"></p-button>
+  </div>
+
+</div>

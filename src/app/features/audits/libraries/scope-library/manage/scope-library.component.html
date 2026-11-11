@@ -1,0 +1,270 @@
+<div class="drawer-inner" [formGroup]="form">
+
+    <!-- ── Header ── -->
+    <div class="drawer-header">
+      <div class="drawer-header-left">
+        <div class="drawer-icon-wrap">
+          <app-draw-icon icon="pi pi-book"></app-draw-icon>
+        </div>
+        <div class="drawer-title-block">
+          <h3 class="drawer-title">{{ drawerTitle }}</h3>
+          <p class="drawer-subtitle">Fill in the details to {{ mode === ScopeLibraryDrawerModes.Edit ? 'update' : 'create' }} a scope library entry</p>
+        </div>
+      </div>
+      <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close">
+        <app-draw-icon icon="pi pi-times"></app-draw-icon>
+      </button>
+    </div>
+
+    <!-- ── Approval Banner ── -->
+    @if (approvalMode) {
+      <div class="approval-banner">
+        <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+        @if (canDecide) {
+          <span>You may view and edit the scope library details. Add your <strong>approver notes</strong> below and approve or reject.</span>
+        } @else {
+          <span>This request has already been <strong>{{ requestStatus }}</strong>. No further action is required.</span>
+        }
+      </div>
+    }
+
+    <!-- ── Body ── -->
+    <div class="drawer-body">
+    <div class="drawer-body-inner">
+
+      <!-- Company / Division / Sub-Division -->
+      <div class="form-field" [class.has-error]="isInvalid('company')">
+        <label class="field-label">Company / Organization <span class="required">*</span></label>
+        <p-select appendTo="body" formControlName="company" [options]="companyOptions" optionLabel="label" optionValue="value"
+          placeholder="Select company / organization" styleClass="field-select"
+          [filter]="true" filterPlaceholder="Search…" [showClear]="true"
+          (onChange)="onCompanyChange()"></p-select>
+        @if (isInvalid('company')) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Company / organization is required</span>
+        }
+      </div>
+      <div class="form-field" [class.has-error]="isInvalid('division')">
+        <label class="field-label">Division <span class="required">*</span></label>
+        <p-select appendTo="body" formControlName="division" [options]="filteredDivisionOptions" optionLabel="label" optionValue="value"
+          placeholder="Select division" styleClass="field-select"
+          [filter]="true" filterPlaceholder="Search…" [showClear]="true"
+          [disabled]="!form.get('company')?.value"
+          (onChange)="onDivisionChange()"></p-select>
+        @if (isInvalid('division')) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Division is required</span>
+        }
+      </div>
+      <!-- Sub-Division — required when the division has sub-divisions; none ⇒ the item sits under the division -->
+      <div class="form-field" [class.has-error]="isInvalid('subDivision')">
+        <label class="field-label">
+          Sub-Division
+          @if (isSubDivisionRequired) {
+            <span class="required">*</span>
+          } @else if (form.get('division')?.value && !selectedDivisionHasSubDivisions) {
+            <span class="field-hint">(not applicable)</span>
+          } @else {
+            <span class="field-hint">(optional)</span>
+          }
+        </label>
+        <p-select appendTo="body" formControlName="subDivision" [options]="filteredSubDivisionOptions" optionLabel="label" optionValue="value"
+          placeholder="Select sub-division" styleClass="field-select"
+          [filter]="true" filterPlaceholder="Search…" [showClear]="true"
+          [disabled]="!form.get('division')?.value || !selectedDivisionHasSubDivisions"
+          (onChange)="onSubDivisionChange()"></p-select>
+        @if (isInvalid('subDivision')) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Sub-division is required — this division has sub-divisions</span>
+        } @else if (form.get('division')?.value && !form.get('subDivision')?.value && !isSubDivisionRequired) {
+          <span class="field-help">No sub-division — the scope will be created under the division.</span>
+        }
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Scope Title -->
+      <div class="form-field" [class.has-error]="isInvalid('title')">
+        <label class="field-label">Scope Title <span class="required">*</span></label>
+        <input pInputText type="text" formControlName="title"
+          placeholder="Enter scope title..." class="field-input"
+          [class.input-error]="isInvalid('title')" />
+        @if (isInvalid('title')) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Scope title is required</span>
+        }
+      </div>
+
+      <!-- Scope Objective -->
+      <div class="form-field" [class.has-error]="isInvalid('objective')">
+        <label class="field-label">Scope Objective <span class="required">*</span></label>
+        <textarea pTextarea formControlName="objective"
+          placeholder="Describe the audit objective for this scope..."
+          [rows]="4" [autoResize]="false" class="field-textarea"
+          [class.input-error]="isInvalid('objective')"></textarea>
+        @if (isInvalid('objective')) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Scope objective is required</span>
+        }
+      </div>
+
+      <p-divider></p-divider>
+
+      <!-- Scope Level -->
+      <div class="form-field">
+        <label class="field-label">Scope Level <span class="required">*</span></label>
+        <p-select appendTo="body"
+          formControlName="scopeLevel"
+          [options]="scopeLevelOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="field-select"
+          (onChange)="onScopeLevelChange()">
+          <ng-template pTemplate="selectedItem" let-selected>
+            <div class="select-item">
+              <i class="pi" [class.pi-folder]="selected?.value === ScopeLevels.Scope"
+                [class.pi-file-check]="selected?.value === ScopeLevels.SubScope"></i>
+              <span>{{ selected?.label }}</span>
+            </div>
+          </ng-template>
+          <ng-template pTemplate="item" let-item>
+            <div class="select-item">
+              <i class="pi" [class.pi-folder]="item.value === ScopeLevels.Scope"
+                [class.pi-file-check]="item.value === ScopeLevels.SubScope"></i>
+              <span>{{ item.label }}</span>
+            </div>
+          </ng-template>
+        </p-select>
+      </div>
+
+      <!-- Parent Scope (only for subscope) -->
+      @if (scopeLevel === ScopeLevels.SubScope) {
+        <div class="form-field" [class.has-error]="isInvalid('parentScopeId')">
+          <label class="field-label">Parent Scope <span class="required">*</span></label>
+          <p-select appendTo="body"
+            formControlName="parentScopeId"
+            [options]="parentScopeOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select parent scope..."
+            styleClass="field-select"
+            [filter]="true"
+            filterPlaceholder="Search scopes..."
+            [showClear]="true"
+            [disabled]="!isScopeOwnerResolved">
+          </p-select>
+          @if (isInvalid('parentScopeId')) {
+            <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Parent scope is required for sub scopes</span>
+          } @else if (!isScopeOwnerResolved) {
+            <span class="field-help">{{ form.get('division')?.value ? 'Select a sub-division first.' : 'Select a division first.' }}</span>
+          } @else {
+            <span class="field-help">Scopes under the same {{ form.get('subDivision')?.value ? 'sub-division' : 'division' }}.</span>
+          }
+        </div>
+      }
+
+      <!-- Sub Scopes (only for scope) -->
+      @if (scopeLevel === ScopeLevels.Scope) {
+        <div class="form-field">
+          <label class="field-label">Sub Scopes
+            <span class="field-hint">(optional)</span>
+          </label>
+          <p-multiselect appendTo="body"
+            formControlName="selectedSubScopeIds"
+            [options]="subScopeOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Select sub scopes to link..."
+            styleClass="field-multiselect"
+            [filter]="true"
+            filterPlaceholder="Search sub scopes..."
+            [showClear]="true"
+            [maxSelectedLabels]="2"
+            selectedItemsLabel="{0} sub scopes selected"
+            [disabled]="!isScopeOwnerResolved">
+          </p-multiselect>
+          @if (!isScopeOwnerResolved) {
+            <span class="field-help">{{ form.get('division')?.value ? 'Select a sub-division first.' : 'Select a division first.' }}</span>
+          } @else {
+            <span class="field-help">Link existing sub-scope library items under the same {{ form.get('subDivision')?.value ? 'sub-division' : 'division' }} to this scope.</span>
+          }
+        </div>
+      }
+
+      <p-divider></p-divider>
+
+      <!-- Risk Category -->
+      <div class="form-field" [class.has-error]="isInvalid('riskCategory')">
+        <label class="field-label">Risk Category <span class="required">*</span></label>
+        <p-select appendTo="body"
+          formControlName="riskCategory"
+          [options]="riskCategoryOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select risk category..."
+          styleClass="field-select"
+          [showClear]="true">
+        </p-select>
+        @if (isInvalid('riskCategory')) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Risk category is required</span>
+        }
+      </div>
+
+      <!-- Applicable Frameworks -->
+      <div class="form-field" [class.has-error]="isInvalid('applicableFrameworks')">
+        <label class="field-label">Applicable Frameworks <span class="required">*</span></label>
+        <p-multiselect appendTo="body"
+          formControlName="applicableFrameworks"
+          [options]="frameworkOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select applicable frameworks..."
+          styleClass="field-multiselect"
+          [showClear]="true"
+          [maxSelectedLabels]="3"
+          selectedItemsLabel="{0} frameworks selected">
+        </p-multiselect>
+        @if (isInvalid('applicableFrameworks')) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> At least one framework is required</span>
+        }
+      </div>
+
+      <!-- ── Approver Notes (approval mode only) ── -->
+      @if (canDecide) {
+        <div class="approver-notes-section">
+          <div class="approver-notes-header">
+            <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+            <span class="approver-notes-title">Approver Notes</span>
+            <span class="approver-notes-required">Required when rejecting</span>
+          </div>
+          <textarea pTextarea formControlName="approverNotes"
+            placeholder="Add your approver notes here..."
+            [rows]="4" class="field-textarea approver-notes-textarea"
+            [class.input-error]="isInvalidApproverNotes()"></textarea>
+          @if (isInvalidApproverNotes()) {
+            <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Approver notes are required when rejecting</span>
+          }
+        </div>
+      }
+
+    </div>
+    </div>
+
+    <!-- ── Footer ── -->
+    <div class="drawer-footer">
+      @if (canDecide) {
+        <button type="button" class="cancel-btn" (click)="onCancel()">Cancel</button>
+        <button type="button" class="btn-reject" (click)="onReject()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon> Reject
+        </button>
+        <button type="button" class="btn-approve" (click)="onApprove()">
+          <app-draw-icon icon="pi pi-check"></app-draw-icon> Approve
+        </button>
+      } @else if (approvalMode) { 
+        <button type="button" class="btn-cancel" (click)="onCancel()">Cancel</button> 
+      } @else {
+        <button type="button" class="cancel-btn" (click)="onCancel()">Cancel</button>
+        <button type="button" class="submit-btn" (click)="onSubmit()">
+          <i class="pi" [class.pi-save]="mode === ScopeLibraryDrawerModes.Edit" [class.pi-plus]="mode === ScopeLibraryDrawerModes.Add"></i>
+          {{ mode === ScopeLibraryDrawerModes.Edit ? 'Save Changes' : 'Add to Library' }}
+        </button>
+      }
+    </div>
+
+  </div>
+

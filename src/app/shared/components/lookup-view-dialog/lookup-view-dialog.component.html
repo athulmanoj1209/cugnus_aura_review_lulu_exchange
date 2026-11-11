@@ -1,0 +1,37 @@
+<p-dialog
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true" [draggable]="false" [resizable]="false" [closable]="false" [showHeader]="false"
+  [style]="{ width: width(), padding: '0' }" styleClass="lookup-view-dialog">
+  <div class="lvd-root">
+    <div class="lvd-header">
+      <div class="lvd-icon"><app-draw-icon [icon]="icon()"></app-draw-icon></div>
+      <div class="lvd-header-text">
+        <span class="lvd-name">{{ title() }}</span>
+        <span class="lvd-subtitle">{{ subtitle() }}</span>
+      </div>
+      <span class="lvd-status-pill" [class.active]="active()">
+        <app-draw-icon [icon]="active() ? 'pi pi-check-circle' : 'pi pi-times-circle'"></app-draw-icon>
+        {{ active() ? 'Active' : 'Inactive' }}
+      </span>
+      <button class="lvd-close" type="button" (click)="close()"><app-draw-icon icon="pi pi-times"></app-draw-icon></button>
+    </div>
+    <div class="lvd-body">
+      <ng-content></ng-content>
+
+      @if (showDescription()) {
+        <div class="lvd-section-label"><app-draw-icon icon="pi pi-align-justify"></app-draw-icon> DESCRIPTION</div>
+        <div class="lvd-desc-card">{{ description() || 'No description provided.' }}</div>
+      }
+
+      @if (createdOn()) {
+        <div class="lvd-footer-row">
+          <span class="lvd-footer-label"><app-draw-icon icon="pi pi-calendar-plus"></app-draw-icon> CREATED ON</span>
+          <span class="lvd-footer-value">{{ createdOn() }}</span>
+        </div>
+      }
+
+      <ng-content select="[lvdAfter]"></ng-content>
+    </div>
+  </div>
+</p-dialog>

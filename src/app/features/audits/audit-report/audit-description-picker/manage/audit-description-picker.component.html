@@ -1,0 +1,206 @@
+<div class="adp-card">
+
+  <!-- ── Header ─────────────────────────────────────────────────────────────── -->
+  <div class="adp-header">
+    <div class="adp-header__icon">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/>
+        <rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6"/><path d="M9 16h6"/>
+      </svg>
+    </div>
+    <div>
+      <h2 class="adp-header__title">{{ title() }}</h2>
+      <p class="adp-header__subtitle">{{ subtitle() }}</p>
+    </div>
+  </div>
+
+  <div class="adp-box">
+
+  <!-- ── Toolbar ────────────────────────────────────────────────────────────── -->
+  <div class="adp-toolbar">
+    <button type="button" class="adp-toggle" [class.adp-toggle--on]="allSelected()" (click)="toggleSelectAll()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+      </svg>
+      {{ selectAllLabel() }}
+    </button>
+
+    <button type="button" class="adp-toggle" (click)="toggleExpandAll()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <ng-container *ngIf="!allExpanded()"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></ng-container>
+        <ng-container *ngIf="allExpanded()"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></ng-container>
+      </svg>
+      {{ expandAllLabel() }}
+    </button>
+
+    <div class="adp-filter">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      <select [ngModel]="scopeFilter()" (ngModelChange)="scopeFilter.set($event)" aria-label="Filter by scope" i18n-aria-label="@@audit.auditReport.filterByScope">
+        <option value="all" i18n="@@audit.auditReport.allScopes">All scopes</option>
+        <option *ngFor="let o of scopeOptions()" [value]="o.value">{{ o.label }}</option>
+      </select>
+    </div>
+
+    <div class="adp-filter">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+      <select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)" aria-label="Filter by type" i18n-aria-label="@@audit.auditReport.filterByType">
+        <option value="all" i18n="@@audit.auditReport.allTypes">All types</option>
+        <option *ngFor="let o of kindOptions()" [value]="o.value">{{ o.label }}</option>
+      </select>
+    </div>
+
+    <div class="adp-searchbox">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search scope, job, description" i18n-placeholder="@@audit.auditReport.searchPlaceholder"
+             [ngModel]="search()" (ngModelChange)="search.set($event)" />
+    </div>
+  </div>
+
+  <!-- ── Body ───────────────────────────────────────────────────────────────── -->
+  <div class="adp-body">
+
+    <div class="adp-empty" *ngIf="!hasResults()">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <p i18n="@@audit.auditReport.noDescriptionsMatch">No descriptions match your search.</p>
+    </div>
+
+    <!-- ══ Scope (white tier) ══ -->
+    <div class="adp-scope" *ngFor="let scope of view(); trackBy: trackByScope"
+         [class.adp-scope--open]="isScopeOpen(scope.id)">
+
+      <div class="adp-row" (click)="toggleScope(scope.id)">
+        <input type="checkbox" class="adp-check" (click)="$event.stopPropagation()"
+               [checked]="allChecked(scopeItemIds(scope))"
+               [indeterminate]="someChecked(scopeItemIds(scope))"
+               (change)="toggleMany(scopeItemIds(scope), $any($event.target).checked)"
+               [attr.aria-label]="selectAllInLabel(scope.name)" />
+
+        <button type="button" class="adp-chevron" (click)="$event.stopPropagation(); toggleScope(scope.id)"
+                [attr.aria-expanded]="isScopeOpen(scope.id)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               [style.transform]="isScopeOpen(scope.id) ? 'rotate(90deg)' : 'none'" style="transition:transform .15s">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+
+        <svg class="adp-scope__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+        </svg>
+
+        <div class="adp-row__main">
+          <span class="adp-scope-name">{{ scope.name }}</span>
+          <span class="adp-scope-sub">{{ scopeSummaryLabel(scope.jobs.length, scopeItemIds(scope).length) }}</span>
+        </div>
+
+        <span class="adp-tag adp-tag--scope" i18n="@@common.scope">Scope</span>
+        <span class="adp-count-pill" *ngIf="selectedInScope(scope) as n">{{ selectedLabel(n) }}</span>
+      </div>
+
+      <!-- ══ Jobs (tinted tier) ══ -->
+      <div class="adp-jobs" *ngIf="isScopeOpen(scope.id)">
+        <div class="adp-job-wrap" *ngFor="let job of scope.jobs; let lastJob = last; trackBy: trackByJob"
+             [class.adp-job-wrap--last]="lastJob">
+
+          <div class="adp-job" (click)="toggleJob(job.id)" [class.adp-job--open]="isJobOpen(job.id)">
+            <input type="checkbox" class="adp-check" (click)="$event.stopPropagation()"
+                   [checked]="allChecked(jobItemIds(job))"
+                   [indeterminate]="someChecked(jobItemIds(job))"
+                   (change)="toggleMany(jobItemIds(job), $any($event.target).checked)"
+                   [attr.aria-label]="selectAllInLabel(job.name)" />
+
+            <button type="button" class="adp-chevron adp-chevron--sm" (click)="$event.stopPropagation(); toggleJob(job.id)"
+                    [attr.aria-expanded]="isJobOpen(job.id)">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   [style.transform]="isJobOpen(job.id) ? 'rotate(90deg)' : 'none'" style="transition:transform .15s">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </button>
+
+            <svg class="adp-job__icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+
+            <div class="adp-job__main">
+              <span class="adp-job__name">{{ job.name }}</span>
+              <span class="adp-job__sub">{{ jobSummaryLabel(job.types.length, jobItemIds(job).length) }}</span>
+            </div>
+
+            <span class="adp-tag adp-tag--job" i18n="@@audit.auditReport.scopeJob">Scope job</span>
+            <span class="adp-count-pill" *ngIf="selectedInJob(job) as n">{{ selectedLabel(n) }}</span>
+          </div>
+
+          <!-- ══ Types + description items ══ -->
+          <div class="adp-types" *ngIf="isJobOpen(job.id)">
+            <div class="adp-type" *ngFor="let type of job.types; trackBy: trackByType">
+
+              <div class="adp-type__head" (click)="toggleType(type.id)"
+                   [class.adp-type__head--collapsed]="!isTypeOpen(type.id)">
+                <input type="checkbox" class="adp-check adp-check--sm" (click)="$event.stopPropagation()"
+                       [checked]="allChecked(typeItemIds(type))"
+                       [indeterminate]="someChecked(typeItemIds(type))"
+                       (change)="toggleMany(typeItemIds(type), $any($event.target).checked)"
+                       [attr.aria-label]="selectAllTypeLabel(type.label)" />
+                <button type="button" class="adp-chevron adp-chevron--sm" (click)="$event.stopPropagation(); toggleType(type.id)"
+                        [attr.aria-expanded]="isTypeOpen(type.id)">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                       [style.transform]="isTypeOpen(type.id) ? 'rotate(90deg)' : 'none'" style="transition:transform .15s">
+                    <polyline points="9 18 15 12 9 6"/>
+                  </svg>
+                </button>
+                <span class="adp-type__label" [attr.data-kind]="type.kind">{{ type.label }}</span>
+                <span class="adp-type__count">{{ type.items.length }}</span>
+              </div>
+
+              <ng-container *ngIf="isTypeOpen(type.id)">
+                <div class="adp-item" *ngFor="let item of type.items; trackBy: trackByItem"
+                     [class.adp-item--on]="isItemChecked(item.id)">
+                  <input type="checkbox" class="adp-check adp-check--sm"
+                         [checked]="isItemChecked(item.id)"
+                         (change)="toggleItem(item.id, $any($event.target).checked)"
+                         [attr.aria-label]="selectItemLabel(item.title)" />
+                  <div class="adp-item__body">
+                    <span class="adp-item__title" *ngIf="showTitle(type)">{{ item.title }}</span>
+
+                    <span class="adp-item__desc" *ngIf="bodyText(type, item) as body">
+                      {{ (isLong(body) && !isItemExpanded(item.id))
+                          ? (body | slice:0:100) + '…'
+                          : body }}
+                      <button type="button" class="adp-viewmore" *ngIf="isLong(body)"
+                              (click)="toggleItemExpand(item.id)">
+                        {{ viewMoreLabel(isItemExpanded(item.id)) }}
+                      </button>
+                    </span>
+                  </div>
+                  <span class="adp-kind-pill" [attr.data-kind]="type.kind">{{ type.label }}</span>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Sticky footer ────────────────────────────────────────────────────────── -->
+  <div class="adp-footer">
+    <span class="adp-footer__label">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+      </svg>
+      {{ descriptionsSelectedLabel(selectedCount()) }}
+    </span>
+    <span class="adp-footer__success" *ngIf="added()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <span i18n="@@audit.auditReport.descriptionsAdded">Descriptions added</span>
+    </span>
+    <span class="adp-footer__spacer"></span>
+    <button type="button" class="adp-btn adp-btn--ghost" [disabled]="selectedCount() === 0" (click)="clear()" i18n="@@common.clear">Clear</button>
+    <button type="button" class="adp-btn adp-btn--primary" [disabled]="selectedCount() === 0" (click)="emitSelection()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span i18n="@@audit.auditReport.addSelected">Add {{ selectedCount() }} selected</span>
+    </button>
+  </div>
+
+  </div><!-- /adp-box -->
+
+</div>

@@ -1,0 +1,468 @@
+:host {
+  display: block;
+  margin: 10px;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────── */
+
+.findings {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* ── KPI Grid ────────────────────────────────────────────────────────────── */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 1rem;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 700px)  { grid-template-columns: repeat(2, 1fr); }
+}
+
+.kpi-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+
+  &--green  { background: var(--surface-card); }
+  &--red    { background: var(--p-red-50); }
+  &--yellow { background: var(--p-amber-50); }
+
+  :host-context(.app-dark) & {
+    &--green  { background: rgba(22, 163, 74, 0.12); }
+    &--red    { background: rgba(220, 38, 38, 0.12); }
+    &--yellow { background: rgba(217, 119, 6, 0.12); }
+  }
+
+  /* KPI cards drill into the findings list */
+  &--clickable {
+    cursor: pointer;
+    transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.08);
+      transform: translateY(-2px);
+    }
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  &__label {
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+    font-weight: 500;
+    line-height: 1.35;
+    flex: 1;
+  }
+
+  &__icon {
+    font-size: 0.85rem;
+    color: var(--text-color-secondary);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  &__value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    line-height: 1;
+    margin-bottom: 0.3rem;
+  }
+
+  &__sub {
+    font-size: 0.74rem;
+    color: var(--text-color-secondary);
+
+    &--up { color: var(--p-green-600); }
+  }
+}
+
+/* ── Chart Row ───────────────────────────────────────────────────────────── */
+
+.chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+
+  &--uneven { grid-template-columns: 2fr 3fr; }
+
+  /* Severity donut + Aging Analysis + Findings by Sub-Division side by side. */
+  &--triple { grid-template-columns: 1fr 1.3fr 1.3fr; }
+
+  @media (max-width: 1200px) {
+    &--triple { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+    &--uneven { grid-template-columns: 1fr; }
+    &--triple { grid-template-columns: 1fr; }
+  }
+}
+
+/* ── Chart Card ──────────────────────────────────────────────────────────── */
+
+.chart-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+
+  &__title {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  /* Row that pairs the title with the "View all" button, used on charts
+   * (Aging Analysis, Findings by Division / Sub-Division) that open a detailed drawer. */
+  &__header-row {
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+
+    .chart-card__title { margin: 0; }
+  }
+
+  /* Right side of the header row: "View by" toggle + "View all" button. */
+  &__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: end;
+    gap: 0.5rem;
+  }
+
+  &__caption {
+    margin: 0.2rem 0 0;
+    font-size: 0.72rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__expand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: transparent;
+    border: 1px solid var(--surface-border);
+    border-radius: 999px;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    i { font-size: 0.68rem; }
+
+    &:hover { background: var(--surface-hover); border-color: var(--surface-border); }
+    &:focus-visible { outline: 2px solid var(--primary-color); outline-offset: 2px; }
+  }
+}
+
+.chart-wrap {
+  height: 280px;
+  position: relative;
+
+  &--tall { height: 320px; }
+
+  /* Centers the donut chart (circle + legend) inside the fixed-height box so
+   * it matches the sibling bar-chart card's height instead of top-aligning
+   * with empty space below it. */
+  &--donut {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    height: stretch;
+  }
+
+  /* Whole-chart click target that opens the detailed drawer view
+   * (used on the Aging Analysis and Findings by Sub-Division charts). No
+   * hover styling here on purpose — matches the Audits by Sub-Division chart,
+   * where a hover effect on the whole canvas fought with Chart.js's own
+   * per-bar hover highlight, so only keyboard focus gets a visible
+   * affordance. */
+  &--clickable {
+    cursor: pointer;
+    border-radius: 8px;
+
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  }
+}
+
+/* Custom legend for the Aging Analysis chart, rendered outside the canvas —
+ * styled to match the donut chart's legend (see shared
+ * donut-status-chart.scss) instead of Chart.js's built-in in-canvas legend.
+ * Same treatment as the Audits by Sub-Division / Risk Rating Distribution
+ * charts on the Audit Overview page. */
+.donut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  width: 100%;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-color-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    user-select: none;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.75; }
+    &:focus-visible {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+
+    &--disabled {
+      opacity: 0.4;
+
+      .donut-legend__dot { background: var(--surface-hover) !important; }
+      .donut-legend__label,
+      .donut-legend__value { text-decoration: line-through; }
+    }
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  &__label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__value {
+    margin-inline-start: 0.35rem;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+}
+
+/* ── Chips ───────────────────────────────────────────────────────────────── */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+
+  &--severity { border-radius: 4px; }
+  &--status   { border-radius: 999px; }
+  &--repeated { border-radius: 999px; background: var(--p-indigo-50); color: var(--p-purple-700); }
+
+  /* Severity */
+  &--critical { background: var(--p-red-50); color: var(--p-red-600); }
+  &--high     { background: var(--surface-card); color: var(--p-orange-600); }
+  &--medium   { background: var(--p-amber-50); color: var(--p-orange-400); }
+  &--low      { background: var(--surface-card); color: var(--p-green-600); }
+
+  /* Status */
+  &--open     { background: var(--p-blue-100); color: var(--primary-color); }
+  &--overdue  { background: var(--p-red-50); color: var(--p-red-600); }
+  &--closed   { background: var(--p-green-50); color: var(--p-green-700); }
+
+  :host-context(.app-dark) & {
+    &--repeated { background: rgba(124, 58, 237, 0.16); }
+    &--critical { background: rgba(220, 38, 38, 0.16); }
+    &--high     { background: rgba(194, 65, 12, 0.16); }
+    &--medium   { background: rgba(202, 138, 4, 0.18); }
+    &--low      { background: rgba(21, 128, 61, 0.16); }
+    &--open     { background: rgba(29, 78, 216, 0.16); }
+    &--overdue  { background: rgba(220, 38, 38, 0.16); }
+    &--closed   { background: rgba(21, 128, 61, 0.16); color: var(--text-color-secondary); }
+  }
+}
+
+/* ── Data Card & Table ───────────────────────────────────────────────────── */
+
+.data-card {
+  background: var(--surface-card);
+  border: 1px solid var(--surface-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+
+  &__title {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+
+    i { color: var(--p-orange-500); }
+  }
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  min-width: 820px;
+
+  th {
+    text-align: start;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface-hover);
+    color: var(--text-color-secondary);
+    font-weight: 600;
+    font-size: 0.77rem;
+    border-bottom: 1px solid var(--surface-border);
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 0.65rem 0.75rem;
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--text-color);
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: var(--surface-hover); }
+}
+
+.cell--id {
+  font-weight: 600;
+  color: var(--text-color);
+  font-size: 0.8rem;
+}
+
+.sort-icon {
+  font-size: 0.7rem;
+  color: var(--text-color-secondary);
+  margin-inline-start: 3px;
+}
+
+/* ── Icon button ─────────────────────────────────────────────────────────── */
+
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  color: var(--primary-color);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: background 0.15s, color 0.15s;
+
+  &:hover { background: var(--surface-hover); color: var(--primary-color); }
+}
+.p-chart
+{
+  height:320px;
+}
+
+/* Aging Analysis's and Findings by Sub-Division's canvases fill their
+ * wrapper's height instead of the fixed 320px the other charts on this
+ * page use. */
+.chart-wrap--aging p-chart,
+.chart-wrap--findings p-chart {
+  height: stretch;
+}
+
+/* "View by" toggle on Findings by Division / Sub-Division — same look as the
+ * audit overview page's view toggles. */
+.view-toggle {
+  display: inline-flex;
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    height: 30px;
+    padding: 0 0.65rem;
+    background: var(--surface-card);
+    border: none;
+    cursor: pointer;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-color-secondary);
+    transition: background 0.15s, color 0.15s;
+
+    i { font-size: 0.72rem; }
+
+    &:not(:last-child) { border-inline-end: 1px solid var(--surface-border); }
+
+    &:hover { background: var(--surface-hover); }
+
+    &--active {
+      background: #1e3a8a;
+      color: #fff;
+    }
+  }
+}
+
+/* Shown over an empty chart when the current "View by" has no findings. */
+.chart-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-color-secondary);
+  pointer-events: none;
+}

@@ -1,0 +1,452 @@
+<p-toast></p-toast>
+
+<div class="drawer-inner">
+
+  <div class="drawer-resizer" (mousedown)="onResizeStart($event)"></div>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <i class="pi pi-file-edit"></i>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title" i18n="@@audit.rfi.viewRfi">
+          View <strong>RFI</strong>
+        </h2>
+        <p class="drawer-subtitle" i18n="@@audit.rfi.requestForInformation">Request for Information</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()" aria-label="Close" i18n-aria-label="@@common.close">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
+  <p-tabs [value]="activeTabIndex" (valueChange)="activeTabIndex = $event" class="rfi-tabs" [lazy]="true">
+
+    @if (rfi) {
+    <p-tablist>
+      <p-tab [value]="0">{{ tab1Label }}</p-tab>
+      @if (rfi.status === RfiStatuses.UnderReview || rfi.status === RfiStatuses.Completed) {
+        <p-tab [value]="3"><span i18n="@@audit.rfi.response">Response</span></p-tab>
+      }
+      <p-tab [value]="2"><span i18n="@@audit.questionnaire.title">Questionnaire</span></p-tab>
+      @if ((rfi.status === RfiStatuses.UnderReview || rfi.status === RfiStatuses.Completed || rfi.status === RfiStatuses.Reopened) && rfi.responseHistory && rfi.responseHistory.length > 0) {
+        <p-tab [value]="4"><span i18n="@@audit.rfi.responseHistory">Response History</span></p-tab>
+      }
+    </p-tablist>
+    }
+
+    <p-tabpanels>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+               TAB 0 — Auditor read-only view
+               ══════════════════════════════════════════════════════════════════ -->
+      <p-tabpanel [value]="0">
+        @if (rfi) {
+        <div class="tab-content rfi-view-readonly">
+
+          <!-- Hero Card: Status + Due Date + Title + Description -->
+          <div class="rfi-view-hero">
+            <div class="rfi-view-hero__meta-row">
+              <p-tag [value]="statusLabel(rfi.status)" [severity]="statusSeverity(rfi.status)" />
+              <span class="rfi-view-hero__due">
+                <i class="pi pi-calendar"></i>
+                <span i18n="@@audit.rfi.dueDateValue">Due {{ rfi.dueDate | date:'dd MMM yyyy' }}</span>
+              </span>
+            </div>
+            <h3 class="rfi-view-hero__title">{{ rfi.title }}</h3>
+            <p class="rfi-view-hero__desc">{{ rfi.description }}</p>
+          </div>
+
+          <!-- Info Chips: Company + Division + Sub-Division + RFI Basis + Scope + (Sub-scope) + Owner -->
+          <div class="rfi-info-chips">
+            <div class="rfi-info-chip">
+              <div class="rfi-info-chip__icon rfi-info-chip__icon--company">
+                <i class="pi pi-briefcase"></i>
+              </div>
+              <div class="rfi-info-chip__text">
+                <span class="rfi-info-chip__label" i18n="@@common.company">Company</span>
+                <span class="rfi-info-chip__value">{{ org?.companyName ?? '—' }}</span>
+              </div>
+            </div>
+            <div class="rfi-info-chip">
+              <div class="rfi-info-chip__icon rfi-info-chip__icon--division">
+                <i class="pi pi-sitemap"></i>
+              </div>
+              <div class="rfi-info-chip__text">
+                <span class="rfi-info-chip__label" i18n="@@common.division">Division</span>
+                <span class="rfi-info-chip__value">{{ rfi.divisionName || '—' }}</span>
+              </div>
+            </div>
+            <!-- Sub-Division: '—' for an RFI on a division-level scope (no sub-division) -->
+            <div class="rfi-info-chip">
+              <div class="rfi-info-chip__icon rfi-info-chip__icon--dept">
+                <i class="pi pi-building"></i>
+              </div>
+              <div class="rfi-info-chip__text">
+                <span class="rfi-info-chip__label" i18n="@@common.subDivision">Sub-Division</span>
+                <span class="rfi-info-chip__value">{{ rfi.subDivisionLabel || '—' }}</span>
+              </div>
+            </div>
+            <!-- RFI Basis: division- or sub-division-level, same rule as the listing's Assigned Area -->
+            <div class="rfi-info-chip">
+              <div class="rfi-info-chip__icon rfi-info-chip__icon--basis">
+                <i class="pi pi-bookmark"></i>
+              </div>
+              <div class="rfi-info-chip__text">
+                <span class="rfi-info-chip__label" i18n="@@audit.rfi.rfiBasis">RFI Basis</span>
+                <span class="rfi-info-chip__value">{{ rfiBasisLevelLabel(!!org?.hasSubDivision) }}</span>
+              </div>
+            </div>
+            <div class="rfi-info-chip">
+              <div class="rfi-info-chip__icon rfi-info-chip__icon--scope">
+                <i class="pi pi-sitemap"></i>
+              </div>
+              <div class="rfi-info-chip__text">
+                <span class="rfi-info-chip__label" i18n="@@audit.rfi.auditScope">Audit Scope</span>
+                <span class="rfi-info-chip__value">{{ rfi.scopeLabel ?? '—' }}</span>
+              </div>
+            </div>
+            @if (rfi.subScopeLabel) {
+            <div class="rfi-info-chip">
+              <div class="rfi-info-chip__icon rfi-info-chip__icon--subscope">
+                <i class="pi pi-share-alt"></i>
+              </div>
+              <div class="rfi-info-chip__text">
+                <span class="rfi-info-chip__label" i18n="@@audit.rfi.scopeArea">Scope Area</span>
+                <span class="rfi-info-chip__value">{{ rfi.subScopeLabel }}</span>
+              </div>
+            </div>
+            }
+            <div class="rfi-info-chip">
+              <div class="rfi-info-chip__icon rfi-info-chip__icon--owner">
+                <i class="pi pi-user"></i>
+              </div>
+              <div class="rfi-info-chip__text">
+                <span class="rfi-info-chip__label" i18n="@@audit.rfi.owner">Owner</span>
+                <span class="rfi-info-chip__value">{{ rfi.ownerLabel }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Documents -->
+          <div class="rfi-docs-section">
+            <div class="rfi-docs-section__header">
+              <i class="pi pi-file-edit"></i>
+              <span class="rfi-docs-section__title" i18n="@@common.documents">Documents</span>
+              <span class="rfi-docs-section__count">{{ staticDocs.length }}</span>
+            </div>
+            <div class="view-doc-list">
+              @for (doc of staticDocs; track doc.url) {
+              <p-card styleClass="view-doc-card">
+                <div class="view-doc-body">
+                  <div class="view-doc-name-row">
+                    <i class="pi pi-file-word view-doc-icon"></i>
+                    <span class="view-doc-link" (click)="openDoc(doc.url)" pTooltip="Open document" i18n-pTooltip="@@audit.rfi.openDocument"
+                      tooltipPosition="top">{{ doc.name }}</span>
+                    <p-button icon="pi pi-download" [rounded]="true" [text]="true" size="small" severity="secondary"
+                      pTooltip="Download" i18n-pTooltip="@@common.download" aria-label="Download" i18n-aria-label="@@common.download" tooltipPosition="top" (onClick)="downloadDoc(doc)" />
+                  </div>
+                  <p class="view-doc-description">{{ doc.description }}</p>
+                </div>
+              </p-card>
+              }
+            </div>
+          </div>
+
+        </div>
+        }
+      </p-tabpanel>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+               TAB 2  — Questionnaire (read-only)
+               ══════════════════════════════════════════════════════════════════ -->
+      @if (rfi) {
+      <p-tabpanel [value]="2">
+        <app-questionare-section [scopeLabel]="rfi.scopeLabel ?? ''" [subScopeLabel]="rfi.subScopeLabel ?? ''"
+          [currentUser]="currentUser" [hideAnswers]="rfi.status === RfiStatuses.Pending || rfi.status === RfiStatuses.Overdue"
+          [initialRows]="rfi.questionnaire ?? []" [readonlyQuestions]="true"
+          [readonlyAnswers]="true">
+        </app-questionare-section>
+      </p-tabpanel>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════════════
+               TAB 3  — Response (under-review or completed only)
+               ══════════════════════════════════════════════════════════════════ -->
+      @if (rfi && (rfi.status === RfiStatuses.UnderReview || rfi.status === RfiStatuses.Completed)) {
+      <p-tabpanel [value]="3">
+        <div class="tab-content rfi-view-readonly">
+
+          <!-- Client Response panel -->
+          <p-panel styleClass="view-panel client-response-panel" [toggleable]="true" [collapsed]="false">
+            <ng-template pTemplate="header">
+              <div class="view-panel-header">
+                <span class="view-panel-icon-wrap resp-icon-wrap"><i class="pi pi-reply"></i></span>
+                <div>
+                  <span class="view-panel-title" i18n="@@audit.rfi.clientResponse">Client Response</span>
+                  <span class="view-panel-sub" i18n="@@audit.rfi.clientResponseSubtitle">Submitted by the client for this RFI</span>
+                </div>
+                @if (rfi.response) {
+                <p-tag [value]="responseStatusLabel(rfi.response.status)"
+                  [severity]="responseSeverity(rfi.response.status)" />
+                }
+              </div>
+            </ng-template>
+
+            @if (rfi.response) {
+            <div class="form-row">
+              <div class="form-col full">
+                <span class="field-label"><i class="pi pi-comment field-label-icon"></i><span i18n="@@audit.rfi.responseText">Response Text</span></span>
+                <div class="readonly-text-block">
+                  <p class="readonly-text-content">{{ rfi.response.responseText }}</p>
+                </div>
+              </div>
+            </div>
+
+            @if (rfi.response.responseDocs.length > 0) {
+            <div class="form-row">
+              <div class="form-col full">
+                <span class="field-label"><i class="pi pi-paperclip field-label-icon"></i><span i18n="@@audit.rfi.evidenceAttachments">Evidence / Attachments</span></span>
+                <div class="view-doc-list">
+                  @for (doc of rfi.response.responseDocs; track doc.url) {
+                  <p-card styleClass="view-doc-card resp-doc-card">
+                    <div class="view-doc-body">
+                      <div class="view-doc-name-row">
+                        <i class="pi pi-file-word view-doc-icon"></i>
+                        <span class="view-doc-link" (click)="openDoc(doc.url)" pTooltip="Open in new tab" i18n-pTooltip="@@common.openNewTab"
+                          tooltipPosition="top">{{ doc.name }}</span>
+                        <p-button icon="pi pi-download" [rounded]="true" [text]="true" size="small" severity="secondary"
+                          pTooltip="Download" i18n-pTooltip="@@common.download" aria-label="Download" i18n-aria-label="@@common.download" tooltipPosition="top" (onClick)="downloadDoc(doc)" />
+                      </div>
+                      <p class="view-doc-description">{{ doc.description }}</p>
+                    </div>
+                  </p-card>
+                  }
+                </div>
+              </div>
+            </div>
+            }
+
+            @if (rfi.response.explanationNotes) {
+            <div class="form-row">
+              <div class="form-col full">
+                <span class="field-label"><i class="pi pi-info-circle field-label-icon"></i><span i18n="@@audit.rfi.explanationNotes">Explanation / Notes</span></span>
+                <div class="readonly-text-block">
+                  <p class="readonly-text-content">{{ rfi.response.explanationNotes }}</p>
+                </div>
+              </div>
+            </div>
+            }
+            } @else {
+            <p-message severity="info" text="No response has been submitted by the client for this RFI yet." i18n-text="@@audit.rfi.noClientResponse"
+              styleClass="w-full" />
+            }
+          </p-panel>
+
+          <!-- Questionnaire Summary panel -->
+          <p-panel styleClass="view-panel qs-summary-panel" [toggleable]="true" [collapsed]="false">
+            <ng-template pTemplate="header">
+              <div class="view-panel-header">
+                <span class="view-panel-icon-wrap qs-summary-icon-wrap"><i class="pi pi-list-check"></i></span>
+                <div>
+                  <span class="view-panel-title" i18n="@@audit.questionnaire.title">Questionnaire</span>
+                  <span class="view-panel-sub" i18n="@@audit.rfi.questionnaireSummarySubtitle">Audit questions &amp; client answers for this RFI</span>
+                </div>
+                @if (rfi.questionnaire && rfi.questionnaire.length > 0) {
+                <p-tag [value]="questionCountLabel(rfi.questionnaire.length)"
+                  severity="secondary" styleClass="qs-count-tag" />
+                }
+              </div>
+            </ng-template>
+
+            @if (rfi.questionnaire && rfi.questionnaire.length > 0) {
+            <app-questionare-section [scopeLabel]="rfi.scopeLabel ?? ''" [subScopeLabel]="rfi.subScopeLabel ?? ''"
+              [currentUser]="currentUser" [initialRows]="rfi.questionnaire" [readonlyQuestions]="true"
+              [readonlyAnswers]="true" [hideAnswers]="false" [responseView]="true">
+            </app-questionare-section>
+            } @else {
+            <p-message severity="info" text="No questionnaire has been added for this RFI." i18n-text="@@audit.rfi.noQuestionnaireAdded" styleClass="w-full" />
+            }
+          </p-panel>
+
+          <!-- Review Decision panel — only for under-review status -->
+          @if (rfi.status === RfiStatuses.UnderReview) {
+          <p-panel styleClass="view-panel review-action-panel" [toggleable]="false">
+            <ng-template pTemplate="header">
+              <div class="view-panel-header">
+                <span class="view-panel-icon-wrap review-icon-wrap"><i class="pi pi-check-square"></i></span>
+                <div>
+                  <span class="view-panel-title" i18n="@@audit.rfi.reviewDecision">Review Decision</span>
+                  <span class="view-panel-sub" i18n="@@audit.rfi.reviewDecisionSubtitle">Accept or reject the client's response</span>
+                </div>
+              </div>
+            </ng-template>
+
+            <div class="review-action-body">
+              @if (!showRejectInput) {
+              <div class="review-action-buttons">
+                <p-button label="Accept the RFI" i18n-label="@@audit.rfi.acceptRfi" icon="pi pi-check-circle" severity="success" styleClass="accept-btn"
+                  (onClick)="onAcceptRfi()" />
+                <p-button label="Reject the RFI" i18n-label="@@audit.rfi.rejectRfi" icon="pi pi-times-circle" severity="danger" [outlined]="true"
+                  styleClass="reject-btn" (onClick)="onRejectRfi()" />
+              </div>
+              }
+              @if (showRejectInput) {
+              <div class="reject-reason-area">
+                <p-message severity="warn"
+                  text="You are about to reject this RFI response. Please provide a reason below." i18n-text="@@audit.rfi.rejectResponseWarning"
+                  styleClass="reject-warn-message" />
+                <div class="form-col full" style="margin-top:12px">
+                  <label class="field-label"><span i18n="@@common.rejectionReason">Rejection Reason</span> <span class="field-required">*</span></label>
+                  <textarea pTextarea [(ngModel)]="rejectReason" placeholder="Enter the reason for rejection…" i18n-placeholder="@@audit.rfi.rejectionReasonPlaceholder" rows="3"
+                    class="form-textarea" [autoResize]="false"></textarea>
+                </div>
+                <div class="reject-action-row">
+                  <p-button label="Cancel" i18n-label="@@common.cancel" severity="secondary" [outlined]="true" icon="pi pi-arrow-left"
+                    (onClick)="onCancelReject()" />
+                  <p-button label="Submit Rejection" i18n-label="@@audit.rfi.submitRejection" icon="pi pi-send" severity="danger" (onClick)="onSubmitReject()" />
+                </div>
+              </div>
+              }
+            </div>
+          </p-panel>
+          }
+
+        </div>
+      </p-tabpanel>
+      }
+
+      <!-- ══════════════════════════════════════════════════════════════════
+               TAB 4  — Response History (under-review, completed, reopened)
+               ══════════════════════════════════════════════════════════════════ -->
+      @if (rfi && (rfi.status === RfiStatuses.UnderReview || rfi.status === RfiStatuses.Completed || rfi.status === RfiStatuses.Reopened) && rfi.responseHistory && rfi.responseHistory.length > 0) {
+      <p-tabpanel [value]="4">
+        <div class="tab-content rfi-view-readonly">
+
+          <div class="response-history-header">
+            <p-message
+              severity="info"
+              [text]="responseHistoryMessage(rfi.responseHistory.length)"
+              styleClass="w-full history-info-msg" />
+          </div>
+
+          @for (entry of rfi.responseHistory; track $index; let i = $index) {
+          <p-panel styleClass="view-panel history-entry-panel" [toggleable]="true" [collapsed]="true">
+            <ng-template pTemplate="header">
+              <div class="hist-entry-header">
+                <span class="hist-entry-badge">{{ i + 1 }}</span>
+                <div class="hist-entry-meta">
+                  <span class="hist-entry-title">{{ responseNumberLabel(i + 1) }}</span>
+                  <div class="hist-entry-dates">
+                    <i class="pi pi-send hist-date-icon"></i>
+                    <span>{{ entry.submittedAt | date:'dd MMM yyyy' }}</span>
+                    <span class="hist-dates-sep">·</span>
+                    <i class="pi pi-ban hist-date-icon"></i>
+                    <span>{{ entry.rejectedAt | date:'dd MMM yyyy' }}</span>
+                  </div>
+                </div>
+                <p-tag value="Rejected" i18n-value="@@common.rejected" severity="danger" />
+              </div>
+            </ng-template>
+
+            <div class="hist-body">
+
+              <div class="hist-section">
+                <div class="hist-section-label"><i class="pi pi-comment"></i><span i18n="@@audit.rfi.response">Response</span></div>
+                <div class="hist-text-block">{{ entry.responseText }}</div>
+              </div>
+
+              @if (entry.responseDocs.length > 0) {
+              <div class="hist-section">
+                <div class="hist-section-label"><i class="pi pi-paperclip"></i><span i18n="@@audit.rfi.evidenceAttachments">Evidence / Attachments</span></div>
+                <div class="view-doc-list">
+                  @for (doc of entry.responseDocs; track doc.url) {
+                  <p-card styleClass="view-doc-card resp-doc-card">
+                    <div class="view-doc-body">
+                      <div class="view-doc-name-row">
+                        <i class="pi pi-file-word view-doc-icon"></i>
+                        <span class="view-doc-link" (click)="openDoc(doc.url)" pTooltip="Open in new tab" i18n-pTooltip="@@common.openNewTab" tooltipPosition="top">{{ doc.name }}</span>
+                        <p-button icon="pi pi-download" [rounded]="true" [text]="true" size="small" severity="secondary" pTooltip="Download" i18n-pTooltip="@@common.download" aria-label="Download" i18n-aria-label="@@common.download" tooltipPosition="top" (onClick)="downloadDoc(doc)" />
+                      </div>
+                      <p class="view-doc-description">{{ doc.description }}</p>
+                    </div>
+                  </p-card>
+                  }
+                </div>
+              </div>
+              }
+
+              @if (entry.explanationNotes) {
+              <div class="hist-section">
+                <div class="hist-section-label"><i class="pi pi-info-circle"></i><span i18n="@@audit.rfi.explanationNotes">Explanation / Notes</span></div>
+                <div class="hist-text-block">{{ entry.explanationNotes }}</div>
+              </div>
+              }
+
+              <div class="hist-rejection-block">
+                <div class="hist-rejection-label"><i class="pi pi-exclamation-triangle"></i><span i18n="@@common.rejectionReason">Rejection Reason</span></div>
+                <p class="hist-rejection-text">{{ entry.rejectionReason }}</p>
+              </div>
+
+              @if (entry.questionnaire && entry.questionnaire.length > 0) {
+              <div class="hist-section">
+                <div class="hist-section-label">
+                  <i class="pi pi-list-check"></i><span i18n="@@audit.rfi.questionnaireAnswers">Questionnaire Answers</span>
+                  <span class="hist-q-count">{{ entry.questionnaire.length }}</span>
+                </div>
+                <div class="qs-history-list">
+                  @for (qa of entry.questionnaire; track $index; let qi = $index) {
+                  <div class="qs-history-item">
+                    <div class="qs-history-q">
+                      <span class="qs-history-q-num">{{ questionNumberLabel(qi + 1) }}</span>
+                      <span class="qs-history-q-text">{{ qa.question }}</span>
+                    </div>
+                    @if (qa.questionDocs && qa.questionDocs.length > 0) {
+                    <div class="qs-hist-doc-row qs-hist-doc-row--q">
+                      <i class="pi pi-paperclip qs-hist-doc-label-icon"></i>
+                      @for (doc of qa.questionDocs; track doc.url) {
+                      <span class="qs-hist-doc-chip" (click)="openDoc(doc.url)" pTooltip="{{ doc.description || doc.name }}" tooltipPosition="top">
+                        <i class="pi pi-file qs-hist-doc-icon"></i>
+                        <span class="qs-hist-doc-name">{{ doc.name }}</span>
+                        <i class="pi pi-external-link qs-hist-doc-ext"></i>
+                      </span>
+                      }
+                    </div>
+                    }
+                    <div class="qs-history-a">
+                      <i class="pi pi-angle-right qs-history-a-icon"></i>
+                      <span class="qs-history-a-text">{{ qa.answer || noAnswerProvidedLabel }}</span>
+                    </div>
+                    @if (qa.answerDocs && qa.answerDocs.length > 0) {
+                    <div class="qs-hist-doc-row qs-hist-doc-row--a">
+                      <i class="pi pi-paperclip qs-hist-doc-label-icon"></i>
+                      @for (doc of qa.answerDocs; track doc.url) {
+                      <span class="qs-hist-doc-chip qs-hist-doc-chip--answer" (click)="openDoc(doc.url)" pTooltip="{{ doc.description || doc.name }}" tooltipPosition="top">
+                        <i class="pi pi-file qs-hist-doc-icon"></i>
+                        <span class="qs-hist-doc-name">{{ doc.name }}</span>
+                        <i class="pi pi-external-link qs-hist-doc-ext"></i>
+                      </span>
+                      }
+                    </div>
+                    }
+                  </div>
+                  }
+                </div>
+              </div>
+              }
+
+            </div>
+          </p-panel>
+          }
+
+        </div>
+      </p-tabpanel>
+      }
+
+    </p-tabpanels>
+  </p-tabs>
+
+</div>

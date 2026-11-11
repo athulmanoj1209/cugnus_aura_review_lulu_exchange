@@ -1,0 +1,262 @@
+<div class="working-papers">
+
+  <!-- ── Working Paper Summary Cards ───────────────────────── -->
+  <div class="stats-grid-5">
+    @for (card of wpSummaryCards; track card.label) {
+      <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass" role="button" tabindex="0"
+           (click)="goToWorkingPapers(card)"
+           (keydown.enter)="goToWorkingPapers(card)">
+        <div class="stat-card__header">
+          <span class="stat-card__label">{{ card.label }}</span>
+          <span class="stat-card__icon">
+            @switch (card.icon) {
+              @case ('pi pi-file') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline pathLength="100" points="14 2 14 8 20 8"></polyline>
+                </svg>
+              }
+              @case ('pi pi-pencil') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+              }
+              @case ('pi pi-send') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon pathLength="100" points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              }
+              @case ('pi pi-undo') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline pathLength="100" points="1 4 1 10 7 10"></polyline>
+                  <path pathLength="100" d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+              }
+              @case ('pi pi-check-circle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              }
+              @case ('pi pi-reply') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline pathLength="100" points="9 14 4 9 9 4"></polyline>
+                  <path pathLength="100" d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                </svg>
+              }
+              @case ('pi pi-clock') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                  <polyline pathLength="100" points="12 6 12 12 16 14"></polyline>
+                </svg>
+              }
+              @case ('pi pi-exclamation-triangle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line pathLength="100" x1="12" y1="9" x2="12" y2="13"></line>
+                  <line pathLength="100" x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              }
+              @case ('pi pi-refresh') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M21 12a9 9 0 1 1-3-6.7"></path>
+                  <polyline pathLength="100" points="21 3 21 9 15 9"></polyline>
+                </svg>
+              }
+              @case ('pi pi-times-circle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                  <line pathLength="100" x1="15" y1="9" x2="9" y2="15"></line>
+                  <line pathLength="100" x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              }
+              @default {
+                <i [class]="card.icon"></i>
+              }
+            }
+          </span>
+        </div>
+        <div class="stat-card__value">{{ card.value }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- ── Working Papers Table ───────────────────────────────── -->
+  <div class="table-card">
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-file" class="header-icon header-icon--blue"></app-draw-icon>
+      <span class="table-card__title" i18n="@@admin.auditorWorkingPapersRfis.workingPapers">Working Papers</span>
+    </div>
+    <p-table
+      [value]="workingPapers"
+      [paginator]="true"
+      [rows]="PAGE_SIZE"
+      [rowsPerPageOptions]="[5, 10]"
+      sortMode="multiple"
+      styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="paper"><span i18n="@@common.workingPaper">Working Paper</span><p-sortIcon field="paper" /></th>
+          <th i18n="@@common.scope">Scope</th>
+          <th pSortableColumn="status" style="width: 115px"><span i18n="@@common.status">Status</span><p-sortIcon field="status" /></th>
+          <th pSortableColumn="reviewerStatus" style="width: 130px"><span i18n="@@admin.auditorWorkingPapersRfis.reviewerStatus">Reviewer Status</span><p-sortIcon field="reviewerStatus" /></th>
+          <th pSortableColumn="lastUpdated" style="width: 130px"><span i18n="@@admin.auditorWorkingPapersRfis.lastUpdated">Last Updated</span><p-sortIcon field="lastUpdated" /></th>
+          <th style="width: 80px" i18n="@@common.actions">Actions</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td class="wp-name">{{ row.paper }}</td>
+          <td>{{ row.scope }}</td>
+          <td><p-tag [value]="wpStatusLabel(row.status)" [severity]="getWpStatusSeverity(row.status)" [rounded]="true"></p-tag></td>
+          <td><p-tag [value]="reviewerStatusLabel(row.reviewerStatus)" [severity]="getReviewerStatusSeverity(row.reviewerStatus)" [rounded]="true"></p-tag></td>
+          <td>{{ row.lastUpdated }}</td>
+          <td>
+            <p-button class="view-btn" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="View" i18n-pTooltip="@@common.view" tooltipPosition="left" (onClick)="openWorkingPaperDrawer(row)">
+              <ng-template pTemplate="icon">
+                <svg class="draw-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"></path>
+                  <circle pathLength="100" cx="12" cy="12" r="3"></circle>
+                </svg>
+              </ng-template>
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- ── RFI Dashboard ──────────────────────────────────────── -->
+  <div class="section-header">
+    <app-draw-icon icon="pi pi-copy" class="section-icon"></app-draw-icon>
+    <span class="section-title" i18n="@@admin.auditorWorkingPapersRfis.rfiDashboard">RFI Dashboard</span>
+  </div>
+
+  <!-- RFI KPI Cards -->
+  <div class="stats-grid-6">
+    @for (card of rfiKpiCards; track card.label) {
+      <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass"
+           role="button" tabindex="0"
+           (click)="goToRfis(card)"
+           (keydown.enter)="goToRfis(card)">
+        <div class="stat-card__header">
+          <span class="stat-card__label">{{ card.label }}</span>
+          <span class="stat-card__icon">
+            @switch (card.icon) {
+              @case ('pi pi-file') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline pathLength="100" points="14 2 14 8 20 8"></polyline>
+                </svg>
+              }
+              @case ('pi pi-pencil') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+              }
+              @case ('pi pi-send') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon pathLength="100" points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+              }
+              @case ('pi pi-undo') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline pathLength="100" points="1 4 1 10 7 10"></polyline>
+                  <path pathLength="100" d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                </svg>
+              }
+              @case ('pi pi-check-circle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline pathLength="100" points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+              }
+              @case ('pi pi-reply') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline pathLength="100" points="9 14 4 9 9 4"></polyline>
+                  <path pathLength="100" d="M20 20v-7a4 4 0 0 0-4-4H4"></path>
+                </svg>
+              }
+              @case ('pi pi-clock') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                  <polyline pathLength="100" points="12 6 12 12 16 14"></polyline>
+                </svg>
+              }
+              @case ('pi pi-exclamation-triangle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                  <line pathLength="100" x1="12" y1="9" x2="12" y2="13"></line>
+                  <line pathLength="100" x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+              }
+              @case ('pi pi-refresh') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path pathLength="100" d="M21 12a9 9 0 1 1-3-6.7"></path>
+                  <polyline pathLength="100" points="21 3 21 9 15 9"></polyline>
+                </svg>
+              }
+              @case ('pi pi-times-circle') {
+                <svg class="draw-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle pathLength="100" cx="12" cy="12" r="10"></circle>
+                  <line pathLength="100" x1="15" y1="9" x2="9" y2="15"></line>
+                  <line pathLength="100" x1="9" y1="9" x2="15" y2="15"></line>
+                </svg>
+              }
+              @default {
+                <i [class]="card.icon"></i>
+              }
+            }
+          </span>
+        </div>
+        <div class="stat-card__value">{{ card.value }}</div>
+      </div>
+    }
+  </div>
+
+  <!-- RFI List + RFI Response Progress -->
+  <div class="rfi-row">
+
+    <div class="table-card rfi-list-card">
+      <div class="table-card__header">
+        <app-draw-icon icon="pi pi-list" class="header-icon header-icon--blue"></app-draw-icon>
+        <span class="table-card__title" i18n="@@admin.auditorWorkingPapersRfis.rfiList">RFI List</span>
+      </div>
+      <p-table
+        [value]="rfiList"
+        [paginator]="true"
+        [rows]="PAGE_SIZE"
+        sortMode="multiple"
+        styleClass="p-datatable-sm">
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="rfiNo" style="width: 90px"><span i18n="@@admin.auditorWorkingPapersRfis.rfiNo">RFI No</span><p-sortIcon field="rfiNo" /></th>
+            <th i18n="@@common.audit">Audit</th>
+            <th i18n="@@common.scope">Scope</th>
+            <th i18n="@@common.subDivision">Sub-Division</th>
+            <th pSortableColumn="dueDate" style="width: 110px"><span i18n="@@common.dueDate">Due Date</span><p-sortIcon field="dueDate" /></th>
+            <th pSortableColumn="status" style="width: 130px"><span i18n="@@common.status">Status</span><p-sortIcon field="status" /></th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-row>
+          <tr [ngClass]="{ 'row-alert': isAlertRfi(row.status) }">
+            <td class="rfi-id">{{ row.rfiNo }}</td>
+            <td>{{ row.audit }}</td>
+            <td>{{ row.scope }}</td>
+            <td>{{ row.subDivision }}</td>
+            <td>{{ row.dueDate }}</td>
+            <td><p-tag [value]="rfiStatusLabel(row.status)" [severity]="getRfiStatusSeverity(row.status)" [rounded]="true"></p-tag></td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <div class="chart-card rfi-chart-card">
+      <h3 class="chart-title"><app-draw-icon icon="pi pi-chart-pie"></app-draw-icon> <span i18n="@@admin.auditorWorkingPapersRfis.rfiResponseProgress">RFI Response Progress</span></h3>
+      <app-donut-status-chart [legend]="rfiResponseLegend"></app-donut-status-chart>
+    </div>
+
+  </div>
+
+
+</div>

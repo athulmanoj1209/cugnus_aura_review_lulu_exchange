@@ -1,0 +1,161 @@
+<div class="drawer-inner">
+
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <i class="pi pi-exclamation-triangle"></i>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title" i18n="@@dashboard.findingsBySubDivision.drawerTitle">Findings by <strong>Division / Sub-Division</strong></h2>
+        <p class="drawer-subtitle" i18n="@@dashboard.findingsBySubDivision.drawerSubtitle">
+          {{ data.findings.length }} findings · {{ divisionCount }} divisions · {{ subDivisionCount }} sub-divisions —
+          one per page, every finding shown
+        </p>
+      </div>
+    </div>
+    <button type="button"
+            class="close-btn"
+            (click)="close()"
+            aria-label="Close detailed view"
+            i18n-aria-label="@@common.closeDetailedView">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+
+  <!-- ============== Sub-Division pager — the page itself IS one sub-division ============== -->
+  <div class="subdivision-pager">
+    <span class="subdivision-pager__label">{{ unitLabel }}</span>
+    <button type="button"
+            class="subdivision-pager__arrow"
+            [disabled]="isFirstPage"
+            (click)="prevSubdivision()"
+            aria-label="Previous page"
+            i18n-aria-label="@@dashboard.findingsBySubDivision.previousPageAria">
+      <i class="pi pi-chevron-left"></i>
+    </button>
+    <div class="subdivision-pager__tabs">
+      <button type="button"
+              #tabBtn
+              *ngFor="let page of data.pages; let i = index"
+              class="subdivision-pager__tab"
+              [class.subdivision-pager__tab--division]="page.kind === 'division'"
+              [class.subdivision-pager__tab--sub]="page.kind === 'subDivision'"
+              [class.active]="i === subdivisionIndex"
+              [attr.title]="pageTabTitle(page)"
+              (click)="goToSubdivision(i)">
+        <i *ngIf="page.kind === 'division'" class="pi pi-building"></i>
+        <span *ngIf="page.kind === 'subDivision'" class="subdivision-pager__branch" aria-hidden="true">↳</span>
+        {{ page.name }}
+      </button>
+    </div>
+    <button type="button"
+            class="subdivision-pager__arrow"
+            [disabled]="isLastPage"
+            (click)="nextSubdivision()"
+            aria-label="Next page"
+            i18n-aria-label="@@dashboard.findingsBySubDivision.nextPageAria">
+      <i class="pi pi-chevron-right"></i>
+    </button>
+    <span class="subdivision-pager__count" i18n="@@dashboard.findingsBySubDivision.pageOf">Page {{ subdivisionIndex + 1 }} of {{ totalPages }}</span>
+  </div>
+
+  <!-- ============== Sort + search within the current sub-division ============== -->
+  <div class="sub-controls">
+    <span class="control-label" i18n="@@dashboard.findingsBySubDivision.sortFindings">Sort findings</span>
+    <div class="segmented">
+      <button type="button" [class.active]="sort === 'age'" (click)="setSort('age')" i18n="@@dashboard.findingsBySubDivision.sortOldestFirst">Oldest first</button>
+      <button type="button" [class.active]="sort === 'severity'" (click)="setSort('severity')" i18n="@@common.severity">Severity</button>
+      <button type="button" [class.active]="sort === 'company'" (click)="setSort('company')" i18n="@@common.company">Company</button>
+      <button type="button" [class.active]="sort === 'alpha'" (click)="setSort('alpha')" i18n="@@common.sortAZ">A–Z</button>
+    </div>
+    <div class="search-input">
+      <i class="pi pi-search"></i>
+      <input type="text"
+             placeholder="Filter by finding, company, or scope…"
+             i18n-placeholder="@@dashboard.findingsBySubDivision.searchPlaceholder"
+             [value]="search"
+             (input)="onSearchChange($any($event.target).value)">
+    </div>
+  </div>
+
+  <!-- ============== Chart: company × status breakdown for the current sub-division ============== -->
+  <div class="chart-card">
+    <div class="chart-card__title-row">
+      <div>
+        <h3 class="chart-card__title" i18n="@@dashboard.findingsBySubDivision.chartTitle">{{ currentPage.name }} — findings by company and status</h3>
+        <p class="chart-card__context">
+          <ng-container *ngIf="currentPage.kind === 'subDivision'" i18n="@@dashboard.findingsBySubDivision.contextSubDivisionOf">Sub-division of {{ currentPage.division }}</ng-container>
+          <ng-container *ngIf="currentPage.kind === 'division'" i18n="@@dashboard.findingsBySubDivision.contextDivisionLevel">Division · findings raised at division level</ng-container>
+        </p>
+      </div>
+      <span class="chart-card__meta" i18n="@@dashboard.findingsBySubDivision.chartMeta">
+        {{ companiesInCurrentSubdivision.length }} companies · {totalInSubdivision, plural, =1 {1 finding} other {{{ totalInSubdivision }} findings}} total
+      </span>
+    </div>
+    <div class="chart-scroll">
+      <div class="chart-wrap" [style.min-width.px]="chartMinWidthPx">
+        <p-chart type="bar"
+                 [data]="chartData"
+                 [options]="barOptions()">
+        </p-chart>
+      </div>
+    </div>
+    <p *ngIf="showScrollHint" class="chart-hint" i18n="@@dashboard.findingsBySubDivision.scrollHint">Scroll horizontally to see every company →</p>
+  </div>
+
+  <!-- ============== Table: every finding in the current sub-division ============== -->
+  <div class="table-card">
+    <div class="table-card__title-row">
+      <h3 class="table-card__title" i18n="@@dashboard.findingsBySubDivision.tableTitle">Findings in {{ currentPage.name }}</h3>
+      <span class="chart-card__meta" i18n="@@dashboard.findingsBySubDivision.rowsShown">{{ rows.length }} of {{ totalInSubdivision }} shown</span>
+    </div>
+    <div class="table-scroll">
+      <table class="findings-table">
+        <thead>
+          <tr>
+            <th i18n="@@common.id">ID</th>
+            <th i18n="@@dashboard.findingsBySubDivision.colFinding">Finding</th>
+            <th i18n="@@common.company">Company</th>
+            <th i18n="@@common.scope">Scope</th>
+            <th i18n="@@common.severity">Severity</th>
+            <th i18n="@@common.status">Status</th>
+            <th i18n="@@common.dueDate">Due Date</th>
+            <th i18n="@@dashboard.findingsBySubDivision.colAgeDays">Age (days)</th>
+            <th i18n="@@dashboard.findingsBySubDivision.colRepeated">Repeated</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let row of rows">
+            <td class="cell--id">{{ row.id }}</td>
+            <td>{{ row.finding }}</td>
+            <td>{{ row.company }}</td>
+            <td>{{ row.scope }}</td>
+            <td>
+              <span class="chip chip--severity chip--{{ row.severityClass }}">{{ severityDisplay(row) }}</span>
+            </td>
+            <td>
+              <span class="chip chip--status chip--{{ row.statusClass }}">{{ statusDisplay(row) }}</span>
+            </td>
+            <td>{{ row.dueDate }}</td>
+            <td>{{ row.ageDays }}</td>
+            <td>
+              <span *ngIf="row.repeated" class="chip chip--repeated" i18n="@@dashboard.findingsBySubDivision.repeatedChip">Repeated</span>
+            </td>
+          </tr>
+          <tr *ngIf="!rows.length">
+            <td colspan="9" class="empty-row" i18n="@@dashboard.findingsBySubDivision.noMatch">No findings match "{{ search }}" in {{ currentPage.name }}.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="footnote" i18n="@@dashboard.findingsBySubDivision.footnote">
+      Same severity and status chip colors as the main findings table, so this drill-down reads
+      consistently with the rest of the page.
+    </p>
+  </div>
+
+  </div>
+
+</div>

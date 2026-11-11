@@ -1,0 +1,188 @@
+<div class="add-ev-content">
+
+  <!-- HEADER -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <i class="pi" [ngClass]="isApprove ? drawerIcons.Approve : drawerIcons.Default"></i>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ headerTitle }}</h2>
+        <p class="drawer-subtitle">{{ headerSubtitle }}</p>
+      </div>
+    </div>
+    <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close" i18n-aria-label="@@common.close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- APPROVE BANNER -->
+  <div *ngIf="isApprove" class="approve-banner">
+    <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+    <span i18n="@@audit.evidence.approveBanner">You may edit the evidence details. Add your <strong>approver notes</strong> below and approve or reject.</span>
+  </div>
+
+  <!-- BODY -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="drawer-body">
+    <div class="form-grid">
+
+      <!-- Title -->
+      <div class="form-field form-field--full">
+        <label for="ev-title" class="form-label"><span i18n="@@common.title">Title</span> *</label>
+        <input pInputText id="ev-title" formControlName="title"
+               placeholder="Enter evidence title" i18n-placeholder="@@audit.evidence.enterEvidenceTitle" [invalid]="isInvalid('title')" />
+        <small *ngIf="getError('title',titleLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Evidence Type -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.evidence.evidenceType">Evidence Type</span> *</label>
+        <p-select formControlName="evidenceType" [options]="evidenceTypeOptions"
+                  optionLabel="label" optionValue="value" placeholder="Select type" i18n-placeholder="@@audit.evidence.selectType"
+                  [invalid]="isInvalid('evidenceType')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('evidenceType',evidenceTypeLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Company -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.company">Company</span></label>
+        <p-select formControlName="company" [options]="companyOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select company" i18n-placeholder="@@audit.evidence.selectCompany"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Division -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.division">Division</span></label>
+        <p-select formControlName="division" [options]="divisionOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select division" i18n-placeholder="@@audit.evidence.selectDivision"
+                  styleClass="w-full"></p-select>
+      </div>
+
+      <!-- Sub-Division -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.subDivision">Sub-Division</span><span *ngIf="subDivisionOptions().length"> *</span></label>
+        <p-select formControlName="subDivision" [options]="subDivisionOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="divisionHasSubDivision() ? subDivisionPlaceholders.Select : subDivisionPlaceholders.None"
+                  [disabled]="!divisionHasSubDivision()"
+                  [invalid]="isInvalid('subDivision')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('subDivision',subDivisionLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Scope -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.scope">Scope</span> *</label>
+        <p-select formControlName="scope" [options]="scopeOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select scope" i18n-placeholder="@@audit.evidence.selectScope"
+                  [invalid]="isInvalid('scope')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('scope',scopeLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Subscope -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@common.subScope">Sub-Scope</span> *</label>
+        <p-select formControlName="subscope" [options]="subscopeOptions()"
+                  optionLabel="label" optionValue="value" placeholder="Select sub-scope" i18n-placeholder="@@audit.evidence.selectSubScope"
+                  [disabled]="!form.get('scope')?.value"
+                  [invalid]="isInvalid('subscope')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('subscope',subScopeLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Task -->
+      <div class="form-field">
+        <label class="form-label"><span i18n="@@audit.evidence.task">Task</span> *</label>
+        <p-select formControlName="taskId" [options]="taskOptions()"
+                  optionLabel="label" optionValue="value"
+                  [placeholder]="!form.get('scope')?.value ? taskPlaceholders.ScopeFirst : taskPlaceholders.Select"
+                  [disabled]="!form.get('scope')?.value"
+                  [invalid]="isInvalid('taskId')" styleClass="w-full"></p-select>
+        <small *ngIf="getError('taskId',taskLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- Description -->
+      <div class="form-field form-field--full">
+        <label for="ev-desc" class="form-label"><span i18n="@@common.description">Description</span></label>
+        <textarea pTextarea id="ev-desc" formControlName="description"
+                  placeholder="Briefly describe this evidence…"
+                  i18n-placeholder="@@audit.evidence.descriptionPlaceholder"
+                  [autoResize]="true" rows="4"
+                  [class.ng-invalid]="isInvalid('description')"
+                  [class.ng-touched]="isInvalid('description')"></textarea>
+        <small *ngIf="getError('description',descriptionLabel) as err" class="error-text">{{ err }}</small>
+      </div>
+
+      <!-- File upload -->
+      <div class="form-field form-field--full">
+        <label class="form-label"><span i18n="@@audit.evidence.supportingDocuments">Supporting Documents</span></label>
+        <p-fileupload #fileUploader mode="advanced" [multiple]="true"
+          [accept]="upload.Accept"
+          [maxFileSize]="upload.MaxFileSizeBytes" [auto]="false" [customUpload]="true"
+          (onSelect)="onFilesSelected($event)" styleClass="custom-fileupload"
+          [showUploadButton]="false" [showCancelButton]="false">
+          <ng-template pTemplate="content">
+            <div class="upload-drop-zone">
+              <div class="upload-drop-zone__icon-wrap"><app-draw-icon icon="pi pi-cloud-upload"></app-draw-icon></div>
+              <p class="upload-drop-zone__title" i18n="@@audit.evidence.dragDropFiles">Drag &amp; drop files here</p>
+              <span class="upload-drop-zone__or" i18n="@@common.or">or</span>
+              <button type="button" class="upload-browse-btn" (click)="fileUploader.choose()">
+                <app-draw-icon icon="pi pi-upload"></app-draw-icon> <span i18n="@@audit.evidence.browseFiles">Browse files</span>
+              </button>
+              <p class="upload-drop-zone__hint" i18n="@@audit.evidence.fileUploadHint">PDF, Word, Excel, Images — max 10 MB each</p>
+            </div>
+          </ng-template>
+        </p-fileupload>
+        <ul *ngIf="uploadedFiles.length > 0" class="file-list">
+          <li *ngFor="let f of uploadedFiles; let i = index" class="file-list__item">
+            <i class="pi file-list__icon" [ngClass]="fileIcon(f.name)"></i>
+            <span class="file-list__name">{{ f.name }}</span>
+            <span class="file-list__size">{{ formatFileSize(f.size) }}</span>
+            <button type="button" class="file-list__remove" (click)="removeFile(i)" aria-label="Remove" i18n-aria-label="@@common.remove">
+              <app-draw-icon icon="pi pi-times"></app-draw-icon>
+            </button>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+
+    <!-- ── APPROVER NOTES (approve mode only) ─────────────────── -->
+    <div *ngIf="isApprove" class="approver-section">
+      <div class="approver-section__head">
+        <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+        <span i18n="@@audit.evidence.approverNotes">Approver Notes</span>
+        <span class="approver-section__hint" i18n="@@audit.evidence.requiredWhenRejecting">Required when rejecting</span>
+      </div>
+      <div class="form-field">
+        <textarea pTextarea formControlName="approverNotes"
+                  placeholder="Add your review notes here. Notes are mandatory when rejecting…"
+                  i18n-placeholder="@@audit.evidence.approverNotesPlaceholder"
+                  [autoResize]="true" rows="4"
+                  [class.ng-invalid]="isInvalid('approverNotes')"
+                  [class.ng-touched]="isInvalid('approverNotes')"></textarea>
+        <small *ngIf="isInvalid('approverNotes')" class="error-text">
+          {{ formErrors.ApproverNotesRequired }}
+        </small>
+      </div>
+    </div>
+
+  </form>
+
+  <!-- FOOTER -->
+  <div class="drawer-footer">
+    <ng-container *ngIf="isApprove">
+      <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onCancel()" type="button"></p-button>
+      <div class="footer-approve-actions">
+        <p-button label="Reject" i18n-label="@@common.reject" icon="pi pi-times" styleClass="btn-reject"
+                  (onClick)="onReject()" type="button"></p-button>
+        <p-button label="Approve" i18n-label="@@common.approve" icon="pi pi-check" styleClass="btn-approve"
+                  (onClick)="onApprove()" type="button"></p-button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="!isApprove">
+      <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onCancel()" type="button"></p-button>
+      <p-button [label]="submitLabel" styleClass="submit-btn" type="submit" (onClick)="onSubmit()"></p-button>
+    </ng-container>
+  </div>
+
+</div>

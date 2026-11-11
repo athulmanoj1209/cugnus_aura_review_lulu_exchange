@@ -1,0 +1,443 @@
+@use '../../../../../../assets/drawer-modal.scss' as *;
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* Border-box everywhere in this drawer so padding/border on the PrimeNG
+   inputs (already given `width: 100%` below) is included in that 100%
+   instead of added on top of it — otherwise fields in the right-hand grid
+   column render wider than their cell and bleed past the drawer's edge. */
+:host, :host * , :host *::before, :host *::after { box-sizing: border-box; }
+
+/* Reserve the scrollbar's width up front instead of only once content
+   overflows — otherwise the scrollbar appearing shrinks the available
+   width after the two-column grid has already been laid out, and it ends
+   up overlapping/clipping the right-hand column's controls. */
+.drawer-body { scrollbar-gutter: stable; }
+
+.add-user-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: var(--surface-card);
+}
+
+/* ---------- Header --------------------------------------------------- */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left { display: flex; align-items: center; gap: 12px; }
+
+.drawer-icon-wrap {
+  width: 40px; height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  .pi { font-size: 18px; color: var(--primary-color); }
+}
+
+.drawer-title-block { display: flex; flex-direction: column; gap: 2px; }
+
+.drawer-title {
+  font-size: 16px; font-weight: 400; color: var(--text-color); margin: 0;
+  strong { font-weight: 700; color: var(--primary-color); }
+}
+
+.drawer-subtitle { font-size: 11px; color: var(--text-color-secondary); margin: 0; }
+
+.close-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi { font-size: 13px; color: var(--text-color-secondary); }
+  &:hover { background: var(--surface-hover); }
+}
+
+/* ---------- Body ----------------------------------------------------- */
+// .drawer-body {
+//   display: flex;
+//   flex-direction: column;
+//   flex: 1;
+//   min-height: 0;
+//   padding: 1rem 1.75rem 1.5rem;
+//   overflow-y: auto;
+// }
+
+/* ---------- Form grid ----------------------------------------------- */
+// .form-grid {
+//   display: grid;
+//   grid-template-columns: 1fr 1fr;
+//   gap: 1rem;
+//   flex: 1;
+// }
+
+// .form-field {
+//   display: flex;
+//   flex-direction: column;
+
+//   &--full { grid-column: 1 / -1; }
+// }
+
+// .form-label {
+//   font-size: 0.85rem;
+//   font-weight: 600;
+//   color: var(--text-color);
+//   margin-bottom: 0.4rem;
+// }
+
+// .error-text {
+//   display: block;
+//   margin-top: 4px;
+//   font-size: 0.78rem;
+//   color: var(--p-red-500);
+//   line-height: 1.3;
+// }
+
+/* ---------- Footer --------------------------------------------------- */
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--surface-border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+.form-grid
+{
+
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07), 0 2px 12px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1rem;
+}
+
+.checkbox-label,
+.repeated-section__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.repeated-toggle {
+  padding-top: 0.5rem;
+  padding-bottom: 0.75rem;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+}
+
+.checkbox-label input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--primary-color);
+}
+
+.checkbox-help {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--text-color-secondary);
+}
+
+.repeated-section__title {
+  margin-bottom: 0.75rem;
+}
+
+.repeated-section {
+  padding: 1rem;
+  border: 1px solid var(--surface-border);
+  border-left: 4px solid var(--primary-color);
+  border-radius: 8px;
+  background: var(--surface-ground);
+}
+
+.repeated-section__grid {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-shadow: none;
+}
+/* ---------- PrimeNG overrides --------------------------------------- */
+:host ::ng-deep .form-field {
+  /* A flex/grid item's default minimum width is its content's min-content
+     size, not 0 — and PrimeNG's Select/MultiSelect/DatePicker ship their
+     own min-width (a CSS variable in their base theme), which wins over
+     the `width: 100%` below whenever the grid column is narrower than
+     that built-in minimum. That mismatch is what pushes the control past
+     the column's right edge, so it has to be zeroed out everywhere along
+     the chain: the grid item itself, the <p-select>/<p-multiselect>/
+     <p-datepicker> host element, and PrimeNG's own inner box. */
+  min-width: 0;
+
+  p-select, p-multiselect, p-datepicker,
+  .p-inputtext, .p-select, .p-multiselect, .p-datepicker {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .p-inputtext,
+  .p-select,
+  .p-datepicker { width: 100%; }
+
+  .p-inputtext:not(.p-invalid),
+  .p-select:not(.p-invalid),
+  .p-datepicker .p-inputtext:not(.p-invalid) {
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.92rem;
+    color: var(--primary-color);
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    height: 44px;
+  }
+
+  /* Restore PrimeNG's grey disabled shading, which the background above overrides */
+  .p-select.p-disabled {
+    background: var(--p-select-disabled-background);
+    color: var(--p-select-disabled-color);
+    cursor: default;
+  }
+
+  .p-inputtext.p-invalid {
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.92rem;
+    color: var(--text-color);
+    background: var(--surface-card);
+    height: 44px;
+  }
+
+  .p-inputtext::placeholder,
+  .p-select .p-select-label { color: var(--text-color-secondary); }
+
+  /* Textarea */
+  textarea.p-textarea {
+    width: 100%;
+    border-radius: 8px;
+    padding: 0.55rem 0.9rem;
+    font-size: 0.92rem;
+    color: var(--primary-color);
+    background: var(--surface-card);
+    border: 1px solid var(--surface-border);
+    resize: vertical;
+    font-family: inherit;
+    transition: border-color 0.15s ease;
+
+    &::placeholder { color: var(--text-color-secondary); }
+    &:focus { border-color: var(--primary-color); outline: none; box-shadow: 0 0 0 2px rgba(59, 91, 219, 0.15); }
+    &.ng-invalid.ng-touched { border-color: var(--p-red-500); }
+  }
+}
+
+/* ---------- File upload --------------------------------------------- */
+:host ::ng-deep .custom-fileupload {
+  border: 2px dashed var(--p-violet-300);
+  border-radius: 12px;
+  background: var(--surface-card);
+  transition: border-color 0.15s ease;
+
+  &:hover { border-color: var(--p-violet-600); }
+
+  /* Hide the default toolbar entirely */
+  .p-fileupload-header { display: none; }
+
+  .p-fileupload-content {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+}
+
+/* Centered drop zone */
+.upload-drop-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  gap: 0.5rem;
+
+  &__icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--p-indigo-50);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.25rem;
+
+    .pi {
+      font-size: 1.5rem;
+      color: var(--p-purple-700);
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  &__or {
+    font-size: 0.82rem;
+    color: var(--text-color-secondary);
+  }
+
+  &__hint {
+    margin: 0.25rem 0 0;
+    font-size: 0.78rem;
+    color: var(--text-color-secondary);
+  }
+}
+
+.upload-browse-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--p-violet-600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.4rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:hover { background: var(--p-violet-700); }
+
+  .pi { font-size: 0.85rem; }
+}
+
+/* ---------- File list ----------------------------------------------- */
+.file-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface-hover);
+    border-radius: 8px;
+    padding: 0.45rem 0.75rem;
+    font-size: 0.85rem;
+  }
+
+  &__icon { color: var(--primary-color); flex-shrink: 0; }
+
+  &__name {
+    flex: 1;
+    min-width: 0;
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+  }
+
+  &__size { color: var(--text-color-secondary); font-size: 0.78rem; flex-shrink: 0; }
+
+  &__remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color-secondary);
+    display: flex;
+    align-items: center;
+    padding: 2px;
+    border-radius: 4px;
+    transition: color 0.15s ease;
+    flex-shrink: 0;
+
+    &:hover { color: var(--p-red-500); }
+  }
+}
+
+:host ::ng-deep {
+  input.ng-invalid.ng-touched {
+    border-color: var(--p-red-500) !important;
+    &:focus {
+      border-color: var(--p-red-500) !important;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+    }
+  }
+
+  p-select.ng-invalid.ng-touched .p-select {
+    border-color: var(--p-red-500) !important;
+  }
+
+  .cancel-btn.p-button {
+    background: var(--surface-hover) !important;
+    border: none !important;
+    color: var(--primary-color) !important;
+    font-weight: 600;
+    padding: 0.7rem 2.5rem;
+    border-radius: 8px !important;
+    min-width: unset;
+    height: auto;
+    &:hover { background: var(--surface-hover) !important; }
+  }
+
+  .submit-btn.p-button {
+    background: var(--primary-color) !important;
+    border: none !important;
+    color: #fff !important;
+    font-weight: 600;
+    padding: 0.7rem 2.5rem;
+    border-radius: 8px !important;
+    min-width: unset;
+    height: auto;
+    margin-inline-start: auto;
+    &:hover { opacity: 0.9; }
+  }
+}
+.form-field .p-select
+{
+  height: 44px;
+  padding-top: 5px;
+  font-size: .88rem;
+}
+.p-multiselect { border-radius: 8px; border-color: var(--surface-border); min-height: 44px;padding: 5px;
+    font-size: .88rem; }
+   :host ::ng-deep .form-field .form-field--full .repeated-toggle
+    {
+      margin:5px;
+    }

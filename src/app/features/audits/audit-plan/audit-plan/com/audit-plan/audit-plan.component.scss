@@ -1,0 +1,254 @@
+/* =====================================================================
+   Audit Plan — design tokens + shell. Child components inherit the
+   CSS custom properties declared on :host (no duplication).
+   ===================================================================== */
+:host {
+  /* brand */
+  --ap-ink: #12203B;
+  --ap-ink-soft: #3E4C68;
+  --ap-slate: #6B7690;
+  --ap-hairline: #E1E5EE;
+  --ap-canvas: #F6F7FB;
+  --ap-panel: #FFFFFF;
+  --ap-brand: #1B3B6F;
+  --ap-sig: #2F7A6E;
+
+  /* status (pastel fills + dark text) */
+  --st-completed-bg: #EAF3DE; --st-completed-tx: #27500A;
+  --st-planned-bg:  #E6F1FB;  --st-planned-tx:  #0C447C;
+  --st-inprog-bg:   #FAEEDA;  --st-inprog-tx:   #633806;
+  --st-overdue-bg:  #FCEBEB;  --st-overdue-tx:  #791F1F;
+
+  /* status (solid accents — rollup track, run strips, status dots, mini-cal borders) */
+  --stc-completed: #7FB94E; --stc-planned: #6FA8E8; --stc-inprog: #EFA23B; --stc-overdue: #E06C61;
+
+  /* frequency (solid accents + light badge tints) */
+  --fq-W: #7A5AF8;  --fq-W-bg: #F0EDFE;  --fq-W-tx: #5B3FD4;
+  --fq-BW: #D6409F; --fq-BW-bg: #FCE9F4; --fq-BW-tx: #B0327F;
+  --fq-M: #12A594;  --fq-M-bg: #E2F6F3;  --fq-M-tx: #0E7F72;
+  --fq-Q: #3E63DD;  --fq-Q-bg: #E8EDFC;  --fq-Q-tx: #3452B8;
+  --fq-HY: #AD7F58; --fq-HY-bg: #F5EDE4; --fq-HY-tx: #8A6240;
+  --fq-Y: var(--text-color-secondary);  --fq-Y-bg: #EEF1F5;  --fq-Y-tx: #52606F;
+
+  --ap-radius: 10px;
+  --ap-shadow: 0 1px 2px rgba(18,32,59,.06), 0 6px 20px -8px rgba(18,32,59,.12);
+
+  display: block;
+  background: var(--ap-canvas);
+  color: var(--ap-ink);
+  min-height: 100vh;
+}
+
+:host-context(.app-dark) {
+  --ap-ink: #e4e7ee;
+  --ap-ink-soft: #b7c0d4;
+  --ap-slate: #93a0bd;
+  --ap-hairline: #2a3550;
+  --ap-canvas: var(--surface-ground);
+  --ap-panel: var(--surface-card);
+  --ap-brand: #3a63ad;
+  --ap-sig: #4fa393;
+
+  --st-completed-bg: rgba(39, 80, 10, 0.35);  --st-completed-tx: var(--p-green-300);
+  --st-planned-bg:  rgba(12, 68, 124, 0.35);  --st-planned-tx:  var(--p-blue-300);
+  --st-inprog-bg:   rgba(99, 56, 6, 0.35);    --st-inprog-tx:   var(--p-amber-400);
+  --st-overdue-bg:  rgba(121, 31, 31, 0.35);  --st-overdue-tx:  var(--p-red-300);
+
+  --stc-completed: #5da83a; --stc-planned: #4a90d9; --stc-inprog: #d98a2b; --stc-overdue: #d9534f;
+
+  --fq-W: #9b83fa;  --fq-W-bg: rgba(91, 63, 212, 0.25);  --fq-W-tx: var(--p-violet-300);
+  --fq-BW: #e373ba; --fq-BW-bg: rgba(176, 50, 127, 0.25); --fq-BW-tx: #f0abdc;
+  --fq-M: #34c9b8;  --fq-M-bg: rgba(14, 127, 114, 0.25);  --fq-M-tx: var(--p-teal-300);
+  --fq-Q: #7590f0;  --fq-Q-bg: rgba(52, 82, 184, 0.25);   --fq-Q-tx: #a5b8f5;
+  --fq-HY: #c9a17b; --fq-HY-bg: rgba(138, 98, 64, 0.25);  --fq-HY-tx: #e2c4a3;
+  --fq-Y: #93a0bd;  --fq-Y-bg: rgba(82, 96, 111, 0.35);   --fq-Y-tx: var(--p-blue-400);
+}
+
+.ap-shell { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ---- topbar ---- */
+.ap-topbar {
+  background: var(--ap-brand); color: #fff;
+  padding: 14px 28px; display: flex; align-items: center; justify-content: space-between;
+
+  .brand { display: flex; align-items: center; gap: 12px; }
+  /* Back button — light-on-dark variant to sit on the brand-coloured bar */
+  .back-btn {
+    width: 34px; height: 34px; border-radius: 8px; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.12); color: #fff;
+    display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+    &:hover { background: rgba(255,255,255,.22); border-color: rgba(255,255,255,.45); }
+    &:dir(rtl) app-draw-icon { transform: scaleX(-1); }
+  }
+  .glyph {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--ap-sig), #57B39F);
+    display: grid; place-items: center; font-weight: 700; font-size: 15px;
+  }
+  .titles { display: flex; flex-direction: column; line-height: 1.2; }
+  .app-name { font-size: 11px; text-transform: uppercase; letter-spacing: .12em; opacity: .65; }
+  .page-name { font-size: 18px; font-weight: 600; }
+  .actions { display: flex; gap: 10px; align-items: center; }
+  ::ng-deep .ap-plan-select { min-width: 260px; max-width: 360px; }
+  .year-switch {
+    display: flex; align-items: center; background: rgba(255,255,255,.12); border-radius: 8px;
+    .yr { padding: 0 10px; font-weight: 600; font-size: 15px; }
+    .yr-btn { color: #fff; }
+  }
+}
+
+/* ---- level tabs ---- */
+.ap-levelbar {
+  background: var(--ap-panel); border-bottom: 1px solid var(--ap-hairline);
+  padding: 0 28px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+
+  .levels { display: flex; flex-wrap: wrap; }
+  .level-tab {
+    padding: 14px 16px 12px; font-size: 13px; font-weight: 600; color: var(--ap-slate);
+    border: none; background: none; cursor: pointer;
+    border-bottom: 3px solid transparent; display: flex; align-items: center; gap: 8px;
+
+    .num {
+      width: 19px; height: 19px; border-radius: 50%; background: var(--ap-hairline);
+      color: var(--ap-slate); font-size: 10.5px; display: grid; place-items: center;
+    }
+    &.active { color: var(--ap-brand); border-bottom-color: var(--ap-sig);
+      .num { background: var(--ap-sig); color: #fff; } }
+    &.done .num { background: color-mix(in srgb, var(--ap-sig) 20%, var(--ap-panel)); color: var(--ap-sig); }
+    &:hover { color: var(--ap-brand); }
+  }
+  .crumb { font-size: 12.5px; color: var(--ap-slate); padding: 14px 0;
+    b { color: var(--ap-ink); } .sep { color: var(--ap-slate); margin: 0 4px; } }
+}
+
+/* ---- filter bar ---- */
+.ap-filterbar {
+  background: var(--ap-panel); border-bottom: 1px solid var(--ap-hairline);
+  padding: 12px 28px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  .search { margin-left: auto; }
+}
+
+/* compact, consistent PrimeNG controls inside the filter bar */
+:host ::ng-deep .ap-filterbar {
+  .p-multiselect.ap-ms {
+    width: 200px; border-radius: 7px; border-color: var(--ap-hairline);
+    .p-multiselect-label { padding: 8px 10px; font-size: 13px; color: var(--ap-ink); }
+    .p-multiselect-label.p-placeholder { color: var(--ap-slate); }
+    &:not(.p-disabled):hover { border-color: var(--ap-brand); }
+    &.p-focus { box-shadow: 0 0 0 2px rgba(27, 59, 111, .15); border-color: var(--ap-brand); }
+  }
+  .p-iconfield .p-inputtext {
+    min-width: 260px; font-size: 13px; padding-block: 8px; border-radius: 7px;
+    border-color: var(--ap-hairline);
+    &:enabled:focus { box-shadow: 0 0 0 2px rgba(27, 59, 111, .15); border-color: var(--ap-brand); }
+  }
+  .p-inputicon { color: var(--ap-slate); }
+
+  @media (max-width: 900px) {
+    .p-multiselect.ap-ms { width: 100%; }
+    .search { margin-left: 0; width: 100%; .p-inputtext { width: 100%; } }
+  }
+}
+
+/* ---- main / KPIs ---- */
+.ap-main { flex: 1; padding: 22px 28px 60px; max-width: 1440px; margin: 0 auto; width: 100%; }
+
+.kpi-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.kpi-section {
+  &__head {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ap-slate);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    .pi { font-size: 12px; }
+  }
+}
+
+.kpi-strip {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+}
+.kpi {
+  position: relative;
+  background: var(--ap-panel); border: 1px solid var(--ap-hairline);
+  border-radius: 16px; padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05), 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  display: flex; flex-direction: column;
+  .num { font-size: 22px; font-weight: 700; }
+  .lbl { font-size: 11px; color: var(--ap-slate); margin-top: 2px; }
+  &.accent { border-color: var(--ap-sig); background: linear-gradient(160deg, color-mix(in srgb, var(--ap-sig) 8%, var(--ap-panel)), var(--ap-panel)); }
+
+  &.kpi--clickable:hover {
+    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+  }
+}
+
+.kpi-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-bottom: 10px;
+  background: color-mix(in srgb, var(--ap-slate) 14%, transparent);
+}
+
+.kpi-icon {
+  font-size: 14px;
+  color: var(--ap-slate);
+  opacity: 1;
+  &--active { color: var(--st-completed-tx); opacity: 1; }
+}
+
+.kpi-num--active { color: var(--st-completed-tx); }
+
+.st-completed-tx { color: var(--st-completed-tx); }
+.st-planned-tx  { color: var(--st-planned-tx); }
+.st-inprog-tx   { color: var(--st-inprog-tx); }
+.st-overdue-tx  { color: var(--st-overdue-tx); }
+/* ---- status-tinted KPI cards (very light: numbers stay dominant) ---- */
+.kpi {
+  &.accent .kpi-icon-wrap { background: color-mix(in srgb, var(--ap-sig) 16%, transparent); }
+  &.accent .kpi-icon { color: var(--ap-sig); }
+
+  &--completed {
+    background: linear-gradient(160deg, color-mix(in srgb, var(--st-completed-tx) 10%, var(--ap-panel)), var(--ap-panel));
+    border-color: color-mix(in srgb, var(--st-completed-tx) 35%, var(--ap-hairline));
+    .kpi-icon { color: var(--st-completed-tx); }
+    .kpi-icon-wrap { background: color-mix(in srgb, var(--st-completed-tx) 16%, transparent); }
+  }
+  &--inprog {
+    background: linear-gradient(160deg, color-mix(in srgb, var(--st-inprog-tx) 10%, var(--ap-panel)), var(--ap-panel));
+    border-color: color-mix(in srgb, var(--st-inprog-tx) 35%, var(--ap-hairline));
+    .kpi-icon { color: var(--st-inprog-tx); }
+    .kpi-icon-wrap { background: color-mix(in srgb, var(--st-inprog-tx) 16%, transparent); }
+  }
+  &--planned {
+    background: linear-gradient(160deg, color-mix(in srgb, var(--st-planned-tx) 10%, var(--ap-panel)), var(--ap-panel));
+    border-color: color-mix(in srgb, var(--st-planned-tx) 35%, var(--ap-hairline));
+    .kpi-icon { color: var(--st-planned-tx); }
+    .kpi-icon-wrap { background: color-mix(in srgb, var(--st-planned-tx) 16%, transparent); }
+  }
+  &--overdue {
+    background: linear-gradient(160deg, color-mix(in srgb, var(--st-overdue-tx) 10%, var(--ap-panel)), var(--ap-panel));
+    border-color: color-mix(in srgb, var(--st-overdue-tx) 35%, var(--ap-hairline));
+    .kpi-icon { color: var(--st-overdue-tx); }
+    .kpi-icon-wrap { background: color-mix(in srgb, var(--st-overdue-tx) 16%, transparent); }
+  }
+}

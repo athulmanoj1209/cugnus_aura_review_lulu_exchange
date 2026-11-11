@@ -1,0 +1,291 @@
+<div class="sub-division-drawer-inner" [formGroup]="form">
+
+  <!-- Header -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-sitemap"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">{{ drawerTitle }}</h2>
+        <p class="drawer-subtitle">{{ drawerSubtitle }}</p>
+      </div>
+    </div>
+    <button class="close-btn" type="button" (click)="onClose()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- Approval Banner -->
+  @if (approvalMode) {
+  <div class="approval-banner">
+    <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+    <span>You may view and edit the sub-division details. Add your <strong>approver notes</strong> below and approve or
+      reject.</span>
+  </div>
+  }
+
+  <!-- Body -->
+  <div class="sub-division-drawer-body">
+
+    <!-- Section: Assignment -->
+    <div class="sub-division-section">
+      <div class="sub-division-section-label">
+        <app-draw-icon icon="pi pi-building" class="sub-division-section-icon"></app-draw-icon>
+        <span>Assignment</span>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Company <span class="field-required">*</span></label>
+          <p-select appendTo="body" formControlName="company" [options]="companyOptions" optionLabel="label" optionValue="value"
+            placeholder="Select company" styleClass="form-dropdown" [invalid]="isFieldInvalid('company')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('company')">
+            {{ getErrorMessage('company') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Division <span class="field-required">*</span></label>
+          <p-select appendTo="body" formControlName="divisionCode" [options]="divisionOptions" optionLabel="label" optionValue="value"
+            placeholder="Select division" styleClass="form-dropdown" [filter]="true" filterPlaceholder="Search division…"
+            [invalid]="isFieldInvalid('divisionCode')" [disabled]="!form.get('company')?.value">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('divisionCode')">
+            {{ getErrorMessage('divisionCode') }}
+          </small>
+          <small class="field-hint" *ngIf="!form.get('company')?.value">
+            Select a company first to load divisions
+          </small>
+          <!-- divisionOptions only lists divisions with hasSubDivision: true -->
+          <small class="field-hint" *ngIf="form.get('company')?.value && divisionOptions.length === 0">
+            This company has no divisions that allow sub-divisions
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <p-divider styleClass="sub-division-divider"></p-divider>
+
+    <!-- Section: Sub-Division Info -->
+    <div class="sub-division-section">
+      <div class="sub-division-section-label">
+        <app-draw-icon icon="pi pi-info-circle" class="sub-division-section-icon"></app-draw-icon>
+        <span>Sub-Division Information</span>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Sub-Division Code <span class="field-required">*</span></label>
+          <input pInputText type="text" formControlName="subDivisionCode" placeholder="e.g. SUBDIV-FIN-001"
+            class="form-input" [class.input-error]="isFieldInvalid('subDivisionCode')" />
+          <small class="error-hint" *ngIf="isFieldInvalid('subDivisionCode')">
+            {{ getErrorMessage('subDivisionCode') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Sub-Division Name <span class="field-required">*</span></label>
+          <input pInputText type="text" formControlName="subDivisionName" placeholder="e.g. Finance, IT Security, HR…"
+            class="form-input" [class.input-error]="isFieldInvalid('subDivisionName')" />
+          <small class="error-hint" *ngIf="isFieldInvalid('subDivisionName')">
+            {{ getErrorMessage('subDivisionName') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Sub-Division Type <span class="field-required">*</span></label>
+          <p-select appendTo="body" formControlName="subDivisionType" [options]="subDivisionTypeOptions" optionLabel="label"
+            optionValue="value" placeholder="Select type" styleClass="form-dropdown"
+            [invalid]="isFieldInvalid('subDivisionType')" (onChange)="onSubDivisionTypeChange()">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('subDivisionType')">
+            {{ getErrorMessage('subDivisionType') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">
+            Department Type
+            @if (form.get('subDivisionType')?.value === DivisionTypes.Department) {<span class="field-required">*</span>}
+          </label>
+          <p-select appendTo="body" formControlName="departmentType" [options]="departmentTypeOptions" optionLabel="label"
+            optionValue="value" placeholder="Select department type" styleClass="form-dropdown" [filter]="true"
+            filterPlaceholder="Search type…" [invalid]="isFieldInvalid('departmentType')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('departmentType')">
+            {{ getErrorMessage('departmentType') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col">
+          <label class="field-label">Status <span class="field-required">*</span></label>
+          <p-select appendTo="body" formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value"
+            placeholder="Select status" styleClass="form-dropdown" [invalid]="isFieldInvalid('status')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('status')">
+            {{ getErrorMessage('status') }}
+          </small>
+        </div>
+
+        <div class="sub-division-form-col">
+          <label class="field-label">Number of Employees</label>
+          <p-inputnumber formControlName="numberOfEmployees" [min]="0" [useGrouping]="false" placeholder="e.g. 25"
+            styleClass="form-inputnumber">
+          </p-inputnumber>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Operational Since</label>
+          <p-datepicker formControlName="operationalSince" view="month" dateFormat="yy-mm"
+            placeholder="Select year/month" [showIcon]="true" class="form-datepicker">
+          </p-datepicker>
+          <small class="field-hint">Month the sub-division was established</small>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Description</label>
+          <textarea pTextarea formControlName="description" rows="3"
+            placeholder="Brief description of this sub-division's function (optional)" class="form-textarea">
+              </textarea>
+        </div>
+      </div>
+    </div>
+
+    <p-divider styleClass="sub-division-divider"></p-divider>
+
+    <!-- Section: Personnel -->
+    <div class="sub-division-section">
+      <div class="sub-division-section-label">
+        <app-draw-icon icon="pi pi-id-card" class="sub-division-section-icon"></app-draw-icon>
+        <span>Personnel &amp; Contact</span>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Sub-Division Head</label>
+          <p-select appendTo="body" formControlName="subDivisionHead" [options]="userOptions" optionLabel="label" optionValue="value"
+            placeholder="Search user… (optional)" styleClass="form-dropdown" [filter]="true"
+            filterPlaceholder="Search by name">
+          </p-select>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col full">
+          <label class="field-label">Primary Contact Person <span class="field-required">*</span></label>
+          <p-select appendTo="body" formControlName="primaryContactPerson" [options]="userOptions" optionLabel="label"
+            optionValue="value" placeholder="Search user…" styleClass="form-dropdown" [filter]="true"
+            filterPlaceholder="Search by name" [invalid]="isFieldInvalid('primaryContactPerson')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('primaryContactPerson')">
+            {{ getErrorMessage('primaryContactPerson') }}
+          </small>
+        </div>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col">
+          <label class="field-label">Contact Email <span class="field-required">*</span></label>
+          <input pInputText type="email" formControlName="contactEmail" placeholder="subdivision@company.ae" class="form-input"
+            [class.input-error]="isFieldInvalid('contactEmail')" />
+          <small class="error-hint" *ngIf="isFieldInvalid('contactEmail')">
+            {{ getErrorMessage('contactEmail') }}
+          </small>
+        </div>
+
+        <div class="sub-division-form-col">
+          <label class="field-label">Contact Phone <span class="field-required">*</span></label>
+          <input pInputText type="tel" formControlName="contactPhone" placeholder="+971 4 000 0000" class="form-input"
+            [class.input-error]="isFieldInvalid('contactPhone')" />
+          <small class="error-hint" *ngIf="isFieldInvalid('contactPhone')">
+            {{ getErrorMessage('contactPhone') }}
+          </small>
+        </div>
+      </div>
+    </div>
+
+    <p-divider styleClass="sub-division-divider"></p-divider>
+
+    <!-- Section: Risk -->
+    <div class="sub-division-section">
+      <div class="sub-division-section-label">
+        <app-draw-icon icon="pi pi-shield" class="sub-division-section-icon"></app-draw-icon>
+        <span>Risk Assessment</span>
+      </div>
+
+      <div class="sub-division-form-row">
+        <div class="sub-division-form-col">
+          <label class="field-label">Risk Rating <span class="field-required">*</span></label>
+          <p-select appendTo="body" formControlName="riskRating" [options]="riskRatingOptions" optionLabel="label" optionValue="value"
+            placeholder="Select rating" styleClass="form-dropdown" [invalid]="isFieldInvalid('riskRating')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('riskRating')">
+            {{ getErrorMessage('riskRating') }}
+          </small>
+        </div>
+
+        <div class="sub-division-form-col">
+          <label class="field-label">Risk Status <span class="field-required">*</span></label>
+          <p-select appendTo="body" formControlName="riskStatus" [options]="riskStatusOptions" optionLabel="label" optionValue="value"
+            placeholder="Select risk status" styleClass="form-dropdown" [invalid]="isFieldInvalid('riskStatus')">
+          </p-select>
+          <small class="error-hint" *ngIf="isFieldInvalid('riskStatus')">
+            {{ getErrorMessage('riskStatus') }}
+          </small>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Approver Notes -->
+  @if (approvalMode) {
+  <div class="approver-notes-section" style="margin: 0 16px 16px;">
+    <div class="approver-notes-header">
+      <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+      <span class="approver-notes-title">Approver Notes</span>
+      <span class="approver-notes-required">Required when rejecting</span>
+    </div>
+    <textarea pTextarea formControlName="approverNotes" placeholder="Add your approver notes here..." [rows]="4"
+      class="field-textarea approver-notes-textarea" [class.input-error]="isInvalidApproverNotes()"></textarea>
+    @if (isInvalidApproverNotes()) {
+    <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Approver notes are required when rejecting</span>
+    }
+  </div>
+  }
+
+  <!-- Footer -->
+  <div class="drawer-footer">
+    @if (approvalMode) {
+    <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+    <button type="button" class="btn-reject" (click)="onReject()">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon> Reject
+    </button>
+    <button type="button" class="btn-approve" (click)="onApprove()">
+      <app-draw-icon icon="pi pi-check"></app-draw-icon> Approve
+    </button>
+    } @else {
+    <p-button label="Cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+    <p-button [label]="submitLabel" icon="pi pi-check" styleClass="submit-btn"
+      (onClick)="onSubmit()">
+    </p-button>
+    }
+  </div>
+
+</div>

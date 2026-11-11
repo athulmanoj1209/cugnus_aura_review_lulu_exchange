@@ -1,0 +1,60 @@
+/* Confirm Action Dialog — shared styles
+   The ::ng-deep rules target the PrimeNG overlay. The class is unique
+   (app-confirm-dialog) so page-level `.confirm-dialog` overrides don't leak in. */
+
+::ng-deep .app-confirm-dialog {
+  .p-dialog-header {
+    background: rgba(223, 235, 247, 0.8117647059);
+    padding: 1.25rem 1.5rem 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    border-bottom: 1px solid var(--surface-border);
+    border-top-right-radius: 6px;
+    border-top-left-radius: 6px;
+  }
+
+  .p-dialog-content {
+    padding: 1.5rem;
+  }
+
+  .p-dialog-footer {
+    padding: 0.75rem 1.5rem 1.25rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    border-top: 1px solid var(--surface-border);
+  }
+}
+
+.confirm-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  text-align: center;
+
+  &__icon-wrap {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+
+    &.icon-wrap--approve,
+    &.icon-wrap--activate   { background: #dcfce7; color: #16a34a; }
+    &.icon-wrap--reject,
+    &.icon-wrap--deactivate,
+    &.icon-wrap--delete     { background: #fef2f2; color: #dc2626; }
+    &.icon-wrap--warning    { background: #fff7ed; color: #ea580c; }
+    &.icon-wrap--info       { background: var(--surface-hover); color: #2563eb; }
+  }
+
+  &__text {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--text-color);
+  }
+}

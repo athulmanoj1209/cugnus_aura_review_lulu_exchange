@@ -1,0 +1,573 @@
+@use 'sass:color';
+
+// ── Tokens ────────────────────────────────────────────────────────────────────
+$color-primary:    var(--primary-color);
+$color-accent:     var(--primary-color);
+$color-success:    var(--p-green-500);
+$color-surface:    var(--surface-card);
+$color-bg:         var(--surface-ground);
+$color-border:     var(--surface-border);
+$color-text:       var(--text-color);
+$color-text-muted: var(--text-color-secondary);
+$color-error:      var(--p-red-500);
+$radius-card:      10px;
+$shadow-card:      0 1px 4px rgba(0,0,0,.07), 0 2px 12px rgba(0,0,0,.04);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// :host is the full-height flex column.
+// .reg-add  = scrollable content area  (flex: 1, overflow-y: auto)
+// .drawer-footer   = sticky footer     (flex-shrink: 0)
+// ─────────────────────────────────────────────────────────────────────────────
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;          // fill whatever the drawer gives us
+  overflow: hidden;      // prevent the host itself from growing or scrolling
+ // font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+// ── Header ─────────────────────────────────────────────────────────────────────
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left { display: flex; align-items: center; gap: 12px; }
+
+.drawer-icon-wrap {
+  width: 40px; height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  .pi { font-size: 18px; color: var(--primary-color); }
+}
+
+.drawer-title-block { display: flex; flex-direction: column; gap: 2px; }
+
+.drawer-title {
+  font-size: 16px; font-weight: 400; color: var(--text-color); margin: 0;
+  strong { font-weight: 700; color: var(--primary-color); }
+}
+
+.drawer-subtitle { font-size: 11px; color: var(--text-color-secondary); margin: 0; }
+
+.close-btn {
+  width: 32px; height: 32px;
+  border: 1px solid var(--surface-border);
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+  .pi { font-size: 13px; color: var(--text-color-secondary); }
+  &:hover { background: var(--surface-hover); }
+}
+
+// ── Scrollable content region ─────────────────────────────────────────────────
+.reg-add {
+  flex: 1 1 0;           // take all remaining height
+  min-height: 0;         // let flexbox shrink below content size
+  overflow-y: auto;      // THIS is what scrolls
+  background: $color-bg;
+  padding: 1.5rem 1.75rem;
+  color: $color-text;
+
+  // ── Section cards ─────────────────────────────────────────────────────────────
+  &__card {
+    background: $color-surface;
+    border: 1px solid $color-border;
+    border-radius: $radius-card;
+    padding: 1.5rem;
+    box-shadow: $shadow-card;
+    margin-bottom: 1rem;
+
+    &--last { margin-bottom: 0; }
+  }
+
+  &__section-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: $color-primary;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+
+    i { font-size: .9rem; color: $color-accent; }
+  }
+
+  &__section-sub {
+    font-size: .8rem;
+    color: $color-text-muted;
+    margin: .2rem 0 0;
+  }
+
+  &__divider {
+    margin: .75rem 0 1.25rem !important;
+
+    ::ng-deep .p-divider-horizontal { margin: 0; border-top-color: $color-border; }
+  }
+
+  // ── Grid ─────────────────────────────────────────────────────────────────────
+  &__grid {
+    display: grid;
+    gap: 1.25rem;
+
+    &--2 { grid-template-columns: repeat(2, 1fr); }
+    &--4 { grid-template-columns: repeat(4, 1fr); }
+  }
+
+  // ── Field ────────────────────────────────────────────────────────────────────
+  &__field {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+
+    &--span2 { grid-column: span 2; }
+
+    input.p-inputtext,
+    textarea.p-textarea {
+      height:44px;
+      width: 100%;
+      border-color: $color-border;
+      font-size: .9rem;
+      border-radius: 7px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+
+      &:focus      { border-color: $color-accent; box-shadow: 0 0 0 3px rgba(21,101,192,.1); }
+      &.ng-invalid { border-color: $color-error; }
+    }
+
+    textarea.p-textarea { resize: vertical; }
+
+    ::ng-deep p-select .p-select,
+    ::ng-deep p-datepicker .p-datepicker-input {
+      width: 100%;
+      border-color: $color-border;
+      border-radius: 7px;
+      font-size: .9rem;
+      border-top-right-radius: 0;
+border-bottom-right-radius: 0;
+
+      &:focus,
+      &.p-focus { border-color: $color-accent; box-shadow: 0 0 0 3px rgba(21,101,192,.1); }
+    }
+
+    ::ng-deep p-select.ng-invalid .p-select,
+    ::ng-deep p-datepicker.ng-invalid .p-datepicker-input { border-color: $color-error; }
+
+    ::ng-deep p-multiselect .p-multiselect {
+      border-color: $color-border;
+      border-radius: 7px;
+      font-size: .9rem;
+      width: 100%;
+
+      &.p-focus  { border-color: $color-accent; box-shadow: 0 0 0 3px rgba(21,101,192,.1); }
+      &.ng-invalid { border-color: $color-error; }
+    }
+
+    ::ng-deep p-autocomplete.reg-add__chips .p-autocomplete {
+      width: 100%;
+
+      .p-autocomplete-multiple-container {
+        border-color: $color-border;
+        border-radius: 7px;
+        font-size: .875rem;
+        width: 100%;
+        gap: .3rem;
+        padding: .4rem .6rem;
+
+        &:focus-within { border-color: $color-accent; box-shadow: 0 0 0 3px rgba(21,101,192,.1); }
+      }
+
+      .p-autocomplete-chip {
+        background: rgba(21,101,192,.1);
+        color: $color-accent;
+        border-radius: 99px;
+        font-size: .78rem;
+        font-weight: 600;
+        border: none;
+      }
+     &__chip-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .375rem;
+  min-height: 2.6rem;
+  padding: .4rem .65rem;
+  border: 1px solid $color-border;
+  border-radius: 7px;
+  background: $color-surface;
+  cursor: text;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  &--focus {
+    border-color: $color-accent;
+    box-shadow: 0 0 0 3px rgba(21, 101, 192, .1);
+  }
+
+  &--invalid {
+    border-color: $color-error;
+
+    &.reg-add__chip-input--focus {
+      box-shadow: 0 0 0 3px rgba(211, 47, 47, .1);
+    }
+  }
+}
+    }
+
+  }
+
+  &__label {
+    font-size: .8rem;
+    font-weight: 600;
+    color: $color-text;
+    letter-spacing: .02em;
+
+    .req { color: $color-error; margin-left: .15rem; }
+  }
+
+  &__optional {
+    font-weight: 400;
+    color: $color-text-muted;
+    font-size: .75rem;
+    margin-left: .3rem;
+  }
+
+  // ── Custom chip / tag input ───────────────────────────────────────────────────
+  &__chip-input {
+    height:44px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem;
+    min-height: 2.6rem;
+    padding: .4rem .65rem;
+    border: 1px solid $color-border;
+    border-radius: 7px;
+    background: $color-surface;
+    cursor: text;
+    transition: border-color .15s ease, box-shadow .15s ease;
+
+    &--focus {
+      border-color: $color-accent;
+      box-shadow: 0 0 0 3px rgba(21, 101, 192, .1);
+    }
+  }
+
+  &__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .55rem .2rem .65rem;
+    background: rgba(21, 101, 192, .1);
+    color: $color-accent;
+    border-radius: 99px;
+    font-size: .78rem;
+    font-weight: 600;
+    line-height: 1.4;
+    white-space: nowrap;
+  }
+
+  &__chip-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1rem;
+    height: 1rem;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    color: $color-accent;
+    opacity: .7;
+    border-radius: 99px;
+    transition: opacity .15s ease, background .15s ease;
+
+    i { font-size: .6rem; }
+
+    &:hover {
+      opacity: 1;
+      background: rgba(21, 101, 192, .2);
+    }
+  }
+
+  &__chip-text {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: .875rem;
+    color: $color-text;
+    flex: 1;
+    min-width: 140px;
+    padding: .15rem .25rem;
+    font-family: inherit;
+
+    &::placeholder { color: $color-text-muted; }
+  }
+
+  &__error {
+    font-size: .75rem;
+    color: $color-error;
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+
+    &::before { content: '⚠'; font-size: .7rem; }
+  }
+
+  &__hint { font-size: .75rem; color: $color-text-muted; }
+
+  // ── File upload ───────────────────────────────────────────────────────────────
+  &__file-input {
+    display: none; // hidden; triggered programmatically
+  }
+
+  &__upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    padding: 1.75rem 1.5rem;
+    border: 2px dashed $color-border;
+    border-radius: $radius-card;
+    background: var(--surface-hover);
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease;
+    text-align: center;
+
+    &:hover,
+    &--active {
+      border-color: $color-accent;
+      background: rgba(21, 101, 192, .04);
+
+      .reg-add__upload-icon { color: $color-accent; }
+    }
+  }
+
+  &__upload-icon {
+    font-size: 2rem;
+    color: var(--text-color-secondary);
+    transition: color .2s ease;
+  }
+
+  &__upload-text {
+    font-size: .875rem;
+    color: $color-text-muted;
+    line-height: 1.4;
+  }
+
+  &__upload-link {
+    color: $color-accent;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  &__upload-hint {
+    font-size: .75rem;
+    color: var(--text-color-secondary);
+  }
+
+  // File preview row (after selection)
+  &__file-preview {
+    display: flex;
+    align-items: center;
+    gap: .875rem;
+    padding: .75rem 1rem;
+    border: 1px solid $color-border;
+    border-radius: $radius-card;
+    background: var(--surface-hover);
+  }
+
+  &__file-preview-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    background: rgba(21, 101, 192, .08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+      font-size: 1.1rem;
+      color: $color-accent;
+    }
+  }
+
+  &__file-preview-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    min-width: 0;
+  }
+
+  &__file-name {
+    font-size: .875rem;
+    font-weight: 600;
+    color: $color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__file-size {
+    font-size: .75rem;
+    color: $color-text-muted;
+  }
+
+  &__file-remove {
+    flex-shrink: 0;
+    width: 1.75rem;
+    height: 1.75rem;
+    border: 1px solid $color-border;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $color-text-muted;
+    transition: all .15s ease;
+
+    i { font-size: .75rem; }
+
+    &:hover {
+      background: var(--p-red-50);
+      border-color: var(--p-red-400);
+      color: var(--p-red-600);
+    }
+  }
+
+  // ── Cross-reference rows ──────────────────────────────────────────────────────
+  &__xref-list {
+    margin-top: .75rem;
+    border: 1px solid $color-border;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &__xref-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid $color-border;
+    gap: .75rem;
+    transition: background .15s ease;
+
+    &:last-child { border-bottom: none; }
+    &:hover      { background: $color-bg; }
+  }
+
+  &__xref-info {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    min-width: 0;
+  }
+
+  &__xref-title {
+    font-size: .85rem;
+    font-weight: 600;
+    color: $color-text;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__xref-code {
+    font-size: .75rem;
+    color: $color-text-muted;
+    font-family: 'Courier New', monospace;
+  }
+
+  &__xref-badge {
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .2rem .55rem;
+    border-radius: 4px;
+    background: var(--p-blue-50);
+    color: $color-accent;
+    flex-shrink: 0;
+    letter-spacing: .04em;
+  }
+} // end .reg-add
+
+// ── Sticky footer (sibling of .reg-add, outside scroll) ───────────────────────
+.drawer-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  background: var(--surface-card);
+  border-top: 1px solid var(--surface-border);
+  flex-shrink: 0;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+}
+
+::ng-deep .cancel-btn.p-button {
+  background: var(--surface-hover) !important;
+  border: none !important;
+  color: var(--primary-color) !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  &:hover { background: var(--surface-hover) !important; }
+}
+
+::ng-deep .submit-btn.p-button {
+  background: var(--primary-color) !important;
+  border: none !important;
+  color: #fff !important;
+  font-weight: 600;
+  padding: 0.7rem 2.5rem;
+  border-radius: 8px !important;
+  min-width: unset;
+  height: auto;
+  margin-left: auto;
+  &:hover { opacity: 0.9; }
+}
+.p-multiselect {
+    height: 44px;
+    padding: 5px;
+}
+.p-datepicker {
+    height: 44px;
+}
+.p-select {
+    height: 44px;
+    padding: 5px;
+}
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .reg-add {
+    padding: 1.25rem 1rem;
+
+    &__grid--4 { grid-template-columns: repeat(2, 1fr); }
+    &__grid--2 { grid-template-columns: 1fr; }
+    &__field--span2 { grid-column: span 1; }
+  }
+
+  .drawer-footer { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .reg-add {
+    &__grid--4 { grid-template-columns: 1fr; }
+  }
+}

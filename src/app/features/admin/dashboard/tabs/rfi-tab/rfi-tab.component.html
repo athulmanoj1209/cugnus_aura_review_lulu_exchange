@@ -1,0 +1,232 @@
+<div class="rfi-tab">
+
+  <!-- ── Stat Cards ──────────────────────────────────────── -->
+  <div class="stats-grid">
+    @for (card of statCards; track card.label) {
+      <div class="stat-card stat-card--clickable" [ngClass]="card.cardClass"
+           role="button" tabindex="0"
+           [attr.aria-label]="viewCardLabel(card.label)"
+           (click)="goToRfiManagement(card.status)"
+           (keydown.enter)="goToRfiManagement(card.status)"
+           (keydown.space)="$event.preventDefault(); goToRfiManagement(card.status)">
+        <div class="stat-card__header">
+          <span class="stat-card__label">{{ card.label }}</span>
+          <span class="stat-card__icon">
+            <app-draw-icon [icon]="card.icon" [size]="15"></app-draw-icon>
+          </span>
+        </div>
+        <div class="stat-card__value">{{ card.value }}</div>
+        @if (card.sub) {
+          <div class="stat-card__sub" [ngClass]="card.subClass">{{ card.sub }}</div>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ── Row 2: Status Pie + RFIs by Sub-Division + SLA Compliance ── -->
+  <div class="two-col-row two-col-row--triple">
+
+    <div class="chart-card">
+      <h3 class="chart-title" i18n="@@dashboard.rfi.statusDistribution">RFI Status Distribution</h3>
+      <div class="chart-box chart-box--donut">
+        <app-donut-status-chart [legend]="statusLegend" [maxWidth]="190"></app-donut-status-chart>
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card__header-row">
+        <div>
+          <h3 class="chart-title" i18n="@@dashboard.rfi.rfisByView">RFIs by {{ rfiByViewLabel(rfiByView) }}</h3>
+          @if (hasMoreOrgData) {
+            <p class="chart-card__caption" i18n="@@dashboard.rfi.rfisByCaption">Top {{ rfiByOrgData.labels.length }} of {{ rfiUnits.length }} {rfiByView, select, division {divisions} other {sub-divisions}} · by status</p>
+          }
+        </div>
+        <div class="chart-card__actions">
+          <div class="view-toggle" role="group" aria-label="View RFIs by" i18n-aria-label="@@dashboard.rfi.rfisByToggleAria">
+            @for (view of rfiByViews; track view.key) {
+              <button type="button"
+                      class="view-toggle__btn"
+                      [class.view-toggle__btn--active]="rfiByView === view.key"
+                      [attr.aria-pressed]="rfiByView === view.key"
+                      (click)="setRfiByView(view.key)">
+                {{ view.label }}
+              </button>
+            }
+          </div>
+          <button type="button"
+                  class="chart-card__expand"
+                  (click)="openRfiByDeptDetail()"
+                  aria-label="View full RFIs by Division / Sub-Division breakdown"
+                  i18n-aria-label="@@dashboard.rfi.rfisByViewAllAria">
+            <app-draw-icon icon="pi pi-external-link"></app-draw-icon> <ng-container i18n="@@common.viewAll">View all</ng-container>
+          </button>
+        </div>
+      </div>
+      <div class="chart-box chart-box--clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open full RFIs by Division / Sub-Division breakdown"
+           i18n-aria-label="@@dashboard.rfi.rfisByOpenAria"
+           (click)="openRfiByDeptDetail()"
+           (keydown.enter)="openRfiByDeptDetail()"
+           (keydown.space)="$event.preventDefault(); openRfiByDeptDetail()">
+        <p-chart #rfiByOrgChart type="bar" [data]="rfiByOrgData" [options]="rfiByOrgOptions()" [plugins]="rfiByOrgChartPlugins"></p-chart>
+        @if (!rfiUnits.length) {
+          <p class="chart-empty" i18n="@@dashboard.rfi.rfisByEmpty">{rfiByView, select, division {No division-level RFIs} other {No sub-division RFIs}}</p>
+        }
+      </div>
+
+      <div class="donut-legend">
+        @for (item of rfiByOrgLegend; track item.label; let i = $index) {
+          <div class="donut-legend__item"
+               [class.donut-legend__item--disabled]="rfiByOrgHidden[i]"
+               role="button"
+               tabindex="0"
+               [attr.aria-pressed]="rfiByOrgHidden[i]"
+               [attr.aria-label]="legendToggleLabel(rfiByOrgHidden[i], item.label)"
+               (click)="toggleRfiByOrgDataset(i)"
+               (keydown.enter)="toggleRfiByOrgDataset(i)"
+               (keydown.space)="$event.preventDefault(); toggleRfiByOrgDataset(i)">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="chart-card">
+      <div class="chart-card__header-row">
+        <div>
+          <h3 class="chart-title" i18n="@@dashboard.rfi.slaByView">SLA Compliance by {{ rfiByViewLabel(slaByView) }}</h3>
+          @if (hasMoreSlaData) {
+            <p class="chart-card__caption" i18n="@@dashboard.rfi.slaByCaption">Top {{ slaByOrgData.labels.length }} of {{ slaUnits.length }} {slaByView, select, division {divisions} other {sub-divisions}}</p>
+          }
+        </div>
+        <div class="chart-card__actions">
+          <div class="view-toggle" role="group" aria-label="View SLA compliance by" i18n-aria-label="@@dashboard.rfi.slaByToggleAria">
+            @for (view of rfiByViews; track view.key) {
+              <button type="button"
+                      class="view-toggle__btn"
+                      [class.view-toggle__btn--active]="slaByView === view.key"
+                      [attr.aria-pressed]="slaByView === view.key"
+                      (click)="setSlaByView(view.key)">
+                {{ view.label }}
+              </button>
+            }
+          </div>
+          <button type="button"
+                  class="chart-card__expand"
+                  (click)="openSlaByDeptDetail()"
+                  aria-label="View full SLA Compliance by Division / Sub-Division breakdown"
+                  i18n-aria-label="@@dashboard.rfi.slaByViewAllAria">
+            <app-draw-icon icon="pi pi-external-link"></app-draw-icon> <ng-container i18n="@@common.viewAll">View all</ng-container>
+          </button>
+        </div>
+      </div>
+      <div class="chart-box chart-box--clickable"
+           role="button"
+           tabindex="0"
+           aria-label="Open full SLA Compliance by Division / Sub-Division breakdown"
+           i18n-aria-label="@@dashboard.rfi.slaByOpenAria"
+           (click)="openSlaByDeptDetail()"
+           (keydown.enter)="openSlaByDeptDetail()"
+           (keydown.space)="$event.preventDefault(); openSlaByDeptDetail()">
+        <p-chart type="bar" [data]="slaByOrgData" [options]="slaByOrgOptions()" [plugins]="slaByOrgChartPlugins" height="260px"></p-chart>
+        @if (!slaUnits.length) {
+          <p class="chart-empty" i18n="@@dashboard.rfi.slaByEmpty">{slaByView, select, division {No division-level RFIs} other {No sub-division RFIs}}</p>
+        }
+      </div>
+
+      <div class="donut-legend">
+        @for (item of slaByOrgLegend; track item.label) {
+          <div class="donut-legend__item donut-legend__item--static">
+            <span class="donut-legend__left">
+              <span class="donut-legend__dot" [style.background]="item.color"></span>
+              <span class="donut-legend__label">{{ item.label }}</span>
+            </span>
+            <span class="donut-legend__value">{{ item.value }}</span>
+          </div>
+        }
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── All RFIs Table ───────────────────────────────── -->
+  <div class="table-card">
+
+    <div class="table-card__header">
+      <app-draw-icon icon="pi pi-exclamation-circle" class="header-icon"></app-draw-icon>
+      <span class="table-card__title" i18n="@@dashboard.rfi.allRfis">All RFIs</span>
+    </div>
+
+    <p-table
+      [value]="rfiRecords"
+      [paginator]="true"
+      [rows]="5"
+      [rowsPerPageOptions]="[5, 10, 20]"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      i18n-currentPageReportTemplate="@@dashboard.rfi.pageReport"
+      sortMode="multiple"
+      styleClass="p-datatable-sm rfi-table">
+
+      <ng-template pTemplate="header">
+        <tr>
+          <th pSortableColumn="id" style="width:100px"><ng-container i18n="@@common.id">ID</ng-container> <p-sortIcon field="id" /></th>
+          <th pSortableColumn="description"><ng-container i18n="@@dashboard.rfi.colDescription">RFI Description</ng-container> <p-sortIcon field="description" /></th>
+          <th pSortableColumn="sub-division" style="width:140px"><ng-container i18n="@@common.subDivision">Sub-Division</ng-container> <p-sortIcon field="sub-division" /></th>
+          <th pSortableColumn="status" style="width:120px"><ng-container i18n="@@common.status">Status</ng-container> <p-sortIcon field="status" /></th>
+          <th pSortableColumn="dueDate" style="width:120px"><ng-container i18n="@@common.dueDate">Due Date</ng-container> <p-sortIcon field="dueDate" /></th>
+          <th style="width:140px" i18n="@@common.responseDate">Response Date</th>
+          <th style="width:100px" i18n="@@dashboard.rfi.colSla">SLA</th>
+          <th style="width:80px" i18n="@@common.actions">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-rfi>
+        <tr [ngClass]="{ 'row-alert': isAlertRow(rfi) }">
+          <td class="rfi-id">{{ rfi.id }}</td>
+          <td>{{ rfi.description }}</td>
+          <td>{{ rfi.subDivision }}</td>
+          <td>
+            <p-tag [value]="statusLabel(rfi.status)" [severity]="getStatusSeverity(rfi.status)" [rounded]="true"></p-tag>
+          </td>
+          <td>{{ rfi.dueDate }}</td>
+          <td>{{ rfi.responseDate }}</td>
+          <td>
+            @if (rfi.sla === 'Breach') {
+              <span class="sla-breach"><app-draw-icon icon="pi pi-times-circle"></app-draw-icon> <ng-container i18n="@@dashboard.rfi.slaBreach">Breach</ng-container></span>
+            } @else {
+              <span class="sla-met"><app-draw-icon icon="pi pi-check-circle"></app-draw-icon> <ng-container i18n="@@dashboard.rfi.slaMet">Met</ng-container></span>
+            }
+          </td>
+          <td>
+            <p-button
+              icon="pi pi-eye"
+              [rounded]="true"
+              [text]="true"
+              severity="secondary"
+              size="small"
+              pTooltip="View Details"
+              i18n-pTooltip="@@common.viewDetailsTitle"
+              tooltipPosition="left"
+              (onClick)="openDrawer(rfi)">
+            </p-button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="8" class="empty-msg" i18n="@@dashboard.rfi.noRecords">No records found.</td>
+        </tr>
+      </ng-template>
+
+    </p-table>
+  </div>
+
+</div>

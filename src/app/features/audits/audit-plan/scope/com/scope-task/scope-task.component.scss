@@ -1,0 +1,709 @@
+// ── Variables ─────────────────────────────────────────────────────────────────
+$primary:      var(--primary-color);
+$accent:       var(--primary-color);
+$border:       var(--surface-border);
+$muted:        var(--text-color-secondary);
+$heading:      var(--text-color);
+// $bg-page:      #f5f7fa;
+$input-border: var(--surface-border);
+$error:        var(--p-red-500);
+
+// ── Drawer Panel ──────────────────────────────────────────────────────────────
+::ng-deep .scope-task-drawer {
+  width: 680px !important;
+  max-width: 100vw !important;
+
+  &.p-drawer {
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .p-drawer-content {
+    padding: 0 !important;
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .p-drawer-footer {
+    padding: 0 !important;
+    border-top: 1px solid $border;
+    flex-shrink: 0;
+  }
+}
+
+// ── Inner wrapper ─────────────────────────────────────────────────────────────
+.drawer-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid $border;
+  background: var(--surface-card);
+  flex-shrink: 0;
+}
+
+.drawer-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-icon-wrap {
+  width: 40px;
+  height: 40px;
+  background: var(--surface-hover);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .pi {
+    font-size: 18px;
+    color: $primary;
+  }
+}
+
+.drawer-title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.drawer-title {
+  font-size: 16px;
+  font-weight: 400;
+  color: $heading;
+  margin: 0;
+
+  strong {
+    font-weight: 700;
+    color: $primary;
+  }
+}
+
+.drawer-subtitle {
+  font-size: 11px;
+  color: $muted;
+  margin: 0;
+}
+
+.close-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: var(--surface-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  .pi {
+    font-size: 13px;
+    color: $muted;
+  }
+
+  &:hover { background: var(--surface-hover); }
+}
+
+// ── Tab Content / Form Body ───────────────────────────────────────────────────
+.tab-content {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  // Scrolling is handled by the parent p-tabpanels container
+}
+
+// ── Section Label ─────────────────────────────────────────────────────────────
+.section-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: $primary;
+  margin: 4px 0 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $border;
+}
+
+// ── Field Labels ──────────────────────────────────────────────────────────────
+.field-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: $heading;
+  margin-bottom: 5px;
+  letter-spacing: 0.01em;
+}
+
+.field-optional {
+  font-weight: 400;
+  color: $muted;
+  margin-left: 4px;
+}
+
+.field-required {
+  color: $error;
+  margin-left: 2px;
+}
+
+// ── Form Layout ───────────────────────────────────────────────────────────────
+.form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.form-col {
+  flex: 1;
+  min-width: 0;
+
+  &.full { flex: 1 1 100%; }
+}
+
+// ── Text Input ────────────────────────────────────────────────────────────────
+.form-input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid $input-border;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-size: 13px;
+  color: var(--text-color);
+  background: var(--surface-card);
+  box-sizing: border-box;
+
+  &::placeholder { color: var(--text-color-secondary); font-size: 13px; }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  &.input-error {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-red-500) 8%, transparent);
+  }
+}
+
+// ── Textarea ──────────────────────────────────────────────────────────────────
+.form-textarea {
+  width: 100%;
+  border: 1px solid $input-border;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-color);
+  background: var(--surface-card);
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+
+  &::placeholder { color: var(--text-color-secondary); font-size: 13px; }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  &.input-error {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-red-500) 8%, transparent);
+  }
+}
+
+// ── Task Textarea (Objective & Observations) ──────────────────────────────────
+.form-textarea--task {
+  width: 100%;
+  height: 120px;
+  min-height: 120px;
+  max-height: 120px;
+  resize: none;
+
+  border: 1px solid $input-border;
+  border-radius: 4px;           // Radius-xs
+  padding: 10px 12px;           // Spacing/3
+  gap: 10px;
+
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text-color);
+  background: var(--surface-card);
+  box-sizing: border-box;
+  line-height: 1.5;
+
+  &::placeholder {
+    color: var(--text-color-secondary);
+    font-size: 13px;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  &.ng-invalid.ng-dirty {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-red-500) 8%, transparent) !important;
+  }
+}
+
+// ── Char counter ──────────────────────────────────────────────────────────────
+.char-counter {
+  font-size: 11px;
+  color: $muted;
+  text-align: right;
+  margin-top: 3px;
+
+  &.char-over { color: $error; font-weight: 600; }
+}
+
+// ── Error hint ────────────────────────────────────────────────────────────────
+.error-hint {
+  display: block;
+  font-size: 11px;
+  color: $error;
+  margin-top: 4px;
+}
+
+// ── Field hint ────────────────────────────────────────────────────────────────
+.field-hint {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: $muted;
+  margin-top: 4px;
+
+  .pi { font-size: 11px; color: $accent; }
+}
+
+// ── Dropdowns (p-select / p-multiselect) ──────────────────────────────────────
+::ng-deep .form-dropdown {
+  width: 100% !important;
+  height: 40px !important;
+  border: 1px solid $input-border !important;
+  border-radius: 6px !important;
+
+  .p-select-label {
+    font-size: 13px;
+    color: var(--text-color);
+    padding: 9px 12px;
+    line-height: 1.4;
+  }
+
+  &.p-placeholder .p-select-label { color: var(--text-color-secondary); }
+
+  .p-select-dropdown { color: $muted; }
+
+  .p-multiselect-label {
+    font-size: 13px;
+    color: var(--text-color);
+    padding: 9px 12px;
+    line-height: 1.4;
+  }
+
+  &.p-multiselect-empty .p-multiselect-label { color: var(--text-color-secondary); }
+
+  &.p-focus {
+    border-color: $primary !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent) !important;
+  }
+
+  &.p-invalid {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-red-500) 8%, transparent) !important;
+  }
+}
+
+// ── DatePicker ────────────────────────────────────────────────────────────────
+::ng-deep .form-datepicker {
+  width: 100%;
+
+  .p-datepicker-input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid $input-border;
+    border-radius: 6px;
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--text-color);
+    background: var(--surface-card);
+    box-sizing: border-box;
+
+    &::placeholder { color: var(--text-color-secondary); font-size: 13px; }
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+    }
+  }
+
+  &.p-datepicker-with-icon .p-datepicker-input {
+    padding-right: 36px;
+  }
+
+  .p-datepicker-dropdown {
+    border: 1px solid $input-border;
+    border-left: none;
+    border-radius: 0 6px 6px 0;
+    background: var(--surface-card);
+    color: $muted;
+    height: 40px;
+    width: 36px;
+
+    &:hover { background: var(--surface-hover); }
+  }
+
+  &.p-invalid .p-datepicker-input {
+    border-color: $error !important;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--p-red-500) 8%, transparent) !important;
+  }
+}
+
+// ── SelectButton — Task Type & RFI Source ─────────────────────────────────────
+::ng-deep .task-type-selectbtn {
+  display: flex;
+  width: 100%;
+
+  .p-selectbutton-option {
+    flex: 1;
+    height: 38px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid $input-border !important;
+    background: var(--surface-card) !important;
+    color: $muted !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+
+    &:first-child { border-radius: 6px 0 0 6px !important; }
+    &:last-child  { border-radius: 0 6px 6px 0 !important; }
+
+    &:hover {
+      background: var(--surface-hover) !important;
+      border-color: $primary !important;
+      color: $primary !important;
+    }
+
+    &.p-selected {
+      background: $primary !important;
+      border-color: $primary !important;
+      color: #fff !important;
+    }
+  }
+}
+
+// ── SelectButton — Control Rating ─────────────────────────────────────────────
+::ng-deep .control-rating-selectbtn {
+  display: flex;
+  width: 100%;
+
+  .p-selectbutton-option {
+    flex: 1;
+    height: 38px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid $input-border !important;
+    background: var(--surface-card) !important;
+    color: $muted !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:first-child { border-radius: 6px 0 0 6px !important; }
+    &:last-child  { border-radius: 0 6px 6px 0 !important; }
+
+    &:hover {
+      background: var(--surface-hover) !important;
+      border-color: $primary !important;
+      color: $primary !important;
+    }
+  }
+
+  .p-selectbutton-option:has(.rating-item--strong).p-selected {
+    background: var(--surface-hover) !important;
+    border-color: #12b76a !important;
+  }
+
+  .p-selectbutton-option:has(.rating-item--moderate).p-selected {
+    background: #fffaeb !important;
+    border-color: #f79009 !important;
+  }
+
+  .p-selectbutton-option:has(.rating-item--weak).p-selected {
+    background: color-mix(in srgb, var(--p-red-500) 8%, transparent) !important;
+    border-color: #f04438 !important;
+  }
+}
+
+// ── Rating item inner span ────────────────────────────────────────────────────
+.rating-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: inherit;
+
+  .pi { font-size: 13px; }
+
+  &--strong   { color: #027a48; }
+  &--moderate { color: #b54708; }
+  &--weak     { color: #b42318; }
+}
+
+// ── InputGroup ────────────────────────────────────────────────────────────────
+::ng-deep .p-inputgroup {
+  .p-inputgroup-addon {
+    height: 40px;
+    border: 1px solid $input-border;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    background: var(--surface-hover);
+    padding: 0 10px;
+    display: flex;
+    align-items: center;
+
+    .pi { font-size: 13px; color: $muted; }
+  }
+
+  input.p-inputtext {
+    height: 40px;
+    border: 1px solid $input-border;
+    border-radius: 0 6px 6px 0;
+    padding: 0 12px;
+    font-size: 13px;
+    color: var(--text-color);
+    width: 100%;
+
+    &::placeholder { color: var(--text-color-secondary); }
+
+    &:focus {
+      outline: none;
+      border-color: $primary;
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 8%, transparent);
+      z-index: 1;
+    }
+
+    &.ng-invalid.ng-dirty {
+      border-color: $error !important;
+      box-shadow: 0 0 0 3px rga(217, 45, 32, 0.08) !important;
+    }
+  }
+}
+
+// ── Tag Add Button ────────────────────────────────────────────────────────────
+.tag-add-btn {
+  height: 40px;
+  width: 36px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $primary;
+  border: 1px solid $primary;
+  border-left: none;
+  border-radius: 0 6px 6px 0;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  .pi { font-size: 12px; }
+
+  &:hover { background: var(--primary-color); border-color: var(--primary-color); }
+}
+
+// ── Tag Chips ─────────────────────────────────────────────────────────────────
+.tags-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 6px 3px 10px;
+  background: var(--surface-hover);
+  border: 1px solid #c5d0e8;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: $primary;
+
+  &-remove {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    color: $muted;
+    padding: 0;
+    transition: background 0.12s, color 0.12s;
+
+    .pi { font-size: 9px; }
+
+    &:hover { background: rgba(16, 46, 112, 0.15); color: $primary; }
+  }
+}
+
+// ── Added Tasks List ──────────────────────────────────────────────────────────
+.added-tasks {
+  flex-shrink: 0;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.task-list-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: var(--surface-hover);
+
+  &-icon {
+    font-size: 12px;
+    color: $muted;
+    flex-shrink: 0;
+  }
+
+  &-name {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 500;
+    color: $heading;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  &-badge {
+    flex-shrink: 0;
+  }
+
+  &-remove {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    color: $muted;
+    flex-shrink: 0;
+    border-radius: 4px;
+    transition: color 0.15s;
+
+    .pi { font-size: 11px; }
+
+    &:hover { color: $error; }
+  }
+}
+
+// ── Risk Priority Badges ──────────────────────────────────────────────────────
+.risk-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+
+  &--critical { background: color-mix(in srgb, var(--p-red-500) 8%, transparent); color: #b42318; border: 1px solid #fecdca; }
+  &--high     { background: #fff4ed; color: #c4320a; border: 1px solid #f9dbaf; }
+  &--medium   { background: #fffaeb; color: #b54708; border: 1px solid #fedf89; }
+  &--low      { background: var(--surface-hover); color: #027a48; border: 1px solid #a9efc5; }
+}
+
+// ── Edit indicator on task list item ─────────────────────────────────────────
+.task-list-item--editing {
+  border-color: $accent !important;
+  background: #f0f3ff !important;
+}
+
+.task-list-item-edit {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  color: $muted;
+  flex-shrink: 0;
+  border-radius: 4px;
+  transition: color 0.15s;
+
+  .pi { font-size: 11px; }
+
+  &:hover { color: $accent; }
+}
+
+// ── Inline task action buttons (below added tasks) ────────────────────────────
+.task-inline-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 4px;
+}
+
+::ng-deep .task-clear-btn-sm.p-button {
+  height: 32px;
+  padding: 0 14px !important;
+  font-size: 12px;
+  background: transparent !important;
+  border: 1px solid $input-border !important;
+  border-radius: 6px !important;
+  color: $heading !important;
+
+  &:hover { background: #f5f7fa !important; }
+}
+
+::ng-deep .task-add-btn-sm.p-button {
+  height: 32px;
+  padding: 0 14px !important;
+  font-size: 12px;
+  font-weight: 600;
+  background: $accent !important;
+  border-color: $accent !important;
+  border-radius: 6px !important;
+  color: #fff !important;
+
+  &:hover { background: var(--primary-color) !important; border-color: var(--primary-color) !important; }
+}

@@ -1,0 +1,43 @@
+h4 { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--ap-slate); margin: 16px 0 8px; &:first-of-type { margin-top: 0; } }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.card { background: #FBFCFE; border: 1px solid var(--ap-hairline); border-radius: 8px; padding: 10px 12px;
+  display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 54px; box-sizing: border-box;
+  &.hi { border-color: var(--ap-sig); background: #F1F8F5; } &.wide { grid-column: 1 / -1; }
+  .k { font-size: 10px; color: var(--ap-slate); text-transform: uppercase; letter-spacing: .05em; font-weight: 700; line-height: 1; }
+  .v { font-size: 12.5px; font-weight: 600; line-height: 18px; height: 18px; display: flex; align-items: center;
+    &.mono { font-variant-numeric: tabular-nums; } } }
+.runs { display: flex; gap: 6px; flex-wrap: wrap; }
+.run { flex: 1; min-width: 90px; text-align: center; padding: 8px 6px; border-radius: 8px;
+  display: flex; flex-direction: column; gap: 2px;
+  .rk { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+  .rv { font-size: 11.5px; font-weight: 600; } }
+.job-row { display: flex; align-items: center; gap: 8px; padding: 8px; width: 100%;
+  border: none; border-bottom: 1px dashed var(--ap-hairline); background: none; cursor: pointer;
+  text-align: left; font-family: inherit; font-size: 12.5px; border-radius: 6px;
+  &.sel { background: #F1F8F5; } &:hover { background: #FAFBFE; }
+  .name { flex: 1; } .who { font-size: 10.5px; color: var(--ap-slate); }
+  .run-tag { font-size: 9px; font-weight: 700; color: var(--ap-slate); background: #EEF1F7;
+    border-radius: 8px; padding: 1px 6px; margin-left: 5px; vertical-align: 1px; } }
+.tag { font-size: 10.5px; font-weight: 600; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
+.finding { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0;
+  border-bottom: 1px dashed var(--ap-hairline); font-size: 12.5px; &:last-child { border-bottom: none; }
+  .fbadge { background: var(--st-overdue-bg); color: var(--st-overdue-tx);
+    padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  .ftext { flex: 1; } .fstate { font-size: 10.5px; color: var(--ap-slate); } }
+.none { font-size: 12.5px; color: var(--ap-slate); }
+.st-completed { background: var(--st-completed-bg); color: var(--st-completed-tx); }
+.st-planned  { background: var(--st-planned-bg);  color: var(--st-planned-tx); }
+.st-inprog   { background: var(--st-inprog-bg);   color: var(--st-inprog-tx); }
+.st-overdue  { background: var(--st-overdue-bg);  color: var(--st-overdue-tx); }
+.risk { font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.risk-High   { background: var(--st-overdue-bg);   color: var(--st-overdue-tx); }
+.risk-Medium { background: var(--st-inprog-bg);    color: var(--st-inprog-tx); }
+.risk-Low    { background: var(--st-completed-bg); color: var(--st-completed-tx); }
+
+:host-context(.app-dark) {
+  .card { background: var(--ap-panel); &.hi { background: color-mix(in srgb, var(--ap-sig) 15%, var(--ap-panel)); } }
+  .job-row.sel { background: color-mix(in srgb, var(--ap-sig) 15%, var(--ap-panel)); }
+  .job-row:hover { background: var(--ap-hairline); }
+  .run-tag { background: var(--ap-hairline); }
+}

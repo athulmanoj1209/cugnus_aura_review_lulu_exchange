@@ -1,0 +1,406 @@
+<div class="add-company-content">
+
+  <!-- ============================= HEADER ============================= -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <app-draw-icon icon="pi pi-building"></app-draw-icon>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title">Add New Company</h2>
+        <p class="drawer-subtitle">Register a new company for audit</p>
+      </div>
+    </div>
+    <button type="button" class="close-btn" (click)="onCancel()" aria-label="Close">
+      <app-draw-icon icon="pi pi-times"></app-draw-icon>
+    </button>
+  </div>
+
+  <!-- ======================= APPROVAL BANNER ========================= -->
+  @if (approvalMode) {
+    <div class="approval-banner">
+      <app-draw-icon icon="pi pi-info-circle"></app-draw-icon>
+      @if (canDecide) {
+        <span>You may view and edit the company details. Add your <strong>approver notes</strong> below and approve or reject.</span>
+      } @else {
+        <span>This request has already been <strong>{{ requestStatus }}</strong>. No further action is required.</span>
+      }
+    </div>
+  }
+
+  <!-- ============================= BODY =============================== -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="drawer-body">
+    <p-tabs [(value)]="activeTabIndex" styleClass="company-tabs">
+
+      <p-tablist>
+        <p-tab value="0">Basic Information</p-tab>
+        <p-tab value="1">Regulatory</p-tab>
+        <p-tab value="2"><app-draw-icon icon="pi pi-calculator" [size]="12"></app-draw-icon> Financial &amp; Operational</p-tab>
+        <p-tab value="3">Risk &amp; Audit</p-tab>
+      </p-tablist>
+
+      <p-tabpanels>
+
+        <!-- ================== TAB 1 – BASIC INFORMATION ================ -->
+        <p-tabpanel value="0">
+          <ng-container *ngIf="activeTabIndex === FIRST_TAB" formGroupName="basic">
+          <div class="form-grid">
+
+            <div class="form-field form-field--full">
+               <label for="companyName" class="form-label">Company Name *</label>
+              <input pInputText id="companyName" formControlName="companyName"
+                     placeholder="Company Name *" [invalid]="isInvalid('basic.companyName')" />
+              <small *ngIf="getError('basic.companyName','Company Name') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.tradeLegalRegNumber')">
+                <label for="tradeLegalRegNumber" class="form-label">Trade/Legal Registration Number *</label>
+              <input pInputText id="tradeLegalRegNumber" formControlName="tradeLegalRegNumber"
+                     placeholder="Trade/Legal Registration Number" [invalid]="isInvalid('basic.tradeLegalRegNumber')"/>
+              <small *ngIf="getError('basic.tradeLegalRegNumber','Trade/Legal Registration Number') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.dateOfIncorporation')">
+              <label for="dateOfIncorporation" class="form-label">Date of Incorporation *</label>
+              <p-datepicker id="dateOfIncorporation" formControlName="dateOfIncorporation"
+                          placeholder="Date of Incorporation"
+                          dateFormat="dd/mm/yy" [showIcon]="true"
+                          styleClass="w-full" inputStyleClass="w-full" [invalid]="isInvalid('basic.dateOfIncorporation')"></p-datepicker>
+              <small *ngIf="getError('basic.dateOfIncorporation','Date of Incorporation') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field">
+              <label for="countryOfIncorporation" class="form-label">Country of Incorporation</label>
+              <p-select id="countryOfIncorporation" formControlName="countryOfIncorporation"
+                          [options]="countries" optionLabel="label" optionValue="value"
+                          placeholder="Country of Incorporation"
+                          [filter]="true" filterBy="label"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field">
+              <label for="regionEmirate" class="form-label">Region / Emirate</label>
+              <p-select id="regionEmirate" formControlName="regionEmirate"
+                          [options]="regions" optionLabel="label" optionValue="value"
+                          placeholder="Region / Emirate"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.city')">
+              
+              <label for="city" class="form-label">City</label>
+              <input pInputText id="city" formControlName="city" placeholder="City" />
+              <small *ngIf="getError('basic.city','City') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field">
+              <label for="industrySector" class="form-label">Industry / Sector</label>
+              <p-select id="industrySector" formControlName="industrySector"
+                          [options]="industries" optionLabel="label" optionValue="value"
+                          placeholder="Industry / Sector"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field">
+              <label for="typeOfEntity" class="form-label">Type of Entity</label>
+              <p-select id="typeOfEntity" formControlName="typeOfEntity"
+                          [options]="entityTypes" optionLabel="label" optionValue="value"
+                          placeholder="Type of Entity"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field">
+               <label for="ownershipType" class="form-label">Ownership Type</label>
+              <p-select id="ownershipType" formControlName="ownershipType"
+                          [options]="ownershipTypes" optionLabel="label" optionValue="value"
+                          placeholder="Ownership Type"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field">
+               <label for="orgStatus" class="form-label">Approval Status</label>
+              <p-select id="orgStatus" formControlName="orgStatus"
+                          [options]="orgStatusOptions" optionLabel="label" optionValue="value"
+                          placeholder="Approval Status"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.address')">
+               <label for="address" class="form-label">Address</label>
+              <input pInputText id="address" formControlName="address" placeholder="Address" />
+              <small *ngIf="getError('basic.address','Address') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.email')">
+               <label for="email" class="form-label">Email</label>
+              <input pInputText id="email" type="email"
+                     formControlName="email" placeholder="Email" />
+              <small *ngIf="getError('basic.email','Email') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.phone')">
+              <label for="phone" class="form-label">Phone</label>
+              <input pInputText id="phone" formControlName="phone" placeholder="Phone" />
+              <small *ngIf="getError('basic.phone','Phone') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.website')">
+               <label for="website" class="form-label">Website</label>
+              <input pInputText id="website" formControlName="website" placeholder="Website" />
+              <small *ngIf="getError('basic.website','Website') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.parentCompany')">
+              <label for="parentCompany" class="form-label">Parent Company</label>
+              <input pInputText id="parentCompany" formControlName="parentCompany"
+                     placeholder="Parent Company" />
+              <small *ngIf="getError('basic.parentCompany','Parent Company') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('basic.groupAffiliation')">
+              <label for="groupAffiliation" class="form-label">Group Affiliation</label>
+              <input pInputText id="groupAffiliation" formControlName="groupAffiliation"
+                     placeholder="Group Affiliation" />
+              <small *ngIf="getError('basic.groupAffiliation','Group Affiliatio') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field form-field--full" [class.is-invalid]="isInvalid('basic.notes')">
+               <label for="notes" class="form-label">Notes</label>
+              <textarea pTextarea id="notes" formControlName="notes"
+                        placeholder="Notes" rows="4"></textarea>
+                        <div class="char-count">
+    {{
+      form.get('basic.notes')?.value?.length || 0
+    }}/500  </div>
+              <small *ngIf="getError('basic.notes','Notes') as err" class="error-text">{{ err }}</small>
+            </div>
+
+          </div>
+          </ng-container>
+        </p-tabpanel>
+
+        <!-- ================== TAB 2 – REGULATORY ====================== -->
+        <p-tabpanel value="1">
+          <div class="form-grid" formGroupName="regulatory">
+
+            <div class="form-field form-field--full checkbox-row">
+              <p-checkbox formControlName="isRegulated"
+                          [binary]="true" inputId="isRegulated"></p-checkbox>
+              <label for="isRegulated" style="font-weight: bold;">Is Regulated?</label>
+            </div>
+
+            <div class="form-field">
+              <label for="regIndustry" class="form-label">Industry</label>
+              <p-select id="regIndustry" formControlName="regIndustry"
+                          [options]="industries" optionLabel="label" optionValue="value"
+                          placeholder="Industry"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('regulatory.regulatoryLicenseNumber')">
+              <label for="regulatoryLicenseNumber" class="form-label">Regulatory License Number</label>
+              <input pInputText id="regulatoryLicenseNumber"
+                     formControlName="regulatoryLicenseNumber"
+                     placeholder="Regulatory License Number *" [invalid]="isInvalid('regulatory.regulatoryLicenseNumber')" />
+              <small *ngIf="getError('regulatory.regulatoryLicenseNumber','Regulatory License Number') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('regulatory.licenseExpiryDate')">
+              
+              <label for="licenseExpiryDate" class="form-label">License Expiry Date </label>
+              <p-datepicker id="licenseExpiryDate" formControlName="licenseExpiryDate"
+                          placeholder="License Expiry Date *"
+                          dateFormat="dd/mm/yy" [showIcon]="true"
+                          styleClass="w-full" inputStyleClass="w-full" [invalid]="isInvalid('regulatory.licenseExpiryDate')"></p-datepicker>
+              <small *ngIf="getError('regulatory.licenseExpiryDate','License Expiry Date') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field form-field--full" [class.is-invalid]="isInvalid('regulatory.regulatoryNotes')">
+              
+               <label for="regulatoryNotes" class="form-label">Regulatory Notes</label>
+               <textarea pTextarea id="regulatoryNotes" formControlName="regulatoryNotes"
+                        placeholder="Regulatory Notes" rows="4"></textarea>
+              <small *ngIf="getError('regulatory.regulatoryNotes','Regulatory Notes') as err" class="error-text">{{ err }}</small>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- ============= TAB 3 – FINANCIAL & OPERATIONAL ============== -->
+        <p-tabpanel value="2">
+          <div class="form-grid" formGroupName="financial">
+
+            <div class="form-field" [class.is-invalid]="isInvalid('financial.currencyAccount')">
+              <label for="currencyAccount" class="form-label">Currency Account *</label>
+              <p-select id="currencyAccount" formControlName="currencyAccount"
+                          [options]="currencies" optionLabel="label" optionValue="value"
+                          placeholder="Currency Account *"
+                          styleClass="w-full" [invalid]="isInvalid('financial.currencyAccount')"></p-select>
+              <small *ngIf="getError('financial.currencyAccount','Currency Account') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field">
+              <label for="annualTurnoverBracket" class="form-label">Annual Turnover / Revenue Bracket</label>
+              <p-select id="annualTurnoverBracket" formControlName="annualTurnoverBracket"
+                          [options]="turnoverBrackets" optionLabel="label" optionValue="value"
+                          placeholder="Annual Turnover / Revenue Bracket"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('financial.numberOfEmployees')">
+               <label for="numberOfEmployees" class="form-label">Number of Employees</label>
+              <p-inputNumber id="numberOfEmployees" formControlName="numberOfEmployees"
+                             placeholder="Number of Employees" [min]="0"
+                             styleClass="w-full" inputStyleClass="w-full"></p-inputNumber>
+              <small *ngIf="getError('financial.numberOfEmployees','Number of Employees') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('financial.numberOfSubDivisionsLocations')">
+              <label for="numberOfSubDivisionsLocations" class="form-label">Number of Sub-Divisions/Locations</label>
+              <p-inputNumber id="numberOfSubDivisionsLocations"
+                             formControlName="numberOfSubDivisionsLocations"
+                             placeholder="Number of Sub-Divisions/Locations" [min]="0"
+                             styleClass="w-full" inputStyleClass="w-full"></p-inputNumber>
+              <small *ngIf="getError('financial.numberOfSubDivisionsLocations','Number of Sub-Divisions/Locations') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('financial.fiscalYearStart')">
+              <label for="fiscalYearStart" class="form-label">Fiscal Year Start</label>
+              <input pInputText id="fiscalYearStart" formControlName="fiscalYearStart"
+                     placeholder="Fiscal Year Start" />
+              <small *ngIf="getError('financial.fiscalYearStart','Fiscal Year Start') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field form-field--full checkbox-row--inline">
+              <div class="checkbox-row">
+                <p-checkbox formControlName="treasuryFunctionsPresent"
+                            [binary]="true" inputId="treasuryFunctionsPresent"></p-checkbox>
+                <label for="treasuryFunctionsPresent">Treasury Functions Present?</label>
+              </div>
+              <div class="checkbox-row second">
+                <p-checkbox formControlName="cashHandlingInvolved"
+                            [binary]="true" inputId="cashHandlingInvolved"></p-checkbox>
+                <label for="cashHandlingInvolved">Cash Handling Involved?</label>
+              </div>
+            </div>
+
+          </div>
+        </p-tabpanel>
+
+        <!-- ================== TAB 4 – RISK & AUDIT ==================== -->
+        <p-tabpanel value="3">
+          <div class="form-grid" formGroupName="risk">
+
+            <div class="form-field" [class.is-invalid]="isInvalid('risk.riskRating')">
+              <label for="riskRating" class="form-label">Risk Rating *</label>
+              <p-select id="riskRating" formControlName="riskRating"
+                          [options]="riskRatings" optionLabel="label" optionValue="value"
+                          placeholder="Risk Rating *"
+                          styleClass="w-full" [invalid]="isInvalid('risk.riskRating')"></p-select>
+              <small *ngIf="getError('risk.riskRating','Risk Rating') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field">
+              <label for="riskOwner" class="form-label">Risk Owner</label>
+              <p-select id="riskOwner" formControlName="riskOwner"
+                          [options]="riskOwners" optionLabel="label" optionValue="value"
+                          placeholder="Risk Owner"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('risk.lastAuditDate')">
+              <label for="lastAuditDate" class="form-label">Last Audit Date</label>
+              <p-datepicker id="lastAuditDate" formControlName="lastAuditDate"
+                          placeholder="Last Audit Date"
+                          dateFormat="dd/mm/yy" [showIcon]="true"
+                          styleClass="w-full" inputStyleClass="w-full"></p-datepicker>
+              <small *ngIf="getError('risk.lastAuditDate','Last Audit Date') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field">
+              <label for="nextPlannedAuditCycle" class="form-label">Next Planned Audit Cycle</label>
+              <p-select id="nextPlannedAuditCycle" formControlName="nextPlannedAuditCycle"
+                          [options]="auditCycles" optionLabel="label" optionValue="value"
+                          placeholder="Next Planned Audit Cycle"
+                          styleClass="w-full"></p-select>
+            </div>
+
+            <div class="form-field" [class.is-invalid]="isInvalid('risk.residualRiskScore')">
+               <label for="residualRiskScore" class="form-label">Residual Risk Score (0-10)</label>
+              <p-inputNumber id="residualRiskScore" formControlName="residualRiskScore"
+                             placeholder="Residual Risk Score (0-10)"
+                             [min]="0" [max]="10" [showButtons]="false"
+                             styleClass="w-full" inputStyleClass="w-full"></p-inputNumber>
+              <small *ngIf="getError('risk.residualRiskScore','Residual Risk Score (0-10)') as err" class="error-text">{{ err }}</small>
+            </div>
+
+            <div class="form-field form-field--full" [class.is-invalid]="isInvalid('risk.riskNotes')">
+              <label for="riskNotes" class="form-label">Risk Notes / Comments</label>
+              <textarea pTextarea id="riskNotes" formControlName="riskNotes"
+                        placeholder="Risk Notes / Comments" rows="4"></textarea>
+              <div class="char-count">
+    {{
+      form.get('risk.riskNotes')?.value?.length || 0
+    }}/500  </div>
+                        <small *ngIf="getError('risk.riskNotes','Risk Notes / Comments') as err" class="error-text">{{ err }}</small>
+            </div>
+
+          </div>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+
+
+    @if (canDecide) {
+      <div class="approver-notes-section" style="margin: 16px 0 0;">
+        <div class="approver-notes-header">
+          <app-draw-icon icon="pi pi-comment"></app-draw-icon>
+          <span class="approver-notes-title">Approver Notes</span>
+          <span class="approver-notes-required">Required when rejecting</span>
+        </div>
+        <textarea pTextarea formControlName="approverNotes"
+          placeholder="Add your approver notes here..."
+          [rows]="4" class="field-textarea approver-notes-textarea"
+          [class.input-error]="isInvalidApproverNotes()"></textarea>
+        @if (isInvalidApproverNotes()) {
+          <span class="error-msg"><app-draw-icon icon="pi pi-exclamation-circle"></app-draw-icon> Approver notes are required when rejecting</span>
+        }
+      </div>
+    }
+  
+  <!-- ============================ FOOTER ============================ -->
+    <div class="drawer-footer">
+         <p-button label="Cancel" *ngIf="activeTabIndex !== FIRST_TAB&&form.get('viewType')?.value!=CompanyDrawerTypes.View"
+                styleClass="p-button-secondary cancel-btn"
+                (onClick)="onCancel()" type="button"></p-button>
+
+<p-button label="Cancel" *ngIf="activeTabIndex == FIRST_TAB&&form.get('viewType')?.value!=CompanyDrawerTypes.View"
+                styleClass="cancel-btn"
+                (onClick)="onCancel()" type="button"></p-button>
+
+                <p-button *ngIf="activeTabIndex == FIRST_TAB&&form.get('viewType')?.value!=CompanyDrawerTypes.View" label="Next"
+                styleClass="btn-next"
+                (onClick)="next()" type="button"></p-button>
+
+      <p-button *ngIf="activeTabIndex !== FIRST_TAB&&form.get('viewType')?.value!=CompanyDrawerTypes.View" label="Previous"
+                styleClass="p-button-secondary btn-previous"
+                (onClick)="previous()" type="button"></p-button>
+
+      <p-button *ngIf="activeTabIndex !== LAST_TAB&&activeTabIndex !== FIRST_TAB&&form.get('viewType')?.value!=CompanyDrawerTypes.View" label="Next"
+                styleClass="btn-primary"
+                (onClick)="next()" type="button"></p-button>
+
+      <p-button *ngIf="activeTabIndex === LAST_TAB&&form.get('viewType')?.value!=CompanyDrawerTypes.View&&!approvalMode" label="Create Company"
+                styleClass="submit-btn" type="submit"></p-button>
+
+      @if (activeTabIndex === LAST_TAB && canDecide) {
+        <button type="button" class="btn-reject" (click)="onReject()">
+          <app-draw-icon icon="pi pi-times"></app-draw-icon> Reject
+        </button>
+        <button type="button" class="btn-approve" (click)="onApprove()">
+          <app-draw-icon icon="pi pi-check"></app-draw-icon> Approve
+        </button>
+      }
+    </div>
+    </form>
+</div>

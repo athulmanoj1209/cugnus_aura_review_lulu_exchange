@@ -1,0 +1,202 @@
+<div class="findings">
+    <!-- ========================= KPI CARDS ========================= -->
+    <div class="kpi-grid">
+        <div
+            *ngFor="let kpi of kpis"
+            class="kpi-card kpi-card--clickable"
+            role="button"
+            tabindex="0"
+            [attr.aria-label]="viewKpiAriaLabel(kpi.label)"
+            (click)="goToFindings(kpi.view)"
+            (keydown.enter)="goToFindings(kpi.view)"
+            (keydown.space)="$event.preventDefault(); goToFindings(kpi.view)"
+            [class.kpi-card--green]="kpi.variant === 'green'"
+            [class.kpi-card--red]="kpi.variant === 'red'"
+            [class.kpi-card--yellow]="kpi.variant === 'yellow'"
+        >
+            <div class="kpi-card__header">
+                <span class="kpi-card__label">{{ kpi.label }}</span>
+                <span class="kpi-card__icon">
+                    <app-draw-icon [icon]="kpi.icon" [size]="15"></app-draw-icon>
+                </span>
+            </div>
+            <div class="kpi-card__value">{{ kpi.value }}</div>
+            <div *ngIf="kpi.sub" class="kpi-card__sub" [class.kpi-card__sub--up]="kpi.sub.startsWith('↑')">
+                {{ kpi.sub }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ==== ROW 1: Severity Pie + Aging Bar + Findings by Sub-Division ==== -->
+    <div class="chart-row chart-row--triple">
+        <div class="chart-card">
+            <h3 class="chart-card__title" i18n="@@dashboard.findings.openFindingsBySeverity">Open Findings by Severity</h3>
+            <div class="chart-wrap chart-wrap--donut">
+                <app-donut-status-chart [legend]="severityLegend" [maxWidth]="240"></app-donut-status-chart>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card__header-row">
+                <h3 class="chart-card__title" i18n="@@dashboard.findings.agingAnalysisTitle">Aging Analysis (Open Findings)</h3>
+                <button type="button" class="chart-card__expand" (click)="openAgingDetail()" aria-label="View full Aging Analysis breakdown" i18n-aria-label="@@dashboard.findings.viewAgingBreakdownAria"><app-draw-icon icon="pi pi-external-link"></app-draw-icon> <ng-container i18n="@@common.viewAll">View all</ng-container></button>
+            </div>
+            <div
+                class="chart-wrap chart-wrap--aging chart-wrap--clickable"
+                role="button"
+                tabindex="0"
+                aria-label="Open full Aging Analysis breakdown"
+                i18n-aria-label="@@dashboard.findings.openAgingBreakdownAria"
+                (click)="openAgingDetail()"
+                (keydown.enter)="openAgingDetail()"
+                (keydown.space)="$event.preventDefault(); openAgingDetail()"
+            >
+                <p-chart #agingChart type="bar" [data]="agingData" [options]="agingOptions()" [plugins]="agingChartPlugins"></p-chart>
+            </div>
+
+            <div class="donut-legend">
+                @for (item of agingLegend; track item.label; let i = $index) {
+                    <div class="donut-legend__item"
+                         [class.donut-legend__item--disabled]="agingHidden[i]"
+                         role="button"
+                         tabindex="0"
+                         [attr.aria-pressed]="agingHidden[i]"
+                         [attr.aria-label]="legendToggleAriaLabel(agingHidden[i], item.label)"
+                         (click)="toggleAgingDataset(i)"
+                         (keydown.enter)="toggleAgingDataset(i)"
+                         (keydown.space)="$event.preventDefault(); toggleAgingDataset(i)">
+                        <span class="donut-legend__left">
+                            <span class="donut-legend__dot" [style.background]="item.color"></span>
+                            <span class="donut-legend__label">{{ item.label }}</span>
+                        </span>
+                        <span class="donut-legend__value">{{ item.value }}</span>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-card__header-row">
+                <div>
+                    <h3 class="chart-card__title" i18n="@@dashboard.findings.findingsByUnitTitle">Findings by {{ findingsByViewLabel }}</h3>
+                    <p *ngIf="hasMoreOrgData" class="chart-card__caption">
+                        @if (findingsByView === 'division') {
+                            <ng-container i18n="@@dashboard.findings.topDivisionsCaption">Top {{ findingsByOrgData.labels.length }} of {{ findingUnits.length }} divisions · by status</ng-container>
+                        } @else {
+                            <ng-container i18n="@@dashboard.findings.topSubDivisionsCaption">Top {{ findingsByOrgData.labels.length }} of {{ findingUnits.length }} sub-divisions · by status</ng-container>
+                        }
+                    </p>
+                </div>
+                <div class="chart-card__actions">
+                    <div class="view-toggle" role="group" aria-label="View findings by" i18n-aria-label="@@dashboard.findings.viewFindingsByAria">
+                        @for (view of findingsByViews; track view.key) {
+                            <button type="button"
+                                    class="view-toggle__btn"
+                                    [class.view-toggle__btn--active]="findingsByView === view.key"
+                                    [attr.aria-pressed]="findingsByView === view.key"
+                                    (click)="setFindingsByView(view.key)">
+                                {{ view.label }}
+                            </button>
+                        }
+                    </div>
+                    <button type="button" class="chart-card__expand" (click)="openFindingsBySubdivisionDetail()" aria-label="View full Findings by Division / Sub-Division breakdown" i18n-aria-label="@@dashboard.findings.viewFindingsByUnitBreakdownAria"><app-draw-icon icon="pi pi-external-link"></app-draw-icon> <ng-container i18n="@@common.viewAll">View all</ng-container></button>
+                </div>
+            </div>
+            <div
+                class="chart-wrap chart-wrap--findings chart-wrap--clickable"
+                role="button"
+                tabindex="0"
+                aria-label="Open full Findings by Division / Sub-Division breakdown"
+                i18n-aria-label="@@dashboard.findings.openFindingsByUnitBreakdownAria"
+                (click)="openFindingsBySubdivisionDetail()"
+                (keydown.enter)="openFindingsBySubdivisionDetail()"
+                (keydown.space)="$event.preventDefault(); openFindingsBySubdivisionDetail()"
+            >
+                <!-- <p-chart #findingsChart type="bar" [data]="findingsByOrgData" [options]="orgStatusOptions" [plugins]="findingsChartPlugins"></p-chart> -->
+            <p-chart #findingsChart type="bar" [data]="findingsByOrgData" [options]="orgStatusOptions()"></p-chart>
+            @if (!findingUnits.length) {
+                @if (findingsByView === 'division') {
+                    <p class="chart-empty" i18n="@@dashboard.findings.noDivisionLevelFindings">No division-level findings</p>
+                } @else {
+                    <p class="chart-empty" i18n="@@dashboard.findings.noSubDivisionFindings">No sub-division findings</p>
+                }
+            }
+            </div>
+
+            <div class="donut-legend">
+                @for (item of findingsLegend; track item.label; let i = $index) {
+                    <div class="donut-legend__item"
+                         [class.donut-legend__item--disabled]="findingsHidden[i]"
+                         role="button"
+                         tabindex="0"
+                         [attr.aria-pressed]="findingsHidden[i]"
+                         [attr.aria-label]="legendToggleAriaLabel(findingsHidden[i], item.label)"
+                         (click)="toggleFindingsDataset(i)"
+                         (keydown.enter)="toggleFindingsDataset(i)"
+                         (keydown.space)="$event.preventDefault(); toggleFindingsDataset(i)">
+                        <span class="donut-legend__left">
+                            <span class="donut-legend__dot" [style.background]="item.color"></span>
+                            <span class="donut-legend__label">{{ item.label }}</span>
+                        </span>
+                        <span class="donut-legend__value">{{ item.value }}</span>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== FINDINGS TABLE ======================== -->
+    <div class="data-card">
+        <h3 class="data-card__title">
+            <app-draw-icon icon="pi pi-exclamation-triangle"></app-draw-icon>
+            <ng-container i18n="@@dashboard.findings.criticalHighTableTitle">Critical &amp; High Severity Open Findings</ng-container>
+        </h3>
+
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th><ng-container i18n="@@common.id">ID</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th><ng-container i18n="@@common.finding">Finding</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th><ng-container i18n="@@common.scope">Scope</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th><ng-container i18n="@@common.subDivision">Sub-Division</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th><ng-container i18n="@@common.severity">Severity</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th><ng-container i18n="@@common.status">Status</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th><ng-container i18n="@@common.dueDate">Due Date</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th><ng-container i18n="@@dashboard.findings.colAgeDays">Age (days)</ng-container> <app-draw-icon icon="pi pi-sort-alt" ></app-draw-icon></th>
+                        <th i18n="@@dashboard.findings.repeated">Repeated</th>
+                        <th i18n="@@common.actions">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let row of tableFindings">
+                        <td class="cell--id">{{ row.id }}</td>
+                        <td>{{ row.finding }}</td>
+                        <td>{{ row.scope }}</td>
+                        <td>{{ row.subDivision }}</td>
+                        <td>
+                            <span class="chip chip--severity chip--{{ row.severityClass }}">
+                                {{ severityDisplay(row.severityClass) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="chip chip--status chip--{{ row.statusClass }}">
+                                {{ statusDisplay(row.statusClass, row.status) }}
+                            </span>
+                        </td>
+                        <td>{{ row.dueDate }}</td>
+                        <td>{{ row.ageDays }}</td>
+                        <td>
+                            <span *ngIf="row.repeated" class="chip chip--repeated" i18n="@@dashboard.findings.repeated">Repeated</span>
+                        </td>
+                        <td>
+                            <button type="button" class="icon-btn" aria-label="View" i18n-aria-label="@@common.view" (click)="findingdetails(row)">
+                                <app-draw-icon icon="pi pi-eye"></app-draw-icon>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,203 @@
+<div class="ap-shell">
+
+  <!-- ===== TOP BAR ===== -->
+  <header class="ap-topbar">
+    <div class="brand">
+      <app-back-button variant="on-dark"></app-back-button>
+      <div class="glyph">{{ companyInitials() }}</div>
+      <div class="titles">
+        <span class="app-name">{{ headerLabel() }}</span>
+        <span class="page-name">Audit Plan</span>
+      </div>
+    </div>
+    <div class="actions">
+      <!-- Audit plan switcher (replaces the year switch) — this company's plans only -->
+      <p-select
+        [options]="planOptions()"
+        [ngModel]="store.planId()"
+        (ngModelChange)="onPlanChange($event)"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Select an audit plan"
+        [filter]="planOptions().length > 5"
+        filterBy="label"
+        emptyMessage="No audit plans for this company"
+        styleClass="ap-plan-select"
+        appendTo="body" />
+
+    </div>
+  </header>
+
+  <!-- ===== LEVEL TABS ===== -->
+  <nav class="ap-levelbar">
+    <div class="levels">
+      @for (tab of tabs; track tab.id) {
+        <button
+          class="level-tab"
+          [class.active]="store.view() === tab.id"
+          [class.done]="tabIndex(store.view()) > tabIndex(tab.id)"
+          (click)="store.view.set(tab.id)">
+          <span class="num">{{ tab.num }}</span>{{ tab.label }}
+        </button>
+      }
+    </div>
+    <div class="crumb">
+      FY {{ store.year() }} <span class="sep">/</span>
+      @switch (store.view()) {
+        @case (PlanViews.Calendar) { <b>{{ months[store.currentMonth()] }} {{ store.year() }}</b> }
+        @case (PlanViews.Scope)    { <b>{{ store.selectedScope()?.scope?.code ?? 'Scope' }}</b> }
+        @case (PlanViews.Log)      { <b>Execution Log</b> }
+        @default           { <b>All Sub-Divisions</b> }
+      }
+    </div>
+  </nav>
+
+  <!-- ===== FILTER BAR (reactive form, multi-select) =====
+       Filters apply when a panel CLOSES (onPanelHide) or is cleared —
+       never mid-selection, so the overlay stays open while ticking items. -->
+  <form class="ap-filterbar" [formGroup]="filterForm">
+    <p-multiselect formControlName="subDivision" [options]="store.subDivisionOptions()" optionLabel="label" optionValue="value"
+                   placeholder="All divisions / sub-divisions" [showClear]="true" [maxSelectedLabels]="1"
+                   selectedItemsLabel="{0} selected" styleClass="ap-ms" appendTo="body"
+                   (onPanelHide)="commitFilters()" (onClear)="commitFilters()" />
+    <p-multiselect formControlName="freq" [options]="freqOptions" optionLabel="label" optionValue="value"
+                   placeholder="All frequencies" [showClear]="true" [maxSelectedLabels]="1"
+                   selectedItemsLabel="{0} frequencies" styleClass="ap-ms" appendTo="body"
+                   (onPanelHide)="commitFilters()" (onClear)="commitFilters()" />
+    <p-multiselect formControlName="status" [options]="statusOptions" optionLabel="label" optionValue="value"
+                   placeholder="All statuses" [showClear]="true" [maxSelectedLabels]="1"
+                   selectedItemsLabel="{0} statuses" styleClass="ap-ms" appendTo="body"
+                   (onPanelHide)="commitFilters()" (onClear)="commitFilters()" />
+    <p-iconfield class="search">
+      <p-inputicon styleClass="pi pi-search" />
+      <input pInputText type="text" formControlName="search" placeholder="Search scope, code, auditor..." />
+    </p-iconfield>
+  </form>
+
+  <main class="ap-main">
+
+    <!-- ===== KPI SECTIONS ===== -->
+    @if (store.loading()) {
+      <div class="kpi-sections">
+        <div class="kpi-section">
+          <div class="kpi-section__head"><app-draw-icon icon="pi pi-sitemap"></app-draw-icon> Scope Summary</div>
+          <div class="kpi-strip">
+            @for (i of [1,2,3,4,5]; track i) { <p-skeleton height="84px" borderRadius="10px" /> }
+          </div>
+        </div>
+        <div class="kpi-section">
+          <div class="kpi-section__head"><app-draw-icon icon="pi pi-briefcase"></app-draw-icon> Scope Job Summary</div>
+          <div class="kpi-strip">
+            @for (i of [1,2,3,4,5]; track i) { <p-skeleton height="84px" borderRadius="10px" /> }
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="kpi-sections">
+
+        <!-- ── Scope Summary ──
+             Each card links to Audit Scope Management, pre-selecting its status. -->
+        <div class="kpi-section">
+          <div class="kpi-section__head">
+            <app-draw-icon icon="pi pi-sitemap"></app-draw-icon> Scope Summary · FY {{ store.year() }}
+          </div>
+          <div class="kpi-strip">
+            <div class="kpi accent kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View all scopes"
+                 (click)="goToScopeManagement()" (keydown.enter)="goToScopeManagement()">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-th-large" class="kpi-icon"></app-draw-icon></span>
+              <span class="num">{{ scopeKpis().total }}</span>
+              <span class="lbl">Total Scopes</span>
+            </div>
+            <div class="kpi kpi--completed kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View completed scopes"
+                 (click)="goToScopeManagement(ScopeManagementStatuses.Completed)" (keydown.enter)="goToScopeManagement(ScopeManagementStatuses.Completed)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-check-circle" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-completed-tx">{{ scopeKpis().completed }}</span>
+              <span class="lbl">Completed</span>
+            </div>
+            <div class="kpi kpi--inprog kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View in-progress scopes"
+                 (click)="goToScopeManagement(ScopeManagementStatuses.InProgress)" (keydown.enter)="goToScopeManagement(ScopeManagementStatuses.InProgress)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-sync" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-inprog-tx">{{ scopeKpis().inprog }}</span>
+              <span class="lbl">In Progress</span>
+            </div>
+            <div class="kpi kpi--planned kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View planned scopes"
+                 (click)="goToScopeManagement(ScopeManagementStatuses.Planned)" (keydown.enter)="goToScopeManagement(ScopeManagementStatuses.Planned)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-clock" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-planned-tx">{{ scopeKpis().planned }}</span>
+              <span class="lbl">Planned</span>
+            </div>
+            <div class="kpi kpi--overdue kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View overdue scopes"
+                 (click)="goToScopeManagement(ScopeManagementStatuses.Overdue)" (keydown.enter)="goToScopeManagement(ScopeManagementStatuses.Overdue)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-exclamation-circle" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-overdue-tx">{{ scopeKpis().overdue }}</span>
+              <span class="lbl">Overdue</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Scope Job Summary ──
+             Each card links to the Scope Job list, pre-selecting its status. -->
+        <div class="kpi-section">
+          <div class="kpi-section__head">
+            <app-draw-icon icon="pi pi-briefcase"></app-draw-icon> Scope Job Summary · FY {{ store.year() }}
+          </div>
+          <div class="kpi-strip">
+            <div class="kpi accent kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View all scope jobs"
+                 (click)="goToScopeJobs()" (keydown.enter)="goToScopeJobs()">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-list" class="kpi-icon"></app-draw-icon></span>
+              <span class="num">{{ store.kpis().total }}</span>
+              <span class="lbl">Total Jobs</span>
+            </div>
+            <div class="kpi kpi--completed kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View completed scope jobs"
+                 (click)="goToScopeJobs(ScopeJobStatuses.Completed)" (keydown.enter)="goToScopeJobs(ScopeJobStatuses.Completed)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-check-circle" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-completed-tx">{{ store.kpis().completed }}</span>
+              <span class="lbl">Completed</span>
+            </div>
+            <div class="kpi kpi--inprog kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View in-progress scope jobs"
+                 (click)="goToScopeJobs(ScopeJobStatuses.InProgress)" (keydown.enter)="goToScopeJobs(ScopeJobStatuses.InProgress)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-sync" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-inprog-tx">{{ store.kpis().inprog }}</span>
+              <span class="lbl">In Progress</span>
+            </div>
+            <div class="kpi kpi--planned kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View pending scope jobs"
+                 (click)="goToScopeJobs(ScopeJobStatuses.Pending)" (keydown.enter)="goToScopeJobs(ScopeJobStatuses.Pending)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-clock" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-planned-tx">{{ store.kpis().planned }}</span>
+              <span class="lbl">Planned</span>
+            </div>
+            <div class="kpi kpi--overdue kpi--clickable" role="button" tabindex="0" style="cursor:pointer"
+                 title="View overdue scope jobs"
+                 (click)="goToScopeJobs(ScopeJobStatuses.Overdue)" (keydown.enter)="goToScopeJobs(ScopeJobStatuses.Overdue)">
+              <span class="kpi-icon-wrap"><app-draw-icon icon="pi pi-exclamation-circle" class="kpi-icon"></app-draw-icon></span>
+              <span class="num st-overdue-tx">{{ store.kpis().overdue }}</span>
+              <span class="lbl">Overdue</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    }
+
+    <!-- ===== ACTIVE VIEW ===== -->
+    @switch (store.view()) {
+      @case (PlanViews.Annual)      { <ap-annual-overview /> }
+      @case (PlanViews.Calendar)    { <ap-month-calendar /> }
+      @case (PlanViews.Departments) { <ap-department-view /> }
+      @case (PlanViews.Scope)       { <ap-scope-detail /> }
+      @case (PlanViews.Log)         { <ap-execution-log /> }
+    }
+  </main>
+
+  <!-- ===== INSTANCE DIALOG ===== -->
+  <ap-instance-dialog />
+</div>

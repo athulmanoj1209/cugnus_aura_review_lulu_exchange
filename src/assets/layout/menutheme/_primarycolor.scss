@@ -1,0 +1,21 @@
+.layout-primarycolor-menu {
+    --logo-color: var(--primary-color-text);
+    --menu-bg: #003360;
+    --root-menuitem-text-color: var(--primary-color-text);
+    --menuitem-text-color: var(--primary-color-text);
+    --menuitem-icon-color: var(--primary-color-text);
+    --menuitem-hover-bg-color: rgba(255, 255, 255, 0.1);
+    --popup-submenu-item-text-color: var(--text-color);
+    --popup-submenu-item-icon-color: var(--primary-color);
+    --popup-submenu-item-hover-bg-color: var(--surface-hover);
+}
+
+.layout-dark.layout-primarycolor-menu,
+.layout-dim.layout-primarycolor-menu {
+    --logo-color: var(--text-color);
+    --menu-bg: var(--surface-overlay);
+    --root-menuitem-text-color: var(--text-color);
+    --menuitem-text-color: var(--text-color);
+    --menuitem-icon-color: var(--text-color);
+    --menuitem-hover-bg-color: var(--surface-hover);
+}

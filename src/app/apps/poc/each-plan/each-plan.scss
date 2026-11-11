@@ -1,0 +1,498 @@
+// ──────────────────────────────────────────────
+// Design Tokens (inherited via CSS var cascade,
+// duplicated here so :host vars resolve in standalone use)
+// ──────────────────────────────────────────────
+:host {
+  --primary: var(--primary-color);
+  --primary-light: color-mix(in srgb, var(--primary-color) 16%, transparent);
+  --accent: #ffc729;
+  --success: var(--p-green-500);
+  --danger: #d72424;
+  --warning: #ff9a52;
+  --text-heading: var(--text-color);
+  --text-body: var(--text-color);
+  --text-muted: var(--text-color-secondary);
+  --border: var(--surface-border);
+  --bg-page: var(--surface-ground);
+  --bg-card: var(--surface-card);
+  --shadow-card: 0 0 15px rgba(104, 134, 177, 0.15);
+  --radius-card: 10px;
+  --radius-badge: 6px;
+  font-family: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  display: block;
+}
+
+// ──────────────────────────────────────────────
+// PrimeNG Tabs Override
+// ──────────────────────────────────────────────
+::ng-deep .audit-tabs {
+  .p-tablist {
+    border: none !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .p-tab {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    padding: 10px 16px 11px !important;
+    font-size: 14px !important;
+    font-weight: 400 !important;
+    color: var(--text-heading) !important;
+    cursor: pointer !important;
+    border-radius: 0 !important;
+    margin-bottom: -1px !important;
+    transition: color 0.2s, border-color 0.2s !important;
+
+    &:hover {
+      color: var(--primary) !important;
+      background: transparent !important;
+    }
+
+    &[aria-selected='true'],
+    &.p-tab-active {
+      font-weight: 600 !important;
+      color: var(--primary) !important;
+      border-bottom-color: var(--primary) !important;
+      background: transparent !important;
+    }
+
+    &:focus {
+      box-shadow: none !important;
+      outline: none !important;
+    }
+  }
+
+  .p-tablist-active-bar {
+    display: none !important;
+  }
+
+  .p-tabpanels {
+    padding: 20px 0 0 !important;
+  }
+
+  .p-tabpanel {
+    background: transparent !important;
+    padding: 0 !important;
+  }
+}
+
+// ──────────────────────────────────────────────
+// Main Grid Layout
+// ──────────────────────────────────────────────
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 230px;
+  gap: 16px;
+  align-items: start;
+}
+
+// ──────────────────────────────────────────────
+// PrimeNG Content Cards Override
+// ──────────────────────────────────────────────
+::ng-deep .content-card.p-card {
+  background: var(--bg-card) !important;
+  border-radius: var(--radius-card) !important;
+  box-shadow: var(--shadow-card) !important;
+  border: none !important;
+  margin-bottom: 16px !important;
+
+  .p-card-body {
+    padding: 20px 22px !important;
+  }
+
+  .p-card-title {
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: var(--text-heading) !important;
+    margin-bottom: 12px !important;
+    font-family: 'Inter', sans-serif !important;
+    padding: 0 !important;
+  }
+
+  .p-card-content {
+    padding: 0 !important;
+  }
+}
+
+.two-col-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+
+  ::ng-deep .content-card.p-card {
+    margin-bottom: 0 !important;
+  }
+}
+
+// ──────────────────────────────────────────────
+// Objective Card
+// ──────────────────────────────────────────────
+.objective-text {
+  font-size: 12px;
+  color: var(--text-heading);
+  margin: 0;
+  line-height: 1.6;
+}
+
+// ──────────────────────────────────────────────
+// Plan Details Card
+// ──────────────────────────────────────────────
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: 160px 12px 1fr;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--text-heading);
+  align-items: center;
+}
+
+.detail-label {
+  color: var(--text-body);
+  font-weight: 500;
+}
+
+.detail-colon {
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.detail-value {
+  color: var(--text-heading);
+  font-weight: 400;
+}
+
+// ──────────────────────────────────────────────
+// Risk Coverage Card
+// ──────────────────────────────────────────────
+.risk-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.risk-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.risk-label {
+  color: var(--text-body);
+  flex: 1;
+  padding-right: 8px;
+}
+
+::ng-deep {
+  .p-tag.risk-critical {
+    background: #ffe2e2 !important;
+    color: var(--danger) !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    padding: 2px 8px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+
+  .p-tag.risk-high {
+    background: #ffedd4 !important;
+    color: var(--warning) !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    padding: 2px 8px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+
+  .p-tag.risk-medium {
+    background: #fef9c2 !important;
+    color: #b08000 !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    padding: 2px 8px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+
+  .p-tag.risk-low {
+    background: #d4edda !important;
+    color: var(--success) !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    padding: 2px 8px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+}
+
+// ──────────────────────────────────────────────
+// Scope Progress Overview Card
+// ──────────────────────────────────────────────
+.scope-list {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.scope-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.scope-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.scope-title-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.scope-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-heading);
+  font-family: 'Inter', sans-serif;
+}
+
+.scope-percent {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-heading);
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+}
+
+::ng-deep {
+  .p-tag.status-in-progress {
+    background: color-mix(in srgb, var(--p-blue-500) 16%, transparent) !important;
+    color: var(--primary-color) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 2px 9px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+
+  .p-tag.status-completed {
+    background: #d0fae5 !important;
+    color: var(--success) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 2px 9px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+
+  .p-tag.status-overdue {
+    background: #ffe2e2 !important;
+    color: var(--danger) !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 2px 9px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+
+  .p-tag.status-pending {
+    background: #fff3cd !important;
+    color: #856404 !important;
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    padding: 2px 9px !important;
+    border-radius: var(--radius-badge) !important;
+  }
+}
+
+// Scope progress bars with status colors
+.scope-progress-wrap {
+  ::ng-deep .p-progressbar {
+    height: 7px !important;
+    background: var(--border) !important;
+    border-radius: 5px !important;
+
+    .p-progressbar-value {
+      border-radius: 5px !important;
+      transition: width 0.4s ease !important;
+    }
+  }
+
+  &.status-in-progress ::ng-deep .p-progressbar-value { background: #1f58c7 !important; }
+  &.status-completed   ::ng-deep .p-progressbar-value { background: var(--p-green-500) !important; }
+  &.status-overdue     ::ng-deep .p-progressbar-value { background: var(--danger) !important; }
+  &.status-pending     ::ng-deep .p-progressbar-value { background: #ffc107 !important; }
+}
+
+// ──────────────────────────────────────────────
+// Stat Cards (Right Column)
+// ──────────────────────────────────────────────
+.stat-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+::ng-deep .stat-card-pg.p-card {
+  background: var(--bg-card) !important;
+  height: 88px;
+  border-radius: var(--radius-card) !important;
+  box-shadow: 0 0 20px rgba(104, 134, 177, 0.12) !important;
+  border: 1px solid transparent !important;
+  transition: box-shadow 0.2s, transform 0.15s !important;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(104, 134, 177, 0.2) !important;
+    transform: translateY(-1px) !important;
+  }
+
+  &.overdue-card {
+    border-left: 3px solid var(--danger) !important;
+  }
+
+  .p-card-body {
+    padding: 14px 16px !important;
+  }
+
+  .p-card-content {
+    padding: 0 !important;
+  }
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.stat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.stat-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-heading);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.3;
+}
+
+.stat-subtitle {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.3;
+
+  &.inline-sub { display: inline; }
+}
+
+.stat-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  i { font-size: 16px; }
+}
+
+.stat-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.scope-count-badge {
+  width: 18px;
+  height: 18px;
+  background: var(--success);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+// Completion stat card
+::ng-deep .completion-stat-card.p-card {
+  height: auto !important;
+}
+
+.completion-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.completion-progress-wrap {
+  flex: 1;
+
+  ::ng-deep .p-progressbar {
+    height: 7px !important;
+    background: var(--border) !important;
+    border-radius: 5px !important;
+
+    .p-progressbar-value {
+      background: var(--primary-light) !important;
+      border-radius: 5px !important;
+    }
+  }
+}
+
+.completion-pct {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-heading);
+  white-space: nowrap;
+}
+
+// ──────────────────────────────────────────────
+// Tab Placeholder
+// ──────────────────────────────────────────────
+.tab-placeholder {
+  color: var(--text-muted);
+  font-size: 14px;
+  padding: 20px 0;
+  text-align: center;
+}
+
+// ──────────────────────────────────────────────
+// Responsive
+// ──────────────────────────────────────────────
+@media (max-width: 1100px) {
+  .main-grid { grid-template-columns: 1fr; }
+
+  .stat-column {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .two-col-row { grid-template-columns: 1fr; }
+  .stat-column { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .stat-column { grid-template-columns: 1fr; }
+}

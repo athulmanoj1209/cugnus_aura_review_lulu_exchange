@@ -1,0 +1,406 @@
+<p-toast></p-toast>
+
+<div class="drawer-inner">
+
+  <div class="drawer-resizer" (mousedown)="onResizeStart($event)"></div>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="drawer-header">
+    <div class="drawer-header-left">
+      <div class="drawer-icon-wrap">
+        <i class="pi pi-file-plus"></i>
+      </div>
+      <div class="drawer-title-block">
+        <h2 class="drawer-title" i18n="@@audit.rfi.addRfiStrong">
+          Add <strong>RFI</strong>
+        </h2>
+        <p class="drawer-subtitle" i18n="@@audit.rfi.requestForInformation">Request for Information</p>
+      </div>
+    </div>
+    <button class="close-btn" (click)="onClose()" aria-label="Close" i18n-aria-label="@@common.close">
+      <i class="pi pi-times"></i>
+    </button>
+  </div>
+
+  <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
+  <p-tabs [value]="activeTabIndex" (valueChange)="activeTabIndex = $event" class="rfi-tabs" [lazy]="true">
+
+    <p-tablist>
+      <p-tab [value]="0">{{ tab1Label }}</p-tab>
+      <p-tab [value]="1"><span i18n="@@audit.questionnaire.title">Questionnaire</span></p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+               TAB 0 — Add-new form
+               ══════════════════════════════════════════════════════════════════ -->
+      <p-tabpanel [value]="0">
+        <div class="tab-content" [formGroup]="rfiForm">
+
+          <!-- ── Source Mode Toggle (top) ───────────────────────────── -->
+          <div class="source-mode-section">
+            <div class="source-mode-header">
+              <div class="source-mode-icon-wrap">
+                <i class="pi pi-list-check"></i>
+              </div>
+              <div class="source-mode-text">
+                <span class="source-mode-label" i18n="@@audit.rfi.rfiSource">RFI Source</span>
+                <span class="source-mode-sub" i18n="@@audit.rfi.rfiSourceSubtitle">Create a new RFI or use a pre-built template</span>
+              </div>
+            </div>
+            <p-selectbutton [(ngModel)]="rfiSource" [ngModelOptions]="{ standalone: true }" [options]="rfiSourceOptions"
+              optionLabel="label" optionValue="value" (onChange)="onRfiSourceChange()"
+              styleClass="rfi-source-selectbtn">
+            </p-selectbutton>
+          </div>
+
+          <!-- ── Company (all modes) ─────────────────────────────────── -->
+          <div class="form-row">
+            <div class="form-col full">
+              <label class="field-label">
+                <span i18n="@@audit.rfi.companyOrganization">Company / Organization</span>
+                <span class="field-required">*</span>
+              </label>
+              <p-select appendTo="body" formControlName="company" [options]="companyOptions" optionLabel="label" optionValue="value"
+                placeholder="Select company / organization" i18n-placeholder="@@audit.rfi.selectCompanyOrganization" styleClass="form-dropdown" [filter]="true"
+                filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search" [showClear]="true" [invalid]="isFieldInvalid('company')"
+                (onChange)="onCompanyChange()"></p-select>
+              <small class="error-hint" *ngIf="isFieldInvalid('company')">{{ getErrorMessage('company') }}</small>
+            </div>
+          </div>
+
+          <!-- ── Division (filtered by company) ───────────────────────── -->
+          <div class="form-row">
+            <div class="form-col">
+              <label class="field-label">
+                <span i18n="@@common.division">Division</span>
+                <span class="field-required">*</span>
+              </label>
+              <p-select appendTo="body" formControlName="division" [options]="filteredDivisionOptions" optionLabel="label"
+                optionValue="value" placeholder="Select division" i18n-placeholder="@@audit.rfi.selectDivision" styleClass="form-dropdown" [filter]="true"
+                filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search" [showClear]="true" [invalid]="isFieldInvalid('division')"
+                [disabled]="!rfiForm.get('company')?.value" (onChange)="onDivisionChange()"></p-select>
+              <small class="error-hint" *ngIf="isFieldInvalid('division')">{{ getErrorMessage('division') }}</small>
+            </div>
+            <!-- ── Sub-Division (filtered by division) — required when the division has sub-divisions; none ⇒ division-level scopes ── -->
+            <div class="form-col">
+              <label class="field-label">
+                <span i18n="@@common.subDivision">Sub-Division</span>
+
+                @if (isSubDivisionRequired) {
+                  <span class="field-required">*</span>
+                } @else if (rfiForm.get('division')?.value && !selectedDivisionHasSubDivisions) {
+                  <span class="field-optional" i18n="@@common.notApplicableParentheses">
+                    (not applicable)
+                  </span>
+                } @else {
+                  <span class="field-optional" i18n="@@common.optionalParentheses">
+                    (optional)
+                  </span>
+                }
+              </label>
+              <p-select appendTo="body" formControlName="subDivision" [options]="filteredSubDivisionOptions" optionLabel="label"
+                optionValue="value" placeholder="Select sub-division" i18n-placeholder="@@audit.rfi.selectSubDivision" styleClass="form-dropdown" [filter]="true"
+                filterPlaceholder="Search…" i18n-filterPlaceholder="@@common.search" [showClear]="true" [invalid]="isFieldInvalid('subDivision')"
+                [disabled]="!rfiForm.get('division')?.value || !selectedDivisionHasSubDivisions"
+                (onChange)="onSubDivisionChange()"></p-select>
+              <small class="error-hint" *ngIf="isFieldInvalid('subDivision')">{{ getErrorMessage('subDivision') }}</small>
+              @if (rfiForm.get('division')?.value && !isSubDivisionRequired) {
+              <small class="field-hint" i18n="@@audit.rfi.noSubDivisionScopeHint">No sub-division — the RFI will use the division's own scopes.</small>
+              }
+            </div>
+          </div>
+
+          <!-- ══ FRESH MODE: manual scope + title ══════════════════════ -->
+          @if (rfiSource === RfiSources.Fresh) {
+          <div class="form-row">
+            <div class="form-col">
+              <label class="field-label">
+                <span i18n="@@audit.rfi.auditScope">Audit Scope</span>
+                <span class="field-required">*</span>
+              </label>
+              <p-select appendTo="body" formControlName="auditScope" [options]="activeScopeOptions" optionLabel="label"
+                optionValue="value" placeholder="Select Audit Scope" i18n-placeholder="@@audit.rfi.selectAuditScope" styleClass="form-dropdown"
+                [invalid]="isFieldInvalid('auditScope')" [disabled]="!isScopeOwnerResolved"></p-select>
+              <small class="error-hint" *ngIf="isFieldInvalid('auditScope')">{{ getErrorMessage('auditScope') }}</small>
+            </div>
+            <div class="form-col">
+              <label class="field-label">
+                <span i18n="@@common.subScope">Sub-Scope</span>
+                <span class="field-required">*</span>
+              </label>
+              <p-select appendTo="body" formControlName="subScope" [options]="activeSubScopeOptions" optionLabel="label"
+                optionValue="value" placeholder="Select Sub-Scope" i18n-placeholder="@@audit.rfi.selectSubScope" styleClass="form-dropdown"
+                [invalid]="isFieldInvalid('subScope')"></p-select>
+              <small class="error-hint" *ngIf="isFieldInvalid('subScope')">{{ getErrorMessage('subScope') }}</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col full">
+              <label class="field-label">
+                <span i18n="@@common.title">Title</span>
+                <span class="field-required">*</span>
+              </label>
+              <input pInputText type="text" formControlName="title" placeholder="Enter RFI title" i18n-placeholder="@@audit.rfi.titlePlaceholder" class="form-input"
+                [class.input-error]="isFieldInvalid('title')" />
+              <small class="error-hint" *ngIf="isFieldInvalid('title')">{{ getErrorMessage('title') }}</small>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-col full">
+              <label class="field-label"><span i18n="@@common.description">Description</span> <span class="field-required">*</span></label>
+              <textarea pTextarea formControlName="description" placeholder="Enter RFI description..." i18n-placeholder="@@audit.rfi.descriptionPlaceholder" rows="4"
+                class="form-textarea" [autoResize]="false"
+                [class.input-error]="isFieldInvalid('description')"></textarea>
+              <small class="error-hint" *ngIf="isFieldInvalid('description')">{{ getErrorMessage('description')
+                }}</small>
+            </div>
+          </div>
+          }
+
+          <!-- ══ LIBRARY MODE: dept → scope → subscope → rfi ══════════ -->
+          @if (rfiSource === RfiSources.Library) {
+
+          <!-- Audit Scope (filtered by division / sub-division) -->
+          <div class="form-row">
+            <div class="form-col">
+              <label class="field-label">
+                <span i18n="@@audit.rfi.auditScope">Audit Scope</span>
+                <span class="field-required">*</span>
+              </label>
+              <p-select appendTo="body" formControlName="auditScope" [options]="activeScopeOptions" optionLabel="label"
+                optionValue="value" placeholder="Select Audit Scope" i18n-placeholder="@@audit.rfi.selectAuditScope" styleClass="form-dropdown"
+                [invalid]="isFieldInvalid('auditScope')" [disabled]="!isScopeOwnerResolved"
+                (onChange)="onLibraryAuditScopeChange()"></p-select>
+              <small class="error-hint" *ngIf="isFieldInvalid('auditScope')">{{ getErrorMessage('auditScope') }}</small>
+            </div>
+            <!-- Sub Scope (filtered by scope, optional) -->
+            <div class="form-col">
+              <label class="field-label">
+                <span i18n="@@common.subScope">Sub-Scope</span>
+                <span class="field-optional" i18n="@@common.optionalParentheses">
+                  (optional)
+                </span>
+              </label>
+              <p-select appendTo="body" formControlName="subScope" [options]="activeSubScopeOptions" optionLabel="label"
+                optionValue="value"  placeholder="Select Sub-Scope" i18n-placeholder="@@audit.rfi.selectSubScope" styleClass="form-dropdown" [showClear]="true"
+                [disabled]="!rfiForm.get('auditScope')?.value" (onChange)="onLibrarySubScopeChange()"></p-select>
+            </div>
+          </div>
+
+          <!-- RFI Template Picker -->
+          <div class="library-select-card">
+            <div class="library-card-header">
+              <div class="library-card-icon">
+                <i class="pi pi-book"></i>
+              </div>
+              <div>
+                <span class="library-card-title" i18n="@@audit.rfi.selectFromLibrary">Select from RFI Library</span>
+                <span class="library-card-sub" i18n="@@audit.rfi.librarySubtitle">Auto-fills title and description based on selected scope</span>
+              </div>
+            </div>
+            <p-select appendTo="body" [(ngModel)]="selectedLibraryRfiId" [ngModelOptions]="{ standalone: true }"
+              [options]="libraryRfiOptions" optionLabel="label" optionValue="value"
+              placeholder="Search and select an RFI template..." i18n-placeholder="@@audit.rfi.selectRfiTemplate" [filter]="true"
+              filterPlaceholder="Search RFI library..." i18n-filterPlaceholder="@@audit.rfi.searchRfiLibrary" [showClear]="true"
+              [disabled]="!rfiForm.get('auditScope')?.value" (onChange)="onLibraryRfiSelect($event.value)"
+              styleClass="form-dropdown">
+            </p-select>
+            @if (!selectedLibraryRfiId) {
+            <span class="library-hint">
+              <i class="pi pi-lightbulb"></i>
+              @if (!rfiForm.get('division')?.value) {
+                <span i18n="@@audit.rfi.selectDivisionForScopes">
+                  Select a division above to see available scopes
+                </span>
+              } @else if (!isScopeOwnerResolved) {
+                <span i18n="@@audit.rfi.selectSubDivisionForScopes">
+                  Select a sub-division above to see available scopes
+                </span>
+              } @else if (!rfiForm.get('auditScope')?.value) {
+                <span i18n="@@audit.rfi.selectScopeForTemplates">
+                  Select a scope to filter available RFI templates
+                </span>
+              } @else if (libraryRfiOptions.length === 0) {
+                <span i18n="@@audit.rfi.noTemplatesForScope">
+                  No RFI templates found for the selected scope
+                </span>
+              } @else {
+                <span i18n="@@audit.rfi.selectTemplateHint">
+                  Select a template — title and description will be auto-filled
+                </span>
+              }
+            </span>
+            }
+          </div>
+
+          <!-- Auto-filled Title -->
+          @if (selectedLibraryRfiId) {
+          <div class="form-row">
+            <div class="form-col full">
+              <label class="field-label">
+                <span i18n="@@audit.rfi.rfiTitle">RFI Title</span>
+                <span class="autofill-badge"><i class="pi pi-book"></i> <span i18n="@@audit.rfi.autoFilled">Auto-filled</span></span>
+              </label>
+              <input pInputText type="text" formControlName="title" class="form-input autofill-input" readonly />
+            </div>
+          </div>
+          }
+
+          <!-- Description (auto-filled or manual) -->
+          <div class="form-row">
+            <div class="form-col full">
+              <label class="field-label">
+                <span i18n="@@common.description">Description</span> <span class="field-required">*</span>
+                @if (isDescriptionFromLibrary) {
+                <span class="autofill-badge readonly-badge"><i class="pi pi-lock"></i> <span i18n="@@common.readOnly">Read-only</span></span>
+                }
+              </label>
+              <textarea pTextarea formControlName="description" placeholder="Enter RFI description..." i18n-placeholder="@@audit.rfi.descriptionPlaceholder" rows="4"
+                class="form-textarea" [autoResize]="false" [class.input-error]="isFieldInvalid('description')"
+                [class.autofill-input]="isDescriptionFromLibrary" [readonly]="isDescriptionFromLibrary"></textarea>
+              <small class="error-hint" *ngIf="isFieldInvalid('description')">{{ getErrorMessage('description')
+                }}</small>
+            </div>
+          </div>
+
+          <!-- Additional Description -->
+          @if (selectedLibraryRfiId) {
+          <div class="form-row">
+            <div class="form-col full">
+              <label class="field-label" i18n="@@audit.rfi.additionalDescription">Additional Description</label>
+              <textarea pTextarea formControlName="additionalDescription"
+                placeholder="Enter any additional description or context…" i18n-placeholder="@@audit.rfi.additionalDescriptionPlaceholder" rows="3" class="form-textarea"
+                [autoResize]="false"></textarea>
+            </div>
+          </div>
+          }
+          }
+
+          <!-- ── Due Date + Owner (all modes) ────────────────────────── -->
+          <div class="form-row">
+            <div class="form-col">
+              <label class="field-label"><span i18n="@@common.dueDate">Due Date</span> <span class="field-required">*</span></label>
+              <p-datepicker formControlName="dueDate" placeholder="Select due date" i18n-placeholder="@@audit.rfi.selectDueDate" dateFormat="dd/mm/yy"
+                [showIcon]="true" class="form-datepicker" [invalid]="isFieldInvalid('dueDate')"></p-datepicker>
+              <small class="error-hint" *ngIf="isFieldInvalid('dueDate')">{{ getErrorMessage('dueDate') }}</small>
+            </div>
+            <div class="form-col">
+              <label class="field-label"><span i18n="@@audit.rfi.owner">Owner</span> <span class="field-required">*</span></label>
+              <p-select appendTo="body" formControlName="owner" [options]="owners" optionLabel="label" optionValue="value"
+                placeholder="Select owner" i18n-placeholder="@@audit.rfi.selectOwner" styleClass="form-dropdown" [invalid]="isFieldInvalid('owner')"></p-select>
+              <small class="error-hint" *ngIf="isFieldInvalid('owner')">{{ getErrorMessage('owner') }}</small>
+            </div>
+          </div>
+
+          <!-- ── Documents (all modes) ───────────────────────────────── -->
+          <div class="form-row">
+            <div class="form-col full">
+              <label class="field-label"><span i18n="@@common.documents">Documents</span> <span class="field-required">*</span></label>
+              <div class="evidence-upload-area">
+                <p-fileupload mode="basic" chooseLabel="Choose Files" i18n-chooseLabel="@@common.chooseFiles" chooseIcon="pi pi-upload" [auto]="false"
+                  [multiple]="true" accept=".pdf,.doc,.docx,image/*" styleClass="evidence-upload-btn"
+                  (onSelect)="onFileSelect($event)"></p-fileupload>
+                <p class="upload-hint"><i class="pi pi-info-circle"></i> <span i18n="@@audit.rfi.acceptedFileFormats">Accepted formats: PDF, DOC, DOCX, Images</span></p>
+              </div>
+              <small class="error-hint" *ngIf="isFieldInvalid('documents')">{{ getErrorMessage('documents') }}</small>
+              @if (uploadedFiles.length > 0) {
+              <div class="doc-desc-list">
+                @for (entry of uploadedFiles; track entry.file.name; let i = $index) {
+                <div class="doc-desc-row">
+                  <div class="doc-desc-file-bar">
+                    <i [class]="resolveFileIcon(entry.file.name) + ' doc-file-icon'"></i>
+                    <span class="doc-file-name" [pTooltip]="entry.file.name" tooltipPosition="top">{{ entry.file.name
+                      }}</span>
+                    <span class="doc-file-size">{{ formatFileSize(entry.file.size) }}</span>
+                    <button type="button" class="doc-remove-btn" (click)="removeFile(i)" pTooltip="Remove file" i18n-pTooltip="@@audit.rfi.removeFile" aria-label="Remove file" i18n-aria-label="@@audit.rfi.removeFile"
+                      tooltipPosition="top"><i class="pi pi-times"></i></button>
+                  </div>
+                  <input pInputText type="text" [(ngModel)]="entry.description" [ngModelOptions]="{ standalone: true }"
+                    [placeholder]="fileDescriptionPlaceholder(entry.file.name)" class="form-input doc-desc-input" />
+                </div>
+                }
+              </div>
+              }
+            </div>
+          </div>
+
+        </div>
+      </p-tabpanel>
+
+      <!-- ══════════════════════════════════════════════════════════════════
+               TAB 1 — Questionnaire authoring
+               ══════════════════════════════════════════════════════════════════ -->
+      <p-tabpanel [value]="1">
+        <app-questionare-section #questionareRef [scopeLabel]="selectedScopeLabel" [subScopeLabel]="selectedSubScopeLabel"
+          [currentUser]="currentUser" [initialQuestions]="libraryQuestions" [hideAnswers]="true"
+          [startWithEmptyRow]="true">
+        </app-questionare-section>
+      </p-tabpanel>
+
+    </p-tabpanels>
+  </p-tabs>
+
+  <!-- ── Footer ──────────────────────────────────────────────────────────── -->
+
+  <!-- Tab 0 → Cancel + Next -->
+  @if (activeTabIndex == 0) {
+  <div class="drawer-footer">
+    <p-button label="Cancel" i18n-label="@@common.cancel" styleClass="cancel-btn" (onClick)="onClose()"></p-button>
+    <p-button label="Next" i18n-label="@@common.next" icon="pi pi-arrow-right" iconPos="right" styleClass="submit-btn" (onClick)="onNextTab()"></p-button>
+  </div>
+  }
+
+  <!-- Tab 1 → Back + Add RFI -->
+  @if (activeTabIndex == 1) {
+  <div class="drawer-footer">
+    <p-button label="Back" i18n-label="@@common.back" icon="pi pi-arrow-left" styleClass="cancel-btn" (onClick)="activeTabIndex = 0"></p-button>
+    <p-button label="Add RFI" i18n-label="@@audit.rfi.addRfi" icon="pi pi-check" styleClass="submit-btn" (onClick)="onAddRfi()"></p-button>
+  </div>
+  }
+
+</div>
+
+<!-- ── Missing-description warning dialog ──────────────────────────────────── -->
+<p-dialog [(visible)]="showDescWarningDialog" [modal]="true" [closable]="false" [draggable]="false" [resizable]="false"
+  [style]="{ width: '460px' }" styleClass="desc-warn-dialog" appendTo="body" (onHide)="onDescWarningDialogHide()">
+  <ng-template pTemplate="header">
+    <div class="desc-warn-header">
+      <span class="desc-warn-icon-wrap">
+        <i class="pi pi-exclamation-triangle desc-warn-icon"></i>
+      </span>
+      <div>
+        <h3 class="desc-warn-title" i18n="@@audit.rfi.missingDescriptions">Missing Descriptions</h3>
+        <p class="desc-warn-subtitle" i18n="@@audit.rfi.missingDescriptionsSubtitle">Some documents have no description attached</p>
+      </div>
+    </div>
+  </ng-template>
+
+  <div class="desc-warn-body">
+    <p class="desc-warn-intro" i18n="@@audit.rfi.missingDescriptionsMessage">
+      The following document(s) are missing a description. You can
+      <strong>proceed anyway</strong> or <strong>cancel</strong> to go back and fill them in.
+    </p>
+    <ul class="desc-warn-list">
+      @for (name of emptyDescFileNames; track name) {
+      <li class="desc-warn-item">
+        <i class="pi pi-file-edit desc-warn-file-icon"></i>
+        <span class="desc-warn-file-name" [title]="name">{{ name }}</span>
+        <span class="desc-warn-badge" i18n="@@audit.rfi.noDescription">No description</span>
+      </li>
+      }
+    </ul>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="desc-warn-footer">
+      <p-button label="Cancel" i18n-label="@@common.cancel" severity="secondary" [outlined]="true" icon="pi pi-times"
+        styleClass="desc-warn-btn desc-warn-btn--cancel" (onClick)="showDescWarningDialog = false" />
+      <p-button label="Proceed Anyway" i18n-label="@@audit.rfi.proceedAnyway" icon="pi pi-arrow-right" iconPos="right"
+        styleClass="desc-warn-btn desc-warn-btn--proceed" (onClick)="proceedAnyway()" />
+    </div>
+  </ng-template>
+</p-dialog>

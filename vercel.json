@@ -1,5 +1,6 @@
 {
-  "outputDirectory": "dist/cygnus-aura",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/cygnus-aura/browser",
   "rewrites": [
     { "source": "/:lang(en|es|de|fr|ar)/:path*", "destination": "/:lang/index.html" }
   ],

@@ -1,5 +1,5 @@
 {
-  "outputDirectory": "dist/apollo-ng/browser",
+  "outputDirectory": "dist/cygnus-aura",
   "rewrites": [
     { "source": "/:lang(en|es|de|fr|ar)/:path*", "destination": "/:lang/index.html" }
   ],

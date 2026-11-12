@@ -68,43 +68,71 @@ import {
 import { SCOPE_FILTER_CHIP_LABELS, scopeAuditorCountLabel } from '../constants/scope-labels.constants';
 
 
+/** One scope/sub-scope as the scope list shows it, with its org context. */
+interface ListedScope {
+  scope: StaticScope;
+  companyId: string;
+  divisionCode: string;
+  divisionName: string;
+  /** null for a division-level scope. */
+  subDivisionName: string | null;
+}
+
+/**
+ * Every scope/sub-scope the scope list page actually shows — division-level
+ * scopes included, leftover sub-division records under a division without
+ * sub-divisions excluded. Same inclusion rules as ScopeListComponent.refreshScopes(),
+ * so dashboard counts always match the list they navigate to.
+ */
+function listedStaticScopes(): ListedScope[] {
+  const out: ListedScope[] = [];
+  for (const companyRec of AUDIT_SCOPE_STATIC_COMPANIES) {
+    for (const division of companyRec.divisions) {
+      for (const scope of division.scopes ?? []) {
+        if (division.hasSubDivision && scope.hasSubDivision !== false) continue;
+        out.push({
+          scope, companyId: companyRec.id, divisionCode: division.divisionCode,
+          divisionName: division.divisionName, subDivisionName: null,
+        });
+      }
+      if (!divisionAllowsSubDivisions(division.divisionCode, companyRec.id)) continue;
+      for (const dept of division.subDivisions) {
+        for (const scope of dept.scopes) {
+          out.push({
+            scope, companyId: companyRec.id, divisionCode: division.divisionCode,
+            divisionName: division.divisionName, subDivisionName: dept.subDivisionName,
+          });
+        }
+      }
+    }
+  }
+  return out;
+}
+
+function isAssignedTo(scope: StaticScope, auditorId: string): boolean {
+  return !!(scope.assignedAuditors?.includes(auditorId) || scope.assignedReviewers?.includes(auditorId));
+}
+
+function matchesLevel(scope: StaticScope, level: ScopeLevel): boolean {
+  return (level === ScopeLevels.SubScope) === !!scope.parentScopeId;
+}
+
 /**
  * Count of scopes (or sub-scopes) where the given id is an assigned auditor
  * OR reviewer — used by the auditor overview's "Assigned Scopes"/"Assigned
  * Sub-scopes" KPI cards.
  */
 export function countScopesForAuditor(auditorId: string, level: ScopeLevel): number {
-  let count = 0;
-  for (const companyRec of AUDIT_SCOPE_STATIC_COMPANIES) {
-    for (const division of companyRec.divisions) {
-      for (const dept of division.subDivisions) {
-        for (const scope of dept.scopes) {
-          const isSubscope = !!scope.parentScopeId;
-          if ((level === ScopeLevels.SubScope) !== isSubscope) continue;
-          if (scope.assignedAuditors?.includes(auditorId) || scope.assignedReviewers?.includes(auditorId)) {
-            count++;
-          }
-        }
-      }
-    }
-  }
-  return count;
+  return listedStaticScopes()
+    .filter(({ scope }) => matchesLevel(scope, level) && isAssignedTo(scope, auditorId))
+    .length;
 }
 
 export function countScopesForTeam(auditorIds: readonly string[], level: ScopeLevel): number {
-  const team = new Set(auditorIds);
   const scopeIds = new Set<string>();
-  for (const companyRec of AUDIT_SCOPE_STATIC_COMPANIES) {
-    for (const division of companyRec.divisions) {
-      for (const dept of division.subDivisions) {
-        for (const scope of dept.scopes) {
-          const isSubscope = !!scope.parentScopeId;
-          if ((level === ScopeLevels.SubScope) !== isSubscope) continue;
-          const assigned = [...(scope.assignedAuditors ?? []), ...(scope.assignedReviewers ?? [])];
-          if (assigned.some(id => team.has(id))) scopeIds.add(scope.id);
-        }
-      }
-    }
+  for (const { scope } of listedStaticScopes()) {
+    if (!matchesLevel(scope, level)) continue;
+    if (auditorIds.some(id => isAssignedTo(scope, id))) scopeIds.add(scope.id);
   }
   return scopeIds.size;
 }
@@ -118,18 +146,10 @@ export function countScopesForTeam(auditorIds: readonly string[], level: ScopeLe
  * clicked with the same status passed as a query param.
  */
 export function countScopesForAuditorByStatus(auditorId: string, status: ScopeStatus | null): number {
-  let count = 0;
-  for (const companyRec of AUDIT_SCOPE_STATIC_COMPANIES) {
-    for (const division of companyRec.divisions) {
-      for (const dept of division.subDivisions) {
-        for (const scope of dept.scopes) {
-          if (!(scope.assignedAuditors?.includes(auditorId) || scope.assignedReviewers?.includes(auditorId))) continue;
-          if (status === null || (scope.workflowStatus ?? ScopeWorkflowStatuses.NotStarted) === status) count++;
-        }
-      }
-    }
-  }
-  return count;
+  return listedStaticScopes()
+    .filter(({ scope }) => isAssignedTo(scope, auditorId) &&
+      (status === null || (scope.workflowStatus ?? ScopeWorkflowStatuses.NotStarted) === status))
+    .length;
 }
 
 /** Illustrative progress % derived from status (scopes have no real completion-% field). */
@@ -144,30 +164,22 @@ function progressForScopeStatus(status: ScopeStatus): number {
  */
 export function getScopeRowsForAuditor(auditorId: string, level: ScopeLevel): AuditorScopeRow[] {
   const rows: AuditorScopeRow[] = [];
-  for (const companyRec of AUDIT_SCOPE_STATIC_COMPANIES) {
-    for (const division of companyRec.divisions) {
-      for (const dept of division.subDivisions) {
-        for (const scope of dept.scopes) {
-          const isSubscope = !!scope.parentScopeId;
-          if ((level === ScopeLevels.SubScope) !== isSubscope) continue;
-          if (!(scope.assignedAuditors?.includes(auditorId) || scope.assignedReviewers?.includes(auditorId))) continue;
-          const status = scope.workflowStatus ?? ScopeWorkflowStatuses.NotStarted;
-          const parent = isSubscope ? findStaticScopeById(scope.parentScopeId) : undefined;
-          rows.push({
-            scope: scope.scopeName,
-            audit: dept.subDivisionName,
-            parentScopeName: parent?.scopeName,
-            priority: SCOPE_RISK_TO_PRIORITY[scope.riskRating ?? ''] ?? SCOPE_DEFAULT_PRIORITY,
-            status,
-            progress: progressForScopeStatus(status),
-            dueDate: scope.endDate
-              ? new Date(scope.endDate).toLocaleDateString(SCOPE_DUE_DATE_LOCALE, SCOPE_DUE_DATE_FORMAT)
-              : '—',
-            scopeLevel: level,
-          });
-        }
-      }
-    }
+  for (const { scope, divisionName, subDivisionName } of listedStaticScopes()) {
+    if (!matchesLevel(scope, level) || !isAssignedTo(scope, auditorId)) continue;
+    const status = scope.workflowStatus ?? ScopeWorkflowStatuses.NotStarted;
+    const parent = scope.parentScopeId ? findStaticScopeById(scope.parentScopeId) : undefined;
+    rows.push({
+      scope: scope.scopeName,
+      audit: subDivisionName ?? divisionName,
+      parentScopeName: parent?.scopeName,
+      priority: SCOPE_RISK_TO_PRIORITY[scope.riskRating ?? ''] ?? SCOPE_DEFAULT_PRIORITY,
+      status,
+      progress: progressForScopeStatus(status),
+      dueDate: scope.endDate
+        ? new Date(scope.endDate).toLocaleDateString(SCOPE_DUE_DATE_LOCALE, SCOPE_DUE_DATE_FORMAT)
+        : '—',
+      scopeLevel: level,
+    });
   }
   return rows;
 }

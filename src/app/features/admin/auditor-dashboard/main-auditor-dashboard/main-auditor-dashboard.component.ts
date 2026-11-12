@@ -37,7 +37,7 @@ export class MainAuditorDashboard {
 
   tabs: { id: AuditorDashboardTab; label: string; icon: string }[] = [
     { id: AuditorDashboardTabs.Overview,        label: $localize`:@@admin.auditorDashboard.overview:Overview`,                icon: 'pi pi-home' },
-        { id: AuditorDashboardTabs.TeamOverview,    label: $localize`:@@admin.auditorDashboard.teamOverview:Team Overview`,       icon: 'pi pi-users' },
+    { id: AuditorDashboardTabs.TeamOverview,    label: $localize`:@@admin.auditorDashboard.teamOverview:Team Overview`,       icon: 'pi pi-users' },
     { id: AuditorDashboardTabs.ScopeManagement, label: $localize`:@@admin.auditorDashboard.myAuditsScopes:My Audits & Scopes`,      icon: 'pi pi-list' },
     { id: AuditorDashboardTabs.WorkingPapers,   label: $localize`:@@admin.auditorDashboard.workingPapersRfis:Working Papers & RFIs`,   icon: 'pi pi-file' },
     { id: AuditorDashboardTabs.Execution,       label: $localize`:@@admin.auditorDashboard.execution:Execution`,               icon: 'pi pi-play-circle' },

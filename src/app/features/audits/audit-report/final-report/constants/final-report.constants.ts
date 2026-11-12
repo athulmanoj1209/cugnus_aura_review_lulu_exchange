@@ -1,3 +1,8 @@
+import {
+  REPORT_SAMPLE_REPORT_FILE_URL,
+  REPORT_SAMPLE_TEMPLATE_FILE_URL,
+} from '@/app/features/audits/audit-report/report-template/constants/report-sample-files.constants';
+
 /* ── Value sets ───────────────────────────────────────────────────────────
  * `as const` objects instead of TS `enum`s so the plain string literals used
  * throughout the seed data (reports-lists-static-*.ts) stay assignable to
@@ -93,13 +98,11 @@ export const FINAL_REPORT_NEW_REPORT_DEFAULTS = {
   FallbackTemplateSubmitterRole: $localize`:@@audit.auditReport.leadAuditor:Lead Auditor`,
 } as const;
 
-/** Placeholder source used until generated report files are served per-report by the backend. */
-export const FINAL_REPORT_SAMPLE_REPORT_FILE_URL =
-  `assets/data/org-static-data/dar-exchange/${encodeURIComponent('ABC Broadcast - IA  Draft H1_2025 1.0-Report.docx')}`;
+/** Placeholder source used until generated report files are served per-report by the backend (resolved per active client). */
+export const FINAL_REPORT_SAMPLE_REPORT_FILE_URL = REPORT_SAMPLE_REPORT_FILE_URL;
 
-/** Placeholder template file opened from the report profile drawer. */
-export const FINAL_REPORT_SAMPLE_TEMPLATE_FILE_URL =
-  `assets/data/org-static-data/dar-exchange/${encodeURIComponent('Dar-Exchange - IA  Draft H1_2025 1.0-Template.docx')}`;
+/** Placeholder template file opened from the report profile drawer (resolved per active client). */
+export const FINAL_REPORT_SAMPLE_TEMPLATE_FILE_URL = REPORT_SAMPLE_TEMPLATE_FILE_URL;
 
 /** Download name when a report has no title (".docx" is appended). */
 export const FINAL_REPORT_DEFAULT_FILE_NAME = 'report-file';

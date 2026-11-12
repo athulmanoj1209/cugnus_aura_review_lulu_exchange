@@ -88,6 +88,15 @@
 .team-findings-bar__fill--recent { background: var(--p-blue-500); }
 .team-findings-bar__fill--aging { background: var(--p-orange-500); }
 .team-findings-bar__fill--stale { background: var(--p-red-500); }
+/* Horizontal bars grow in from the left when the tab opens / a page of rows renders, matching the donut chart's entry animation. */
+@keyframes team-bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.team-workload-row__fill,
+.team-aging-row__fill,
+.rfi-funnel__bar,
+.team-findings-bar__fill { transform-origin: left center; animation: team-bar-grow .8s cubic-bezier(.22, 1, .36, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .team-workload-row__fill, .team-aging-row__fill, .rfi-funnel__bar, .team-findings-bar__fill { animation: none; transition: none; }
+}
 @media (max-width: 1100px) { .two-col-row { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .team-findings-bar, .team-findings-bar--status { grid-template-columns: 1fr 2rem; gap: .35rem 1rem; } .team-findings-bar__label { grid-column: 1 / -1; } }
 .team-members__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }

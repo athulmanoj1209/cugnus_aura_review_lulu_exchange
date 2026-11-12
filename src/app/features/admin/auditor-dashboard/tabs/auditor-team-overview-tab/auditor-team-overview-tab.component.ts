@@ -92,37 +92,37 @@ export class AuditorTeamOverviewTabComponent implements OnChanges {
         const ids = this.teamIds;
         const names = this.teamNames;
         return [
-            { label: 'Active Audits', value: countActivePlansForTeam(names), icon: 'pi pi-briefcase', cardClass: '', action: AuditorKpiActions.ActiveAudits },
-            { label: 'Assigned Scopes', value: countScopesForTeam(ids, ScopeLevels.Scope), icon: 'pi pi-list', cardClass: '', action: AuditorKpiActions.AssignedScopes },
-            { label: 'Assigned Sub-scopes', value: countScopesForTeam(ids, ScopeLevels.SubScope), icon: 'pi pi-sitemap', cardClass: '', action: AuditorKpiActions.AssignedSubScopes },
-            { label: 'Open Tasks', value: countTasksForTeam(ids, AuditorTaskCountBuckets.Open) + countTasksForTeam(ids, AuditorTaskCountBuckets.InProgress), icon: 'pi pi-check-square', cardClass: '', action: AuditorKpiActions.OpenTasks },
-            { label: 'Tasks Due Today', value: countTasksForTeam(ids, AuditorTaskCountBuckets.DueToday), icon: 'pi pi-calendar', cardClass: 'stat--warning', action: AuditorKpiActions.TasksDueToday },
-            { label: 'Overdue Tasks', value: countTasksForTeam(ids, AuditorTaskCountBuckets.Overdue), icon: 'pi pi-exclamation-triangle', cardClass: 'stat--danger', action: AuditorKpiActions.OverdueTasks },
-            { label: 'Pending RFI Responses', value: countPendingRfisForTeam(ids), icon: 'pi pi-file', cardClass: 'stat--warning', action: AuditorKpiActions.PendingRfi },
-            { label: 'Open Findings', value: countOpenFindingsForTeam(ids), icon: 'pi pi-exclamation-circle', cardClass: 'stat--danger', action: AuditorKpiActions.OpenFindings },
-            { label: 'Repeated Findings', value: countRepeatedFindingsForTeam(ids), icon: 'pi pi-replay', cardClass: 'stat--orange', action: AuditorKpiActions.RepeatedFindings },
-            { label: 'Working Papers Pending', value: countPendingWorkingPapersForTeam(names), icon: 'pi pi-file-edit', cardClass: '', action: AuditorKpiActions.WorkingPapersPending },
+            { label: $localize`:@@admin.auditorOverview.activeAudits:Active Audits`, value: countActivePlansForTeam(names), icon: 'pi pi-briefcase', cardClass: '', action: AuditorKpiActions.ActiveAudits },
+            { label: $localize`:@@admin.auditorOverview.assignedScopes:Assigned Scopes`, value: countScopesForTeam(ids, ScopeLevels.Scope), icon: 'pi pi-list', cardClass: '', action: AuditorKpiActions.AssignedScopes },
+            { label: $localize`:@@admin.auditorOverview.assignedSubScopes:Assigned Sub-scopes`, value: countScopesForTeam(ids, ScopeLevels.SubScope), icon: 'pi pi-sitemap', cardClass: '', action: AuditorKpiActions.AssignedSubScopes },
+            { label: $localize`:@@admin.auditorOverview.openTasks:Open Tasks`, value: countTasksForTeam(ids, AuditorTaskCountBuckets.Open) + countTasksForTeam(ids, AuditorTaskCountBuckets.InProgress), icon: 'pi pi-check-square', cardClass: '', action: AuditorKpiActions.OpenTasks },
+            { label: $localize`:@@admin.auditorOverview.tasksDueToday:Tasks Due Today`, value: countTasksForTeam(ids, AuditorTaskCountBuckets.DueToday), icon: 'pi pi-calendar', cardClass: 'stat--warning', action: AuditorKpiActions.TasksDueToday },
+            { label: $localize`:@@admin.auditorOverview.overdueTasks:Overdue Tasks`, value: countTasksForTeam(ids, AuditorTaskCountBuckets.Overdue), icon: 'pi pi-exclamation-triangle', cardClass: 'stat--danger', action: AuditorKpiActions.OverdueTasks },
+            { label: $localize`:@@admin.auditorOverview.pendingRfiResponses:Pending RFI Responses`, value: countPendingRfisForTeam(ids), icon: 'pi pi-file', cardClass: 'stat--warning', action: AuditorKpiActions.PendingRfi },
+            { label: $localize`:@@admin.auditorOverview.openFindings:Open Findings`, value: countOpenFindingsForTeam(ids), icon: 'pi pi-exclamation-circle', cardClass: 'stat--danger', action: AuditorKpiActions.OpenFindings },
+            { label: $localize`:@@admin.auditorOverview.repeatedFindings:Repeated Findings`, value: countRepeatedFindingsForTeam(ids), icon: 'pi pi-replay', cardClass: 'stat--orange', action: AuditorKpiActions.RepeatedFindings },
+            { label: $localize`:@@admin.auditorOverview.workingPapersPending:Working Papers Pending`, value: countPendingWorkingPapersForTeam(names), icon: 'pi pi-file-edit', cardClass: '', action: AuditorKpiActions.WorkingPapersPending },
         ];
     }
 
     get teamWorkDistribution(): DonutLegendItem[] {
         return [
-            { label: 'Active Audits', value: countActivePlansForTeam(this.teamNames), color: DASHBOARD_COLORS.Blue },
-            { label: 'Assigned Scopes', value: countScopesForTeam(this.teamIds, ScopeLevels.Scope), color: DASHBOARD_COLORS.Green },
-            { label: 'Sub-scopes', value: countScopesForTeam(this.teamIds, ScopeLevels.SubScope), color: DASHBOARD_COLORS.Amber },
-            { label: 'Open Findings', value: countOpenFindingsForTeam(this.teamIds), color: DASHBOARD_COLORS.Red },
-            { label: 'Pending RFIs', value: countPendingRfisForTeam(this.teamIds), color: DASHBOARD_COLORS.Violet },
+            { label: $localize`:@@admin.auditorOverview.activeAudits:Active Audits`, value: countActivePlansForTeam(this.teamNames), color: DASHBOARD_COLORS.Blue },
+            { label: $localize`:@@admin.auditorOverview.assignedScopes:Assigned Scopes`, value: countScopesForTeam(this.teamIds, ScopeLevels.Scope), color: DASHBOARD_COLORS.Green },
+            { label: $localize`:@@admin.auditorOverview.subScopes:Sub-scopes`, value: countScopesForTeam(this.teamIds, ScopeLevels.SubScope), color: DASHBOARD_COLORS.Amber },
+            { label: $localize`:@@admin.auditorOverview.openFindings:Open Findings`, value: countOpenFindingsForTeam(this.teamIds), color: DASHBOARD_COLORS.Red },
+            { label: $localize`:@@admin.auditorOverview.pendingRfis:Pending RFIs`, value: countPendingRfisForTeam(this.teamIds), color: DASHBOARD_COLORS.Violet },
         ];
     }
 
     get teamTaskStatus(): DonutLegendItem[] {
         const counts = getTeamTaskStatusCounts(this.teamIds);
         return [
-            { label: 'Open', value: counts.open, color: DASHBOARD_COLORS.Slate },
-            { label: 'In Progress', value: counts.inProgress, color: DASHBOARD_COLORS.Blue },
-            { label: 'Completed', value: counts.completed, color: DASHBOARD_COLORS.Green },
-            { label: 'Overdue', value: counts.overdue, color: DASHBOARD_COLORS.Red },
-            { label: 'Due Today', value: counts.dueToday, color: DASHBOARD_COLORS.Amber },
+            { label: $localize`:@@common.open:Open`, value: counts.open, color: DASHBOARD_COLORS.Slate },
+            { label: $localize`:@@common.inProgress:In Progress`, value: counts.inProgress, color: DASHBOARD_COLORS.Blue },
+            { label: $localize`:@@common.completed:Completed`, value: counts.completed, color: DASHBOARD_COLORS.Green },
+            { label: $localize`:@@common.overdue:Overdue`, value: counts.overdue, color: DASHBOARD_COLORS.Red },
+            { label: $localize`:@@common.dueToday:Due Today`, value: counts.dueToday, color: DASHBOARD_COLORS.Amber },
         ];
     }
 
@@ -155,10 +155,10 @@ export class AuditorTeamOverviewTabComponent implements OnChanges {
     get teamRfiFunnelStages() {
         const funnel = this.teamRfiResponseFunnel;
         return [
-            { label: 'RFIs Raised', value: funnel.raised, className: 'rfi-funnel__bar--raised' },
-            { label: 'Responses Received', value: funnel.received, className: 'rfi-funnel__bar--received' },
-            { label: 'Responses Under Review', value: funnel.underReview, className: 'rfi-funnel__bar--review' },
-            { label: 'Responses Accepted', value: funnel.accepted, className: 'rfi-funnel__bar--accepted' },
+            { label: $localize`:@@admin.auditorTeamOverview.rfisRaised:RFIs Raised`, value: funnel.raised, className: 'rfi-funnel__bar--raised' },
+            { label: $localize`:@@admin.auditorTeamOverview.responsesReceived:Responses Received`, value: funnel.received, className: 'rfi-funnel__bar--received' },
+            { label: $localize`:@@admin.auditorTeamOverview.responsesUnderReview:Responses Under Review`, value: funnel.underReview, className: 'rfi-funnel__bar--review' },
+            { label: $localize`:@@admin.auditorTeamOverview.responsesAccepted:Responses Accepted`, value: funnel.accepted, className: 'rfi-funnel__bar--accepted' },
         ];
     }
 

@@ -18,7 +18,7 @@ import { Popover, PopoverModule } from 'primeng/popover';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RightDrawerService } from '@/app/shared/components/right-drawer-host/services/right-drawer.service';
 import { AuditPlanViewComponent } from '../com/audit-plan-view/audit-plan-view.component';
-import { AuditPlanFormComponent } from '../manage/audit-plan.component/audit-plan.component';
+import { AuditPlanFormComponent, planDivisionSource } from '../manage/audit-plan.component';
 import { AuditPlanHeader } from '../models/audit-plan.model';
 import { AuditPlanListStore } from '../services/audit-plan-list.store';
 import { ConfirmDialogService } from '@/app/shared/components/confirm-action-dialog/services/confirm-dialog.service';
@@ -57,8 +57,6 @@ import {
   AUDIT_PLAN_DATE_FORMAT_OPTIONS,
   AUDIT_PLAN_DATE_LOCALE,
   AUDIT_PLAN_DRAWER_WIDTH,
-  AUDIT_PLAN_ID_PAD_LENGTH,
-  AUDIT_PLAN_ID_PREFIX,
   AUDIT_PLAN_LIST_PAGE_SIZE,
   AUDIT_PLAN_MOCK_PROGRESS,
   AUDIT_PLAN_QUERY_PARAMS,
@@ -286,7 +284,8 @@ export class AuditPlanListComponent implements OnInit {
   private readonly toast      = inject(ToastService);
 
   /* ── Data ── shared with the Audit Plan page (its plan dropdown) */
-  readonly plans = inject(AuditPlanListStore).plans;
+  private readonly planStore = inject(AuditPlanListStore);
+  readonly plans = this.planStore.plans;
 
   /* ── View mode ── */
   readonly viewMode = signal<AuditPlanViewMode>(AuditPlanViewModes.Grid);
@@ -604,14 +603,8 @@ export class AuditPlanListComponent implements OnInit {
       const result = raw as AuditPlanHeader | null | undefined;
       if (!result) return;
 
-      // Newly created plan — add it to the top of the (in-memory) list.
-      const newPlan: AuditPlan = {
-        ...this.fromHeader(result),
-        id: this.nextPlanId(),
-        status: AuditPlanStatuses.Draft,
-        subDivisions: [],
-      };
-      this.plans.update(list => [newPlan, ...list]);
+      // Newly created plan — added to the top of the shared list.
+      this.planStore.createFromHeader(result);
       this.currentPage.set(1);
     });
   }
@@ -625,7 +618,7 @@ export class AuditPlanListComponent implements OnInit {
 
       // Merge edited header fields back, preserving status / sub-divisions.
       this.plans.update(list =>
-        list.map(x => (x.id === p.id ? { ...x, ...this.fromHeader(result) } : x)),
+        list.map(x => (x.id === p.id ? { ...x, ...this.planStore.fromHeader(result) } : x)),
       );
     });
   }
@@ -648,9 +641,10 @@ export class AuditPlanListComponent implements OnInit {
     this.toast.success(auditPlanActiveToggledMessage(activate));
   }
 
-  /** List row → drawer form data (form works off company id / division code). */
+  /** List row → drawer form data (form works off company id / division code).
+   *  Looked up in the same CLIENT_MODE / client-key aware source the form uses. */
   private toHeader(p: AuditPlan): AuditPlanHeader {
-    const company  = ORG_STATIC_DATA.find(c => c.companyName === p.organizationName);
+    const company  = planDivisionSource().find(c => c.companyName === p.organizationName);
     const division = company?.divisions.find(d => d.divisionName === p.divisionName);
     return {
       id:           p.id,
@@ -660,27 +654,6 @@ export class AuditPlanListComponent implements OnInit {
       periodFrom:   p.startDate!,
       periodTo:     p.endDate!,
     };
-  }
-
-  /** Drawer result → list row header fields (names resolved back from the org roster). */
-  private fromHeader(h: AuditPlanHeader): Pick<AuditPlan, 'planName' | 'organizationName' | 'divisionName' | 'startDate' | 'endDate'> {
-    const company  = ORG_STATIC_DATA.find(c => c.id === h.companyId);
-    const division = company?.divisions.find(d => d.divisionCode === h.divisionCode);
-    return {
-      planName:         h.planName,
-      organizationName: company?.companyName ?? '',
-      divisionName:     division?.divisionName ?? '',
-      startDate:        h.periodFrom,
-      endDate:          h.periodTo,
-    };
-  }
-
-  private nextPlanId(): string {
-    const max = this.plans().reduce((m, p) => {
-      const n = p.id.startsWith(AUDIT_PLAN_ID_PREFIX) ? Number(p.id.slice(AUDIT_PLAN_ID_PREFIX.length)) : Number(p.id);
-      return Number.isFinite(n) ? Math.max(m, n) : m;
-    }, 0);
-    return `${AUDIT_PLAN_ID_PREFIX}${String(max + 1).padStart(AUDIT_PLAN_ID_PAD_LENGTH, '0')}`;
   }
 
   /* ── Popovers ── */

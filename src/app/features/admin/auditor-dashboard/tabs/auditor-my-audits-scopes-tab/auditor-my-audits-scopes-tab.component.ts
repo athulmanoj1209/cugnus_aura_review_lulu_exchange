@@ -94,6 +94,14 @@ export class AuditorMyAuditsScopesTabComponent implements OnInit {
     return {
       plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, padding: 14, font: { size: 12 }, color: c.textSecondary } } },
       maintainAspectRatio: false,
+      // Entry animation: points rise from the baseline one after another, left to right,
+      // so the line "draws in" when the tab opens (hover/active animations are not delayed).
+      animation: {
+        duration: 900,
+        easing: 'easeOutQuart',
+        delay: (ctx: { type: string; mode: string; dataIndex: number }) =>
+          ctx.type === 'data' && ctx.mode === 'default' ? ctx.dataIndex * 80 : 0,
+      },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 11 } } },
         y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: c.surfaceBorder } },

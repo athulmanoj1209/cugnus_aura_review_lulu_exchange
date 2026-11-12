@@ -568,6 +568,11 @@ export class AppMenu {
             icon: 'pi pi-fw pi-calendar',
             items: [
                 {
+                    label: 'Audit Plan',
+                    icon: 'pi pi-fw pi-list-check',
+                    routerLink: ['/audits/audit-plan/audit-plan-selector']
+                },
+                {
                     label: 'Risks',
                     icon: 'pi pi-fw pi-exclamation-triangle',
                     routerLink: ['/audits/audit-plan/risks']
@@ -577,17 +582,12 @@ export class AppMenu {
                     icon: 'pi pi-fw pi-list-check',
                     routerLink: ['/audits/audit-plan/audit-scope']
                 },
-                 {
+                {
                     label: 'Scope Jobs',
                     icon: 'pi pi-fw pi-list-check',
                     routerLink: ['/audits/audit-plan/scope-jobs']
                 },
-                {
-                    label: 'Audit Plan',
-                    icon: 'pi pi-fw pi-list-check',
-                    routerLink: ['/audits/audit-plan/audit-plan-selector']
-                },
-                
+
                 // {
                 //     label: 'View Plan',
                 //     icon: 'pi pi-fw pi-calendar',
@@ -611,6 +611,11 @@ export class AppMenu {
             label: 'Audit Execution',
             icon: 'pi pi-fw pi-play',
             items: [
+                {
+                    label: 'Assign Auditors',
+                    icon: 'pi pi-fw pi-user-plus',
+                    routerLink: ['/audits/audit-execution/assign-auditors']
+                },
                 {
                     label: 'RFI Management',
                     icon: 'pi pi-fw pi-question-circle',
@@ -642,11 +647,7 @@ export class AppMenu {
                     icon: 'pi pi-fw pi-question-circle',
                     routerLink: ['/audits/audit-execution/working-papers']
                 },
-                {
-                    label: 'Assign Auditors',
-                    icon: 'pi pi-fw pi-thumbs-up',
-                    routerLink: ['/audits/audit-execution/assign-auditors']
-                },
+                
                 {
                     label: 'Re-assign Auditors',
                     icon: 'pi pi-fw pi-thumbs-up',

@@ -16,10 +16,10 @@ import { CLIENT_MODE_VALUE } from '@/app/core/config/client-mode';
 import { COMPANIES_SEED } from '@/app/features/audits/organization/company/company-static-indi-org.data';
 import { DIVISION_INDI_ORG_COMPANIES } from '@/app/features/audits/organization/divisions/division-static-indi-org.data';
 import { HttpClient } from '@angular/common/http';
+import { REPORT_SAMPLE_REPORT_FILE_URL } from '@/app/features/audits/audit-report/report-template/constants/report-sample-files.constants';
 
-// Placeholder source used until generated/corrected report files are served per-report by the backend.
-const SAMPLE_REPORT_FILE_URL =
-  `assets/data/org-static-data/dar-exchange/${encodeURIComponent('ABC Broadcast - IA  Draft H1_2025 1.0-Report.docx')}`;
+// Placeholder source used until generated/corrected report files are served per-report by the backend (resolved per active client).
+const SAMPLE_REPORT_FILE_URL = REPORT_SAMPLE_REPORT_FILE_URL;
 
 // ── Types ───────────────────────────────────────────────────────────────────
 export type UserRole = 'admin' | 'auditor';

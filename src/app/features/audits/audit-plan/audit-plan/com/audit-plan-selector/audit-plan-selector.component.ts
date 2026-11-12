@@ -9,7 +9,11 @@ import { DrawIconComponent } from '@/app/shared/components/draw-icon/draw-icon.c
 import { BackButtonComponent } from '@/app/shared/components/back-button/back-button.component';
 import { CompanyDataService } from '@/app/shared/components/services/company-data.service';
 import { CLIENT_MODE } from '@/app/core/config/client-mode';
-import { AUDIT_PLAN_QUERY_PARAMS, AUDIT_PLAN_ROUTES } from '../../constants/audit-plan.constants';
+import { RightDrawerService } from '@/app/shared/components/right-drawer-host/services/right-drawer.service';
+import { AUDIT_PLAN_DRAWER_WIDTH, AUDIT_PLAN_QUERY_PARAMS, AUDIT_PLAN_ROUTES } from '../../constants/audit-plan.constants';
+import { AuditPlanFormComponent } from '../../manage/audit-plan.component';
+import { AuditPlanHeader } from '../../models/audit-plan.model';
+import { AuditPlanListStore } from '../../services/audit-plan-list.store';
 
 
 @Component({
@@ -24,6 +28,8 @@ export class AuditPlanSelectorComponent {
   private readonly location = inject(Location);
   private readonly companyDataService = inject(CompanyDataService);
   private readonly clientMode = inject(CLIENT_MODE);
+  private readonly drawer = inject(RightDrawerService);
+  private readonly planStore = inject(AuditPlanListStore);
 
   /**
    * Reactive company list, sourced from CompanyDataService rather than a
@@ -63,12 +69,33 @@ export class AuditPlanSelectorComponent {
     this.router.navigate([AUDIT_PLAN_ROUTES.PlanList]);
   }
 
-  private navigate(id: string): void {
+  /**
+   * Open the Add Audit Plan drawer right here (same form as the list page).
+   * On save the plan is added to the shared list store and the user lands on
+   * the new plan's dashboard, so a first-time user never has to detour
+   * through the list page.
+   */
+  openCreate(): void {
+    const ref = this.drawer.open(AuditPlanFormComponent, { data: null, width: AUDIT_PLAN_DRAWER_WIDTH });
+    ref.afterClosed.then((raw: unknown) => {
+      const result = raw as AuditPlanHeader | null | undefined;
+      if (!result) return;
+
+      const plan = this.planStore.createFromHeader(result);
+      // The dashboard matches plans by company name; resolve the selector's
+      // company id by that name (the form's roster can use different ids).
+      const company = this.companies().find(c => c.companyName === plan.organizationName);
+      this.navigate(company?.id ?? result.companyId, plan.organizationName, plan.id);
+    });
+  }
+
+  private navigate(id: string, companyName?: string, planId?: string): void {
     const company = this.companyDataService.getById(id);
     this.router.navigate([AUDIT_PLAN_ROUTES.Plan], {
       queryParams: {
         [AUDIT_PLAN_QUERY_PARAMS.Company]:     id,
-        [AUDIT_PLAN_QUERY_PARAMS.CompanyName]: company?.companyName ?? '',
+        [AUDIT_PLAN_QUERY_PARAMS.CompanyName]: companyName ?? company?.companyName ?? '',
+        ...(planId ? { [AUDIT_PLAN_QUERY_PARAMS.Plan]: planId } : {}),
       },
     });
   }

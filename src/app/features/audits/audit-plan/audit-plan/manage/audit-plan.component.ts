@@ -28,17 +28,21 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { DatePickerModule } from 'primeng/datepicker';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { AuditPlanHeader } from '../../models/audit-plan.model';
+import { AuditPlanHeader } from '../models/audit-plan.model';
 import { DrawerRef, DRAWER_DATA } from '@/app/shared/components/right-drawer-host/helper/drawer-ref';
 import { ToastService } from '@/app/shared/components/toast/services/toast.service';
 import { ORG_STATIC_DATA, OrgOption } from '@/app/features/audits/organization/company/company-org-data';
 import { DrawIconComponent } from '@/app/shared/components/draw-icon/draw-icon.component';
+import { CLIENT_MODE_VALUE } from '@/app/core/config/client-mode';
+import { COMPANIES_SEED } from '@/app/features/audits/organization/company/company-static-indi-org.data';
+import { DIVISION_INDI_ORG_COMPANIES } from '@/app/features/audits/organization/divisions/division-static-indi-org.data';
+import { SUB_DIVISION_INDI_ORG_COMPANIES } from '@/app/features/audits/organization/sub-divisions/sub-division-static-indi-org.data';
 import {
   AUDIT_PLAN_FIELD_LIMITS,
   AUDIT_PLAN_PERIOD_MONTHS,
   AUDIT_PLAN_SUBMIT_DELAY_MS,
   MONTHS_PER_YEAR,
-} from '../../constants/audit-plan.constants';
+} from '../constants/audit-plan.constants';
 import {
   AUDIT_PLAN_FORM_ERRORS,
   AUDIT_PLAN_FORM_HEADERS,
@@ -46,7 +50,43 @@ import {
   AUDIT_PLAN_SUB_DIVISION_PLACEHOLDERS,
   AUDIT_PLAN_TOAST_MESSAGES,
   maxCharactersMessage,
-} from '../../constants/audit-plan-messages.constants';
+} from '../constants/audit-plan-messages.constants';
+
+// ── CLIENT_MODE / client-key aware Company → Division → Sub-Division source ──
+// Same switch as the Audit Plan list filters: audit-firm builds read the
+// multi-company ORG_STATIC_DATA roster; internal-audit builds read the
+// per-client seeds (COMPANIES_SEED / DIVISION_INDI_ORG_COMPANIES /
+// SUB_DIVISION_INDI_ORG_COMPANIES), which already switch on
+// INTERNAL_AUDIT_CLIENT_KEY_VALUE (dar-exchange / xyz-broadcast / lulu-exchange).
+
+interface PlanSourceSubDivision { subDivisionCode: string; subDivisionName: string; }
+interface PlanSourceDivision { divisionCode: string; divisionName: string; }
+interface PlanSourceDivisionWithSubs extends PlanSourceDivision {
+  hasSubDivision?: boolean;
+  subDivisions?: PlanSourceSubDivision[];
+}
+export interface PlanSourceCompany<D extends PlanSourceDivision = PlanSourceDivision> {
+  id: string;
+  companyName: string;
+  divisions: D[];
+}
+
+const IS_INTERNAL_AUDIT = CLIENT_MODE_VALUE === 'internal-audit';
+
+/** Companies offered in the Company dropdown. */
+export function planCompanySource(): { id: string; companyName: string }[] {
+  return IS_INTERNAL_AUDIT ? COMPANIES_SEED : ORG_STATIC_DATA;
+}
+
+/** Company → Division source (used for the Division dropdown and name/code lookups). */
+export function planDivisionSource(): PlanSourceCompany[] {
+  return IS_INTERNAL_AUDIT ? DIVISION_INDI_ORG_COMPANIES : ORG_STATIC_DATA;
+}
+
+/** Company → Division → Sub-Division source (used for the Sub-Division dropdown). */
+export function planSubDivisionSource(): PlanSourceCompany<PlanSourceDivisionWithSubs>[] {
+  return IS_INTERNAL_AUDIT ? SUB_DIVISION_INDI_ORG_COMPANIES : ORG_STATIC_DATA;
+}
 
 // ── Custom Validators ─────────────────────────────────────────────────────────
 
@@ -122,6 +162,11 @@ export class AuditPlanFormComponent implements OnInit, OnDestroy {
   readonly isEditMode = computed(() => !!this.drawerData?.id);
   submitting = signal(false);
   readonly currentMonthStart = startOfMonth(new Date());
+  /**
+   * Cached (not a getter): a fresh Date on every change-detection pass makes the
+   * PrimeNG datepicker rebuild its panel, swallowing the first click on the year view.
+   */
+  periodToMaxDate: Date | null = null;
 
   // ── Template constants ────────────────────────────────────────────────────
   readonly planNameMax             = AUDIT_PLAN_FIELD_LIMITS.PlanNameMax;
@@ -132,10 +177,9 @@ export class AuditPlanFormComponent implements OnInit, OnDestroy {
   readonly header = computed(() => this.isEditMode() ? AUDIT_PLAN_FORM_HEADERS.Edit : AUDIT_PLAN_FORM_HEADERS.Create);
 
   // ── Options ───────────────────────────────────────────────────────────────
-  readonly companyOptions: OrgOption[] = ORG_STATIC_DATA.map(c => ({
-    label: c.companyName,
-    value: c.id,
-  }));
+  readonly companyOptions: OrgOption[] = planCompanySource()
+    .map(c => ({ label: c.companyName, value: c.id }))
+    .sort((a, b) => a.label.localeCompare(b.label));
   divisionOptions: OrgOption[] = [];
   subDivisionOptions: OrgOption[] = [];
 
@@ -147,6 +191,7 @@ export class AuditPlanFormComponent implements OnInit, OnDestroy {
     this.buildForm();
     this.watchCompany();
     this.watchDivision();
+    this.watchPeriodFrom();
     if (this.drawerData) this.patchForm(this.drawerData);
   }
 
@@ -184,7 +229,7 @@ export class AuditPlanFormComponent implements OnInit, OnDestroy {
   }
 
   private loadDivisions(companyId: string | null): void {
-    const company = ORG_STATIC_DATA.find(c => c.id === companyId);
+    const company = planDivisionSource().find(c => c.id === companyId);
     this.divisionOptions = (company?.divisions ?? []).map(d => ({
       label: d.divisionName,
       value: d.divisionCode,
@@ -205,10 +250,22 @@ export class AuditPlanFormComponent implements OnInit, OnDestroy {
       });
   }
 
+  /** Recompute the To max date only when From changes, keeping a stable reference for the datepicker. */
+  private watchPeriodFrom(): void {
+    this.form.get('periodFrom')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((from: Date | null) => {
+        this.periodToMaxDate = from ? maxPeriodTo(from) : null;
+        this.cdr.markForCheck();
+      });
+  }
+
   private loadSubDivisions(divisionCode: string | null): void {
-    const company  = ORG_STATIC_DATA.find(c => c.id === this.form.get('companyId')!.value);
+    const company  = planSubDivisionSource().find(c => c.id === this.form.get('companyId')!.value);
     const division = company?.divisions.find(d => d.divisionCode === divisionCode);
-    this.subDivisionOptions = (division?.subDivisions ?? []).map(s => ({
+    // Divisions flagged hasSubDivision:false can still carry a subDivisions array in the seeds.
+    const subDivisionList = division?.hasSubDivision === false ? [] : (division?.subDivisions ?? []);
+    this.subDivisionOptions = subDivisionList.map(s => ({
       label: s.subDivisionName,
       value: s.subDivisionCode,
     }));
@@ -272,10 +329,6 @@ export class AuditPlanFormComponent implements OnInit, OnDestroy {
 
   // ── Validation helpers ────────────────────────────────────────────────────
 
-  get periodToMaxDate(): Date | null {
-    const from = this.form.get('periodFrom')?.value as Date | null;
-    return from ? maxPeriodTo(from) : null;
-  }
 
   invalid(field: string): boolean {
     const c = this.form.get(field);

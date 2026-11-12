@@ -11,9 +11,13 @@
         <p class="aps-titlebar__sub">Select a company to view and manage its annual audit plan.</p>
       </div>
     </div>
-    <p-button label="View All Audit Plans" icon="pi pi-list" [outlined]="true"
-              pTooltip="Create, edit and activate audit plans" tooltipPosition="left"
-              (onClick)="goToPlanList()" />
+    <div class="aps-titlebar__actions">
+      <p-button label="View All Audit Plans" icon="pi pi-list" [outlined]="true"
+                pTooltip="Edit and activate existing audit plans" tooltipPosition="bottom"
+                (onClick)="goToPlanList()" />
+      <p-button label="Create Audit Plan" icon="pi pi-plus"
+                (onClick)="openCreate()" />
+    </div>
   </div>
 
   <!-- ── Company selector bar ── -->

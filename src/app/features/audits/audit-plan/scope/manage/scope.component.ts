@@ -4,7 +4,9 @@ import {
   OnDestroy,
   inject,
   ViewChild,
+  computed,
 } from '@angular/core';
+import { risksStore } from '@/app/features/audits/audit-plan/risk/risk-shared-data';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -72,7 +74,6 @@ import {
   SCOPE_DETAILS_TAB_REQUIRED_FIELDS,
   SCOPE_EVIDENCE_UPLOAD,
   SCOPE_FORM_TABS,
-  SCOPE_MOCK_RISK_REGISTER,
   SCOPE_NAME_MAX_LENGTH,
   SCOPE_NAME_MIN_LENGTH,
   SCOPE_OBJECTIVE_MAX_LENGTH,
@@ -442,8 +443,14 @@ export class ScopeComponent implements OnInit, OnDestroy {
   hourlyRateOptions = HOURLY_RATE_OPTIONS;
   riskRatingOptions = RISK_RATING_OPTIONS;
 
-  // Simulated risk register — replace with real API call in production
-  private riskRegister = SCOPE_MOCK_RISK_REGISTER;
+  // Risk Register items (shared store) shown in the Risk Reference ID dropdown
+  riskReferenceOptions = computed(() =>
+    risksStore().map(r => ({
+      label: `${r.id} — ${r.title}`,
+      value: r.id,
+      residualLevel: r.residualLevel,
+    }))
+  );
 
   auditFormErrorMessages = SCOPE_ERROR_MESSAGES;
 
@@ -636,8 +643,8 @@ export class ScopeComponent implements OnInit, OnDestroy {
 
     this.subs.add(
       this.scopeForm.get('riskReferenceId')!.valueChanges.subscribe(val => {
-        const key = (val ?? '').trim().toUpperCase();
-        const rating = this.riskRegister[key] ?? null;
+        const risk = risksStore().find(r => r.id === val);
+        const rating = risk?.residualLevel ?? null;
         this.scopeForm.get('riskRating')?.setValue(rating, { emitEvent: false });
       })
     );

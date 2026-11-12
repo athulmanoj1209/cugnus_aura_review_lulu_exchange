@@ -209,7 +209,7 @@
             @if (rfi.response.responseDocs.length > 0) {
             <div class="form-row">
               <div class="form-col full">
-                <span class="field-label"><i class="pi pi-paperclip field-label-icon"></i><span i18n="@@audit.rfi.evidenceAttachments">Evidence / Attachments</span></span>
+                <span class="field-label"><i class="pi pi-paperclip field-label-icon"></i><span i18n="@@audit.rfi.evidenceAttachments"> Attachments</span></span>
                 <div class="view-doc-list">
                   @for (doc of rfi.response.responseDocs; track doc.url) {
                   <p-card styleClass="view-doc-card resp-doc-card">
@@ -361,7 +361,7 @@
 
               @if (entry.responseDocs.length > 0) {
               <div class="hist-section">
-                <div class="hist-section-label"><i class="pi pi-paperclip"></i><span i18n="@@audit.rfi.evidenceAttachments">Evidence / Attachments</span></div>
+                <div class="hist-section-label"><i class="pi pi-paperclip"></i><span i18n="@@audit.rfi.evidenceAttachments"> Attachments</span></div>
                 <div class="view-doc-list">
                   @for (doc of entry.responseDocs; track doc.url) {
                   <p-card styleClass="view-doc-card resp-doc-card">

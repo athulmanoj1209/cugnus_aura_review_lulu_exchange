@@ -42,6 +42,22 @@
           <context context-type="linenumber">37</context>
         </context-group>
       </trans-unit>
+      <trans-unit id="admin.auditorDashboard.teamOverview" datatype="html">
+        <source>Team Overview</source>
+        <target state="translated">نظرة عامة على الفريق</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/main-auditor-dashboard/main-auditor-dashboard.component.ts</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorDashboard.preparingTeamOverview" datatype="html">
+        <source>Preparing team overview...</source>
+        <target state="translated">جارٍ تحضير نظرة عامة على الفريق...</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/main-auditor-dashboard/main-auditor-dashboard.component.html</context>
+          <context context-type="linenumber">73,77</context>
+        </context-group>
+      </trans-unit>
       <trans-unit id="admin.auditorDashboard.myAuditsScopes" datatype="html">
         <source>My Audits &amp; Scopes</source>
         <target state="translated">عمليات التدقيق والنطاقات الخاصة بي</target>
@@ -3128,6 +3144,250 @@
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-overview-tab/auditor-overview-tab.component.ts</context>
           <context context-type="linenumber">145</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorOverview.repeatedFindings" datatype="html">
+        <source>Repeated Findings</source>
+        <target state="translated">الملاحظات المتكررة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-overview-tab/auditor-overview-tab.component.ts</context>
+          <context context-type="linenumber">86</context>
+        </context-group>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.ts</context>
+          <context context-type="linenumber">103</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.rfisRaised" datatype="html">
+        <source>RFIs Raised</source>
+        <target state="translated">طلبات المعلومات المُرسلة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.ts</context>
+          <context context-type="linenumber">158</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.responsesReceived" datatype="html">
+        <source>Responses Received</source>
+        <target state="translated">الردود المستلمة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.ts</context>
+          <context context-type="linenumber">159</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.responsesUnderReview" datatype="html">
+        <source>Responses Under Review</source>
+        <target state="translated">الردود قيد المراجعة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.ts</context>
+          <context context-type="linenumber">160</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.responsesAccepted" datatype="html">
+        <source>Responses Accepted</source>
+        <target state="translated">الردود المقبولة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.ts</context>
+          <context context-type="linenumber">161</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.workloadDistribution" datatype="html">
+        <source>Workload Distribution</source>
+        <target state="translated">توزيع عبء العمل</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">40</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.workloadDistributionSubtitle" datatype="html">
+        <source>Work allocation by audit</source>
+        <target state="translated">توزيع العمل حسب التدقيق</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">41</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.percentComplete" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ audit.completionPercentage }}"/>% complete</source>
+        <target state="translated">مكتمل بنسبة <x id="INTERPOLATION" equiv-text="{{ audit.completionPercentage }}"/>%</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">50</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.membersCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ audit.assignedTeamMembers }}"/> members</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ audit.assignedTeamMembers }}"/> أعضاء</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">56</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.scopesCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ audit.teamScopeCount }}"/> scopes</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ audit.teamScopeCount }}"/> نطاقات</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">57</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.tasksCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ audit.teamTaskCount }}"/> tasks</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ audit.teamTaskCount }}"/> مهام</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">58</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.taskAging" datatype="html">
+        <source>Task Aging</source>
+        <target state="translated">تقادم المهام</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">70</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.taskAgingSubtitle" datatype="html">
+        <source>Open team tasks grouped by age</source>
+        <target state="translated">مهام الفريق المفتوحة مجمّعة حسب العمر</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">71</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.openTasksCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ teamTaskAgingTotal }}"/> open tasks</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ teamTaskAgingTotal }}"/> مهام مفتوحة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">73</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.rfiMonitoring" datatype="html">
+        <source>RFI &amp; Client-Response Monitoring</source>
+        <target state="translated">مراقبة طلبات المعلومات وردود العملاء</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">89</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.rfiMonitoringSubtitle" datatype="html">
+        <source>Team response funnel</source>
+        <target state="translated">مسار ردود الفريق</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">90</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.pendingCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ teamRfiResponseFunnel.pending }}"/> pending</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ teamRfiResponseFunnel.pending }}"/> قيد الانتظار</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.overdueCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ teamRfiResponseFunnel.overdue }}"/> overdue</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ teamRfiResponseFunnel.overdue }}"/> متأخرة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.avgResponseDays" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ teamRfiResponseFunnel.averageResponseDays }}"/> days avg. response</source>
+        <target state="translated">متوسط الرد <x id="INTERPOLATION" equiv-text="{{ teamRfiResponseFunnel.averageResponseDays }}"/> أيام</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">92</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.responsesRejected" datatype="html">
+        <source>Responses rejected:</source>
+        <target state="translated">الردود المرفوضة:</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.rfiFunnelNote" datatype="html">
+        <source>Responses received includes under review, accepted, and rejected responses.</source>
+        <target state="translated">تشمل الردود المستلمة الردود قيد المراجعة والمقبولة والمرفوضة.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">102</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsBySeverity" datatype="html">
+        <source>Findings by Severity</source>
+        <target state="translated">الملاحظات حسب الخطورة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">109</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsBySeveritySubtitle" datatype="html">
+        <source>Team's overall risk distribution</source>
+        <target state="translated">التوزيع الإجمالي للمخاطر لدى الفريق</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">110</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsCenterLabel" datatype="html">
+        <source>Findings</source>
+        <target state="translated">الملاحظات</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">113</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsByStatus" datatype="html">
+        <source>Findings by Status</source>
+        <target state="translated">الملاحظات حسب الحالة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">119</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsByStatusSubtitle" datatype="html">
+        <source>Team findings grouped by lifecycle status</source>
+        <target state="translated">ملاحظات الفريق مجمّعة حسب حالة دورة الحياة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">120</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsByStatusNote" datatype="html">
+        <source>Repeated findings are also counted in their current status group.</source>
+        <target state="translated">تُحتسب الملاحظات المتكررة أيضًا ضمن مجموعة حالتها الحالية.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">132</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsAging" datatype="html">
+        <source>Findings Aging</source>
+        <target state="translated">تقادم الملاحظات</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">139</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.findingsAgingSubtitle" datatype="html">
+        <source>Team findings not yet closed, grouped by age</source>
+        <target state="translated">ملاحظات الفريق غير المغلقة بعد، مجمّعة حسب العمر</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">140</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="admin.auditorTeamOverview.openFindingsCount" datatype="html">
+        <source><x id="INTERPOLATION" equiv-text="{{ teamFindingAgingTotal }}"/> open findings</source>
+        <target state="translated"><x id="INTERPOLATION" equiv-text="{{ teamFindingAgingTotal }}"/> ملاحظات مفتوحة</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/features/admin/auditor-dashboard/tabs/auditor-team-overview-tab/auditor-team-overview-tab.component.html</context>
+          <context context-type="linenumber">142</context>
         </context-group>
       </trans-unit>
       <trans-unit id="admin.auditorOverview.openAssignedAudit" datatype="html">
@@ -22743,8 +23003,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="audit.rfi.evidenceAttachments" datatype="html">
-        <source>Evidence / Attachments</source>
-        <target state="translated">الأدلة / المرفقات</target>
+        <source>Attachments</source>
+         <target state="translated">المرفقات</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/audits/audit-execution/rfi/profile/rfi-profile.component.html</context>
           <context context-type="linenumber">212,213</context>
@@ -29495,8 +29755,8 @@
         </context-group>
       </trans-unit>
       <trans-unit id="common.evidenceAttachments" datatype="html">
-        <source>Evidence / Attachments</source>
-        <target state="translated">الأدلة / المرفقات</target>
+        <source>Attachments</source>
+        <target state="translated">المرفقات</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/features/client/rfi-client/manage/rfi-client.component.html</context>
           <context context-type="linenumber">140,141</context>

@@ -1,5 +1,5 @@
 // Pull in every token, mixin, and utility class from the shared drawer partial.
-@use '../../../../../../../assets/drawer-modal.scss' as *;
+@use '../../../../../../assets/drawer-modal.scss' as *;
 
 // ── Header / footer shell overrides (matches events-meetings.component.scss) ──
 .drawer-header {

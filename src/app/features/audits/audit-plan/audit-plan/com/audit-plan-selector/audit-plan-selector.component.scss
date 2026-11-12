@@ -71,6 +71,12 @@
     gap: 0.75rem;
   }
 
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
   &__title {
     font-size: 22px;
     font-weight: 800;

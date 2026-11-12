@@ -137,7 +137,7 @@
                     }
                   </div>
                   <div class="form-col full">
-                    <label class="field-label" i18n="@@common.evidenceAttachments">Evidence / Attachments</label>
+                    <label class="field-label" i18n="@@common.evidenceAttachments"> Attachments</label>
                     <div class="evidence-upload-area">
                       <p-fileupload mode="basic" [chooseLabel]="chooseFilesLabel" chooseIcon="pi pi-upload" [auto]="false" [multiple]="true" accept=".pdf,.doc,.docx,image/*" styleClass="evidence-upload-btn" (onSelect)="onResponseFileSelect($event)"></p-fileupload>
                       <p class="upload-hint"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> <span i18n="@@common.acceptedFormats">Accepted formats: PDF, DOC, DOCX, Images</span></p>
@@ -192,7 +192,7 @@
                 @if (rfi.response.responseDocs.length > 0) {
                   <div class="form-col full" style="margin-top:4px">
                     <span class="field-label"><app-draw-icon icon="pi pi-paperclip" class="field-label-icon"></app-draw-icon>
-                      <span i18n="@@common.evidenceAttachments">Evidence / Attachments</span>
+                      <span i18n="@@common.evidenceAttachments">Attachments</span>
                     </span>
                     <div class="view-doc-list">
                       @for (doc of rfi.response.responseDocs; track doc.url) {
@@ -279,7 +279,7 @@
                 @if (rfi.response.responseDocs.length > 0) {
                   <div class="form-col full" style="margin-top:4px">
                     <span class="field-label"><app-draw-icon icon="pi pi-paperclip" class="field-label-icon"></app-draw-icon>
-                      <span i18n="@@common.evidenceAttachments">Evidence / Attachments</span>
+                      <span i18n="@@common.evidenceAttachments"> Attachments</span>
                     </span>
                     <div class="view-doc-list">
                       @for (doc of rfi.response.responseDocs; track doc.url) {
@@ -371,7 +371,7 @@
                   @if (rfi.response.responseDocs.length > 0) {
                     <div class="form-col full" style="margin-top:4px">
                       <span class="field-label"><app-draw-icon icon="pi pi-paperclip" class="field-label-icon"></app-draw-icon>
-                        <span i18n="@@common.evidenceAttachments">Evidence / Attachments</span>
+                        <span i18n="@@common.evidenceAttachments">Attachments</span>
                       </span>
                       <div class="view-doc-list">
                         @for (doc of rfi.response.responseDocs; track doc.url) {
@@ -500,7 +500,7 @@
                       }
                     </div>
                     <div class="form-col full">
-                      <label class="field-label"><span i18n="@@common.evidenceAttachments">Evidence / Attachments</span></label>
+                      <label class="field-label"><span i18n="@@common.evidenceAttachments">Attachments</span></label>
                       <div class="evidence-upload-area">
                         <p-fileupload mode="basic" [chooseLabel]="chooseFilesLabel" chooseIcon="pi pi-upload" [auto]="false" [multiple]="true" accept=".pdf,.doc,.docx,image/*" styleClass="evidence-upload-btn" (onSelect)="onResponseFileSelect($event)"></p-fileupload>
                         <p class="upload-hint"><app-draw-icon icon="pi pi-info-circle"></app-draw-icon> <span i18n="@@common.acceptedFormats">Accepted formats: PDF, DOC, DOCX, Images</span></p>
@@ -601,7 +601,7 @@
                   @if (entry.responseDocs.length > 0) {
                     <div class="hist-section">
                       <div class="hist-section-label"><app-draw-icon icon="pi pi-paperclip"></app-draw-icon>
-                        <span i18n="@@common.evidenceAttachments">Evidence / Attachments</span>
+                        <span i18n="@@common.evidenceAttachments">Attachments</span>
                       </div>
                       <div class="view-doc-list">
                         @for (doc of entry.responseDocs; track doc.url) {

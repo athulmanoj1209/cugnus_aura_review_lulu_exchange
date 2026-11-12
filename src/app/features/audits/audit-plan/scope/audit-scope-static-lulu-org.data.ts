@@ -129,7 +129,7 @@ function makeLuluUnitScope(
 
 const LULU_UNIT_SCOPES = {
   software: [
-    makeLuluUnitScope('SC-8001', DIV_IT, 'SOFTWARE', 'SOFTWARE', 'Information Technology / Software Applications', 'quarterly', 'high', 'In Progress'),
+    makeLuluUnitScope('SC-8001', DIV_IT, 'SOFTWARE', 'SOFTWARE', 'Information Technology / Software Applications', 'quarterly', 'high', 'Approved'),
   ],
   hardware: [
     makeLuluUnitScope('SC-8002', DIV_IT, 'HARDWARE', 'HARDWARE', 'IT Infrastructure / Hardware & Data Centre', 'annually', 'medium', 'Approved'),

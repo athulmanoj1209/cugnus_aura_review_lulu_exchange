@@ -223,6 +223,19 @@
   height: 100%;
   border-radius: 4px;
   transition: width 0.5s ease;
+  // Grow in from the left when the tab opens / a page of rows renders (matches the donut chart's entry animation).
+  transform-origin: left center;
+  animation: progress-fill-grow 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    transition: none;
+  }
+}
+
+@keyframes progress-fill-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
 }
 
 .pct-label {

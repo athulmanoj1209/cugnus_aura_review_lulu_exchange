@@ -37,8 +37,8 @@
     <div class="team-workload-card">
         <div class="team-workload-card__header">
             <div>
-                <h3>Workload Distribution</h3>
-                <p>Work allocation by audit</p>
+                <h3 i18n="@@admin.auditorTeamOverview.workloadDistribution">Workload Distribution</h3>
+                <p i18n="@@admin.auditorTeamOverview.workloadDistributionSubtitle">Work allocation by audit</p>
             </div>
         </div>
 
@@ -47,15 +47,15 @@
                 <div class="team-workload-row">
                     <div class="team-workload-row__title">
                         <strong>{{ audit.auditName }}</strong>
-                        <span>{{ audit.completionPercentage }}% complete</span>
+                        <span i18n="@@admin.auditorTeamOverview.percentComplete">{{ audit.completionPercentage }}% complete</span>
                     </div>
                     <div class="team-workload-row__bar">
                         <div class="team-workload-row__fill" [class]="workloadFillClass(audit.completionPercentage)" [style.width.%]="audit.completionPercentage"></div>
                     </div>
                     <div class="team-workload-row__metrics">
-                        <span><i class="pi pi-users"></i> {{ audit.assignedTeamMembers }} members</span>
-                        <span><i class="pi pi-sitemap"></i> {{ audit.teamScopeCount }} scopes</span>
-                        <span><i class="pi pi-check-square"></i> {{ audit.teamTaskCount }} tasks</span>
+                        <span><i class="pi pi-users"></i> <ng-container i18n="@@admin.auditorTeamOverview.membersCount">{{ audit.assignedTeamMembers }} members</ng-container></span>
+                        <span><i class="pi pi-sitemap"></i> <ng-container i18n="@@admin.auditorTeamOverview.scopesCount">{{ audit.teamScopeCount }} scopes</ng-container></span>
+                        <span><i class="pi pi-check-square"></i> <ng-container i18n="@@admin.auditorTeamOverview.tasksCount">{{ audit.teamTaskCount }} tasks</ng-container></span>
                         <span><i class="pi pi-chart-line"></i> {{ audit.completionPercentage }}%</span>
                     </div>
                 </div>
@@ -67,10 +67,10 @@
     <div class="team-aging-card">
         <div class="team-workload-card__header">
             <div>
-                <h3>Task Aging</h3>
-                <p>Open team tasks grouped by age</p>
+                <h3 i18n="@@admin.auditorTeamOverview.taskAging">Task Aging</h3>
+                <p i18n="@@admin.auditorTeamOverview.taskAgingSubtitle">Open team tasks grouped by age</p>
             </div>
-            <span class="team-aging-total">{{ teamTaskAgingTotal }} open tasks</span>
+            <span class="team-aging-total" i18n="@@admin.auditorTeamOverview.openTasksCount">{{ teamTaskAgingTotal }} open tasks</span>
         </div>
 
         <div class="team-aging-list">
@@ -86,10 +86,10 @@
     <div class="rfi-funnel-card">
         <div class="team-workload-card__header">
             <div>
-                <h3>RFI &amp; Client-Response Monitoring</h3>
-                <p>Team response funnel</p>
+                <h3 i18n="@@admin.auditorTeamOverview.rfiMonitoring">RFI &amp; Client-Response Monitoring</h3>
+                <p i18n="@@admin.auditorTeamOverview.rfiMonitoringSubtitle">Team response funnel</p>
             </div>
-            <div class="rfi-funnel-summary"><span>{{ teamRfiResponseFunnel.pending }} pending</span><span>{{ teamRfiResponseFunnel.overdue }} overdue</span><strong>{{ teamRfiResponseFunnel.averageResponseDays }} days avg. response</strong></div>
+            <div class="rfi-funnel-summary"><span i18n="@@admin.auditorTeamOverview.pendingCount">{{ teamRfiResponseFunnel.pending }} pending</span><span i18n="@@admin.auditorTeamOverview.overdueCount">{{ teamRfiResponseFunnel.overdue }} overdue</span><strong i18n="@@admin.auditorTeamOverview.avgResponseDays">{{ teamRfiResponseFunnel.averageResponseDays }} days avg. response</strong></div>
         </div>
         <div class="rfi-funnel">
             @for (stage of teamRfiFunnelStages; track stage.label; let index = $index) {
@@ -99,25 +99,25 @@
                 </div>
             }
         </div>
-        <div class="rfi-funnel__footer"><span>Responses rejected: <strong>{{ teamRfiResponseFunnel.rejected }}</strong></span><span>Responses received includes under review, accepted, and rejected responses.</span></div>
+        <div class="rfi-funnel__footer"><span><ng-container i18n="@@admin.auditorTeamOverview.responsesRejected">Responses rejected:</ng-container> <strong>{{ teamRfiResponseFunnel.rejected }}</strong></span><span i18n="@@admin.auditorTeamOverview.rfiFunnelNote">Responses received includes under review, accepted, and rejected responses.</span></div>
     </div>
 
     <div class="two-col-row">
         <div class="team-findings-card">
             <div class="team-workload-card__header">
                 <div>
-                    <h3>Findings by Severity</h3>
-                    <p>Team's overall risk distribution</p>
+                    <h3 i18n="@@admin.auditorTeamOverview.findingsBySeverity">Findings by Severity</h3>
+                    <p i18n="@@admin.auditorTeamOverview.findingsBySeveritySubtitle">Team's overall risk distribution</p>
                 </div>
             </div>
-            <app-donut-status-chart [legend]="teamFindingSeverity" centerLabel="Findings" [maxWidth]="220"></app-donut-status-chart>
+            <app-donut-status-chart [legend]="teamFindingSeverity" centerLabel="Findings" i18n-centerLabel="@@admin.auditorTeamOverview.findingsCenterLabel" [maxWidth]="220"></app-donut-status-chart>
         </div>
 
         <div class="team-findings-card">
             <div class="team-workload-card__header">
                 <div>
-                    <h3>Findings by Status</h3>
-                    <p>Team findings grouped by lifecycle status</p>
+                    <h3 i18n="@@admin.auditorTeamOverview.findingsByStatus">Findings by Status</h3>
+                    <p i18n="@@admin.auditorTeamOverview.findingsByStatusSubtitle">Team findings grouped by lifecycle status</p>
                 </div>
             </div>
             <div class="team-findings-bars">
@@ -129,17 +129,17 @@
                     </div>
                 }
             </div>
-            <p class="team-findings-note">Repeated findings are also counted in their current status group.</p>
+            <p class="team-findings-note" i18n="@@admin.auditorTeamOverview.findingsByStatusNote">Repeated findings are also counted in their current status group.</p>
         </div>
     </div>
 
     <div class="team-findings-card">
         <div class="team-workload-card__header">
             <div>
-                <h3>Findings Aging</h3>
-                <p>Team findings not yet closed, grouped by age</p>
+                <h3 i18n="@@admin.auditorTeamOverview.findingsAging">Findings Aging</h3>
+                <p i18n="@@admin.auditorTeamOverview.findingsAgingSubtitle">Team findings not yet closed, grouped by age</p>
             </div>
-            <span class="team-aging-total">{{ teamFindingAgingTotal }} open findings</span>
+            <span class="team-aging-total" i18n="@@admin.auditorTeamOverview.openFindingsCount">{{ teamFindingAgingTotal }} open findings</span>
         </div>
         <div class="team-findings-bars">
             @for (bucket of teamFindingAging; track bucket.key) {

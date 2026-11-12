@@ -1,3 +1,5 @@
+import { REPORT_SAMPLE_TEMPLATE_FILE_URL } from './report-sample-files.constants';
+
 /* ── Value sets ───────────────────────────────────────────────────────────
  * `as const` objects instead of TS `enum`s so the plain string literals used
  * throughout the seed data (report-template-static-*.ts) stay assignable to
@@ -101,9 +103,8 @@ export const REPORT_TEMPLATE_NEW_SUBMITTER = {
   Role: 'Auditor',
 } as const;
 
-/** Placeholder source used until template files are uploaded/served per-template by the backend. */
-export const REPORT_TEMPLATE_SAMPLE_FILE_URL =
-  `assets/data/org-static-data/dar-exchange/${encodeURIComponent('ABC Broadcast - IA  Draft H1_2025 1.0-Template.docx')}`;
+/** Placeholder source used until template files are uploaded/served per-template by the backend (resolved per active client). */
+export const REPORT_TEMPLATE_SAMPLE_FILE_URL = REPORT_SAMPLE_TEMPLATE_FILE_URL;
 
 /** Download name when a template has no file name. */
 export const REPORT_TEMPLATE_DEFAULT_FILE_NAME = 'template-file.docx';

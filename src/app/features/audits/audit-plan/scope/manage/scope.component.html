@@ -496,8 +496,9 @@
                 <div class="form-row">
                   <div class="form-col">
                     <label class="field-label">Risk Reference ID</label>
-                    <input pInputText type="text" formControlName="riskReferenceId" placeholder="e.g. RR-001"
-                      class="form-input" [readonly]="isViewMode" />
+                    <p-select appendTo="body" formControlName="riskReferenceId" [options]="riskReferenceOptions()"
+                      optionLabel="label" optionValue="value" placeholder="Select Risk" styleClass="form-dropdown"
+                      [filter]="true" filterBy="label" [showClear]="!isViewMode" [disabled]="isViewMode"></p-select>
                     <small class="field-hint">
                       <i class="pi pi-link"></i>
                       Links to Risk Register item
@@ -510,7 +511,7 @@
                       [disabled]="isViewMode"></p-select>
                     <small class="field-hint">
                       <i class="pi pi-info-circle"></i>
-                      Auto-populated when Risk Reference ID is matched
+                      Auto-populated from the selected Risk Register item
                     </small>
                   </div>
                 </div>

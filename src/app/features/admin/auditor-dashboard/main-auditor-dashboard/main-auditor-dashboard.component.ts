@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { NgClass } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuditorOverviewTabComponent } from '../tabs/auditor-overview-tab/auditor-overview-tab.component';
 import { AuditorMyAuditsScopesTabComponent } from '../tabs/auditor-my-audits-scopes-tab/auditor-my-audits-scopes-tab.component';
 import { AuditorWorkingPapersRfisTabComponent } from '../tabs/auditor-working-papers-rfis-tab/auditor-working-papers-rfis-tab.component';
@@ -33,8 +34,6 @@ export class MainAuditorDashboard {
 
   readonly AuditorDashboardTabs = AuditorDashboardTabs;
 
-  activeTab: string = AuditorDashboardTabs.Overview;
-
   tabs: { id: AuditorDashboardTab; label: string; icon: string }[] = [
     { id: AuditorDashboardTabs.Overview,        label: $localize`:@@admin.auditorDashboard.overview:Overview`,                icon: 'pi pi-home' },
     { id: AuditorDashboardTabs.TeamOverview,    label: $localize`:@@admin.auditorDashboard.teamOverview:Team Overview`,       icon: 'pi pi-users' },
@@ -43,4 +42,26 @@ export class MainAuditorDashboard {
     { id: AuditorDashboardTabs.Execution,       label: $localize`:@@admin.auditorDashboard.execution:Execution`,               icon: 'pi pi-play-circle' },
     { id: AuditorDashboardTabs.Reviews,         label: $localize`:@@admin.auditorDashboard.reviews:Reviews`,                 icon: 'pi pi-check-circle' },
   ];
+
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  /** Restored from `?tab=` so Back from a counter-card drill-down returns to the same tab. */
+  activeTab: string = this.resolveTab(this.route.snapshot.queryParamMap.get('tab'));
+
+  selectTab(id: AuditorDashboardTab): void {
+    if (this.activeTab === id) return;
+    this.activeTab = id;
+    // replaceUrl: tab switches update the current history entry instead of stacking Back steps.
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: id },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
+  private resolveTab(tab: string | null): string {
+    return this.tabs.some(t => t.id === tab) ? tab! : AuditorDashboardTabs.Overview;
+  }
 }

@@ -45,19 +45,19 @@
 
   <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
   <div class="tab-bar">
-    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '0'" (click)="activeTab = '0'">
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '0'" (click)="selectTab('0')">
       <app-draw-icon icon="pi pi-th-large"></app-draw-icon> <span i18n="@@client.clientDashboard.overview">Overview</span>
     </button>
-    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '1'" (click)="activeTab = '1'">
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '1'" (click)="selectTab('1')">
       <app-draw-icon icon="pi pi-file-edit"></app-draw-icon> <span i18n="@@client.clientDashboard.rfis">RFIs</span>
       @if (overdueRfiCount > 0) {
         <p-badge [value]="overdueRfiCount.toString()" severity="danger" styleClass="tab-badge" />
       }
     </button>
-    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '2'" (click)="activeTab = '2'">
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '2'" (click)="selectTab('2')">
       <app-draw-icon icon="pi pi-list-check"></app-draw-icon> <span i18n="@@client.clientDashboard.scope">Scope</span>
     </button>
-    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '3'" (click)="activeTab = '3'">
+    <button type="button" class="tab-btn" [class.tab-btn--active]="activeTab === '3'" (click)="selectTab('3')">
       <app-draw-icon icon="pi pi-bell"></app-draw-icon> <span i18n="@@client.clientDashboard.notificationsAndReports">Notifications &amp; Reports</span>
       @if (unreadCount > 0) {
         <p-badge [value]="unreadCount.toString()" severity="danger" styleClass="tab-badge" />

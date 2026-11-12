@@ -1,7 +1,7 @@
 import { Component, OnInit, OnChanges, SimpleChanges, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SelectModule } from 'primeng/select';
 import { BadgeModule } from 'primeng/badge';
 import { ButtonModule } from 'primeng/button';
@@ -75,6 +75,10 @@ function firstIndiOrgSubDivisionName(): string | undefined {
 // seed ever ends up with no sub-divisions at all, so this dashboard never silently ends up with
 // `undefined` as a filter value.
 const INDI_ORG_HR_SUB_DIVISION_NAME = firstIndiOrgSubDivisionName() ?? 'HR Dept';
+
+/** Tab ids: 0 Overview, 1 RFIs, 2 Scope, 3 Notifications & Reports. Mirrored in `?tab=`. */
+const CLIENT_DASHBOARD_TABS = ['0', '1', '2', '3'] as const;
+type ClientDashboardTab = (typeof CLIENT_DASHBOARD_TABS)[number];
 
 @Component({
   selector: 'app-client-dashboard',
@@ -215,7 +219,7 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
 
   /** Flags each KPI card that has a navigation target, so the tabs can render it as clickable. */
   private withNav(kpis: KpiCard[]): KpiCard[] {
-    return kpis.map((kpi) => ({ ...kpi, clickable: !!this.kpiNav[kpi.label] }));
+    return kpis.map((kpi) => ({ ...kpi, clickable: !!this.kpiNav[kpi.key] }));
   }
 
   // Sub-division used for the Sub-Division Head persona's RFI pool (rfi-static-data.ts's
@@ -256,9 +260,27 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
   /** Drives the custom .tab-bar/.tab-btn navigation — each tab body is its own component
    * under ../tabs. Replaces PrimeNG's <p-tabs>, which fought CSS overrides for its
    * tablist/tabpanel background no matter how the styles were applied. */
-  activeTab: '0' | '1' | '2' | '3' = '0';
+  activeTab: ClientDashboardTab = '0';
 
-  constructor(private cdr: ChangeDetectorRef, private router: Router) {}
+  constructor(private cdr: ChangeDetectorRef, private router: Router, private route: ActivatedRoute) {
+    // Restored from `?tab=` so Back from a counter-card drill-down returns to the same tab.
+    const tab = this.route.snapshot.queryParamMap.get('tab');
+    if (CLIENT_DASHBOARD_TABS.includes(tab as ClientDashboardTab)) {
+      this.activeTab = tab as ClientDashboardTab;
+    }
+  }
+
+  selectTab(tab: ClientDashboardTab): void {
+    if (this.activeTab === tab) return;
+    this.activeTab = tab;
+    // replaceUrl: tab switches update the current history entry instead of stacking Back steps.
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
 
   /**
    * Query params that tell rfi-client-list.component.ts which role/sub-division to open as.
@@ -569,7 +591,7 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
     ];
 
     // ── KPIs — derived from scope stats/rfiBreakdown above so they can never drift out of sync ──
-    this.kpis = [
+    this.kpis = this.withNav([
       {
         key: 'totalOpenRfis',
         label: $localize`:@@client.clientDashboard.totalOpenRfis:Total open RFIs`,
@@ -602,11 +624,11 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
         subColor: 'muted',
         icon: 'pi pi-file-pdf',
       },
-    ];
+    ]);
 
     // Mirrors rfi-client-list.component.ts's own 6 stat cards (Total/Pending/Overdue/Under
     // Review/Completed/Reopened) so the two pages always tell the same story.
-    this.rfiKpis = [
+    this.rfiKpis = this.withNav([
       {
         key: 'totalRfis',
         label: this.totalRfisLabel,
@@ -655,7 +677,7 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
         subColor: 'warning',
         icon: 'pi pi-refresh',
       },
-    ];
+    ]);
   }
 
   // ── Sub-Division Head data ─────────────────────────────────────────────────
@@ -722,7 +744,7 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
     ];
 
     // ── KPIs — derived from scope stats/rfiBreakdown above so they can never drift out of sync ──
-    this.kpis = [
+    this.kpis = this.withNav([
       {
         key: 'myOpenRfis',
         label: $localize`:@@client.clientDashboard.myOpenRfis:My open RFIs`,
@@ -755,9 +777,9 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
         subColor: 'muted',
         icon: 'pi pi-bell',
       },
-    ];
+    ]);
 
-    this.rfiKpis = [
+    this.rfiKpis = this.withNav([
       {
         key: 'totalRfis',
         label: $localize`:@@client.clientDashboard.totalRfis:Total RFIs`,
@@ -806,6 +828,6 @@ export class ClientDashboardComponent implements OnInit, OnChanges {
         subColor: 'warning',
         icon: 'pi pi-refresh',
       },
-    ];
+    ]);
   }
 }

@@ -6,7 +6,7 @@
       <button
         class="tab-btn"
         [ngClass]="{ 'tab-btn--active': activeTab === tab.id }"
-        (click)="activeTab = tab.id">
+        (click)="selectTab(tab.id)">
         @switch (tab.icon) {
           @case ('pi pi-home') {
             <svg class="draw-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
